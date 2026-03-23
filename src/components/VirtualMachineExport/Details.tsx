@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ExportVolume,KubeCondition } from '../../types';
+import { ExportVolume, KubeCondition } from '../../types';
 import VirtualMachineExport from './VirtualMachineExport';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,13 +104,17 @@ function DownloadAccess({ serviceName, namespace, volumes, tokenSecretRef }: Dow
             .map(([k, v]) => `${k}=${v}`)
             .join(',');
           ApiProxy.request(
-            `/api/v1/namespaces/${namespace}/pods?labelSelector=${encodeURIComponent(labelSelector)}`
-          ).then((response: KubeService) => {
-            const pods = response?.items || [];
-            if (pods.length > 0) {
-              setPodName(pods[0].metadata.name);
-            }
-          }).catch(() => setPodName(''));
+            `/api/v1/namespaces/${namespace}/pods?labelSelector=${encodeURIComponent(
+              labelSelector
+            )}`
+          )
+            .then((response: KubeService) => {
+              const pods = response?.items || [];
+              if (pods.length > 0) {
+                setPodName(pods[0].metadata.name);
+              }
+            })
+            .catch(() => setPodName(''));
         }
       })
       .catch(() => setServiceResource(null));
@@ -139,7 +143,7 @@ function DownloadAccess({ serviceName, namespace, volumes, tokenSecretRef }: Dow
         targetPort,
         serviceName,
         namespace,
-        localPort,
+        localPort
       );
       if (result?.id) {
         setPortForwardId(result.id);
@@ -175,7 +179,7 @@ function DownloadAccess({ serviceName, namespace, volumes, tokenSecretRef }: Dow
       <RadioGroup
         row
         value={accessMode}
-        onChange={(e) => setAccessMode(e.target.value as 'portforward' | 'cli')}
+        onChange={e => setAccessMode(e.target.value as 'portforward' | 'cli')}
         sx={{ mb: 2 }}
       >
         <FormControlLabel
@@ -234,8 +238,12 @@ function DownloadAccess({ serviceName, namespace, volumes, tokenSecretRef }: Dow
               </Typography>
               {volume.formats?.map((format, fIdx) => {
                 const localUrl = rewriteUrl(format.url, localPort);
-                const tokenHeader = exportToken ? ` \\\n  -H "x-kubevirt-export-token: ${exportToken}"` : '';
-                const curlCmd = `curl -k${tokenHeader} \\\n  -o ${volume.name}.${format.format === 'gzip' ? 'img.gz' : 'img'} \\\n  "${localUrl}"`;
+                const tokenHeader = exportToken
+                  ? ` \\\n  -H "x-kubevirt-export-token: ${exportToken}"`
+                  : '';
+                const curlCmd = `curl -k${tokenHeader} \\\n  -o ${volume.name}.${
+                  format.format === 'gzip' ? 'img.gz' : 'img'
+                } \\\n  "${localUrl}"`;
                 return (
                   <Box key={fIdx} sx={{ ml: 2, mb: 1, position: 'relative' }}>
                     <Typography variant="caption" color="text.secondary">
@@ -272,7 +280,7 @@ function DownloadAccess({ serviceName, namespace, volumes, tokenSecretRef }: Dow
               size="small"
               label="Local Port"
               value={localPort}
-              onChange={(e) => {
+              onChange={e => {
                 setLocalPort(e.target.value);
                 setPortForwardActive(false);
               }}
@@ -328,15 +336,21 @@ function DownloadAccess({ serviceName, namespace, volumes, tokenSecretRef }: Dow
               </Typography>
               {volume.formats?.map((format, fIdx) => {
                 const localUrl = rewriteUrl(format.url, localPort);
-                const tokenHeader = exportToken ? ` \\\n  -H "x-kubevirt-export-token: ${exportToken}"` : '';
-                const curlCmd = `curl -k${tokenHeader} \\\n  -o ${volume.name}.${format.format === 'gzip' ? 'img.gz' : 'img'} \\\n  "${localUrl}"`;
+                const tokenHeader = exportToken
+                  ? ` \\\n  -H "x-kubevirt-export-token: ${exportToken}"`
+                  : '';
+                const curlCmd = `curl -k${tokenHeader} \\\n  -o ${volume.name}.${
+                  format.format === 'gzip' ? 'img.gz' : 'img'
+                } \\\n  "${localUrl}"`;
                 return (
                   <Box key={fIdx} sx={{ ml: 2, mb: 1, position: 'relative' }}>
                     <Chip label={format.format} size="small" variant="outlined" sx={{ mb: 0.5 }} />
                     <Box
                       sx={{
                         p: 1,
-                        bgcolor: portForwardActive ? 'rgba(46, 125, 50, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                        bgcolor: portForwardActive
+                          ? 'rgba(46, 125, 50, 0.06)'
+                          : 'rgba(0, 0, 0, 0.06)',
                         borderRadius: '4px',
                         fontFamily: 'monospace',
                         fontSize: '0.75rem',
@@ -423,18 +437,14 @@ export default function VirtualMachineExportDetails() {
                 <Typography variant="caption" color="text.secondary">
                   VM Name
                 </Typography>
-                <Typography variant="body1">
-                  {vmExport.getVirtualMachineName() || '-'}
-                </Typography>
+                <Typography variant="body1">{vmExport.getVirtualMachineName() || '-'}</Typography>
               </Box>
 
               <Box sx={{ mb: 2 }}>
                 <Typography variant="caption" color="text.secondary">
                   TTL Duration
                 </Typography>
-                <Typography variant="body1">
-                  {vmExport.getTTLDuration() || '-'}
-                </Typography>
+                <Typography variant="body1">{vmExport.getTTLDuration() || '-'}</Typography>
               </Box>
 
               <Box sx={{ mb: 2 }}>
@@ -452,9 +462,7 @@ export default function VirtualMachineExportDetails() {
                 <Typography variant="caption" color="text.secondary">
                   Service Name
                 </Typography>
-                <Typography variant="body1">
-                  {serviceName || '-'}
-                </Typography>
+                <Typography variant="body1">{serviceName || '-'}</Typography>
               </Box>
             </CardContent>
           </Card>
@@ -480,14 +488,24 @@ export default function VirtualMachineExportDetails() {
                       <Typography variant="body2" fontWeight="bold">
                         {volume.name}
                       </Typography>
-                      {volume.formats?.map((format: { format: string; url: string }, fIdx: number) => (
-                        <Box key={fIdx} sx={{ ml: 2, mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Chip label={format.format} size="small" variant="outlined" />
-                          <MuiLink href={format.url} target="_blank" rel="noopener" sx={{ fontSize: '0.85rem' }}>
-                            {format.url}
-                          </MuiLink>
-                        </Box>
-                      ))}
+                      {volume.formats?.map(
+                        (format: { format: string; url: string }, fIdx: number) => (
+                          <Box
+                            key={fIdx}
+                            sx={{ ml: 2, mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            <Chip label={format.format} size="small" variant="outlined" />
+                            <MuiLink
+                              href={format.url}
+                              target="_blank"
+                              rel="noopener"
+                              sx={{ fontSize: '0.85rem' }}
+                            >
+                              {format.url}
+                            </MuiLink>
+                          </Box>
+                        )
+                      )}
                     </Box>
                   ))}
                 </Box>
@@ -504,16 +522,22 @@ export default function VirtualMachineExportDetails() {
                       <Typography variant="body2" fontWeight="bold">
                         {volume.name}
                       </Typography>
-                      {volume.formats?.map((format: { format: string; url: string }, fIdx: number) => (
-                        <Box key={fIdx} sx={{ ml: 2, mt: 0.5 }}>
-                          <Typography variant="body2" component="span" color="text.secondary">
-                            {format.format}:{' '}
-                          </Typography>
-                          <Typography variant="body2" component="span" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                            {format.url}
-                          </Typography>
-                        </Box>
-                      ))}
+                      {volume.formats?.map(
+                        (format: { format: string; url: string }, fIdx: number) => (
+                          <Box key={fIdx} sx={{ ml: 2, mt: 0.5 }}>
+                            <Typography variant="body2" component="span" color="text.secondary">
+                              {format.format}:{' '}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              component="span"
+                              sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                            >
+                              {format.url}
+                            </Typography>
+                          </Box>
+                        )
+                      )}
                     </Box>
                   ))}
 
@@ -545,27 +569,93 @@ export default function VirtualMachineExportDetails() {
               <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
                 <Box component="thead">
                   <Box component="tr">
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Type</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Status</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Reason</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Message</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Last Transition</Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Type
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Status
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Reason
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Message
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Last Transition
+                    </Box>
                   </Box>
                 </Box>
                 <Box component="tbody">
                   {vmExport.status.conditions.map((condition: KubeCondition, idx: number) => (
                     <Box component="tr" key={idx}>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>{condition.type}</Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
+                        {condition.type}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
                         <Chip
                           label={condition.status}
                           size="small"
                           color={condition.status === 'True' ? 'success' : 'default'}
                         />
                       </Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>{condition.reason || '-'}</Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>{condition.message || '-'}</Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
+                        {condition.reason || '-'}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
+                        {condition.message || '-'}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
                         {condition.lastTransitionTime
                           ? new Date(condition.lastTransitionTime).toLocaleString()
                           : '-'}

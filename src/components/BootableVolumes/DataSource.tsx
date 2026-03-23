@@ -12,8 +12,11 @@ class DataSource extends KubeObject {
 
   getOperatingSystem(): string {
     const labels = this.metadata?.labels || {};
-    return labels['os.template.kubevirt.io/name'] ||
-           labels['instancetype.kubevirt.io/default-preference'] || '-';
+    return (
+      labels['os.template.kubevirt.io/name'] ||
+      labels['instancetype.kubevirt.io/default-preference'] ||
+      '-'
+    );
   }
 
   getDescription(): string {

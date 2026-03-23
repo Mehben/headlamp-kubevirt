@@ -45,7 +45,9 @@ export default function Terminal(props: TerminalProps) {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const xtermRef = useRef<XTerminalConnected | null>(null);
   const [terminalRef, setTerminalRef] = useState<HTMLElement | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected'>('connecting');
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected'>(
+    'connecting'
+  );
 
   const { t } = useTranslation(['translation', 'glossary']);
   const encoder = new TextEncoder();
@@ -117,74 +119,71 @@ export default function Terminal(props: TerminalProps) {
     }
     xterm.write(text);
   }
-  useEffect(
-    () => {
-      // Don't do anything if the dialog is not open.
-      if (!props.open) {
-        return;
-      }
+  useEffect(() => {
+    // Don't do anything if the dialog is not open.
+    if (!props.open) {
+      return;
+    }
 
-      if (xtermRef.current) {
-        xtermRef.current.xterm.dispose();
-        execRef.current?.cancel();
-      }
+    if (xtermRef.current) {
+      xtermRef.current.xterm.dispose();
+      execRef.current?.cancel();
+    }
 
-      const isWindows = ['Windows', 'Win16', 'Win32', 'WinCE'].indexOf(navigator?.platform) >= 0;
-      xtermRef.current = {
-        xterm: new XTerminal({
-          cursorBlink: true,
-          cursorStyle: 'underline',
-          scrollback: 10000,
-          rows: 30, // initial rows before fit
-          windowsMode: isWindows,
-          allowProposedApi: true,
-        }),
-        connected: false,
-        reconnectOnEnter: false,
-      };
+    const isWindows = ['Windows', 'Win16', 'Win32', 'WinCE'].indexOf(navigator?.platform) >= 0;
+    xtermRef.current = {
+      xterm: new XTerminal({
+        cursorBlink: true,
+        cursorStyle: 'underline',
+        scrollback: 10000,
+        rows: 30, // initial rows before fit
+        windowsMode: isWindows,
+        allowProposedApi: true,
+      }),
+      connected: false,
+      reconnectOnEnter: false,
+    };
 
-      fitAddonRef.current = new FitAddon();
-      xtermRef.current.xterm.loadAddon(fitAddonRef.current);
+    fitAddonRef.current = new FitAddon();
+    xtermRef.current.xterm.loadAddon(fitAddonRef.current);
 
-      (async function () {
-        setConnectionStatus('connecting');
-        execRef.current = await item.exec(items => onData(xtermRef.current!, items), {
-          reconnectOnFailure: false,
-          failCb: () => {
-            xtermRef.current!.xterm.write(encoder.encode(t('\r\n')));
-          },
-          connectCb: () => {
-            xtermRef.current!.connected = true;
-            setConnectionStatus('connected');
-            // Clear any pending input (Ctrl+U) then send Enter to trigger prompt.
-            // Ctrl+U discards the current line buffer, preventing accidental execution
-            // of commands left over from a previous serial console session.
-            setTimeout(() => {
-              send(0, '\x15\r');
-            }, 500);
-          },
-          tty: false,
-          stderr: false,
-          stdin: false,
-          stdout: false,
-        });
-        setupTerminal(terminalRef, xtermRef.current!.xterm, fitAddonRef.current!);
-      })();
+    (async function () {
+      setConnectionStatus('connecting');
+      execRef.current = await item.exec(items => onData(xtermRef.current!, items), {
+        reconnectOnFailure: false,
+        failCb: () => {
+          xtermRef.current!.xterm.write(encoder.encode(t('\r\n')));
+        },
+        connectCb: () => {
+          xtermRef.current!.connected = true;
+          setConnectionStatus('connected');
+          // Clear any pending input (Ctrl+U) then send Enter to trigger prompt.
+          // Ctrl+U discards the current line buffer, preventing accidental execution
+          // of commands left over from a previous serial console session.
+          setTimeout(() => {
+            send(0, '\x15\r');
+          }, 500);
+        },
+        tty: false,
+        stderr: false,
+        stdin: false,
+        stdout: false,
+      });
+      setupTerminal(terminalRef, xtermRef.current!.xterm, fitAddonRef.current!);
+    })();
 
-      const handler = () => {
-        fitAddonRef.current!.fit();
-      };
+    const handler = () => {
+      fitAddonRef.current!.fit();
+    };
 
-      window.addEventListener('resize', handler);
+    window.addEventListener('resize', handler);
 
-      return function cleanup() {
-        xtermRef.current?.xterm.dispose();
-        execRef.current?.cancel();
-        window.removeEventListener('resize', handler);
-      };
-    },
-    [terminalRef, props.open, item]
-  );
+    return function cleanup() {
+      xtermRef.current?.xterm.dispose();
+      execRef.current?.cancel();
+      window.removeEventListener('resize', handler);
+    };
+  }, [terminalRef, props.open, item]);
 
   return (
     <Dialog

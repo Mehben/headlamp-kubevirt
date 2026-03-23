@@ -4,7 +4,15 @@ import { StreamArgs, StreamResultsCb } from '@kinvolk/headlamp-plugin/lib/ApiPro
 import { Dialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { KubeObject } from '@kinvolk/headlamp-plugin/lib/K8s/cluster';
 import type { DialogProps } from '@mui/material';
-import { Alert, Box, IconButton, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  IconButton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerminal } from '@xterm/xterm';
@@ -35,19 +43,42 @@ type execReturn = ReturnType<ConsoleObject['exec']>;
 
 function getKeysym(e: React.KeyboardEvent): number | null {
   const specialKeys: { [key: string]: number } = {
-    'Backspace': 0xff08, 'Tab': 0xff09, 'Enter': 0xff0d, 'Escape': 0xff1b,
-    'Delete': 0xffff, 'Home': 0xff50, 'End': 0xff57, 'PageUp': 0xff55,
-    'PageDown': 0xff56, 'ArrowLeft': 0xff51, 'ArrowUp': 0xff52,
-    'ArrowRight': 0xff53, 'ArrowDown': 0xff54, 'Shift': 0xffe1,
-    'Control': 0xffe3, 'Alt': 0xffe9, 'Meta': 0xffe7,
-    'F1': 0xffbe, 'F2': 0xffbf, 'F3': 0xffc0, 'F4': 0xffc1,
-    'F5': 0xffc2, 'F6': 0xffc3, 'F7': 0xffc4, 'F8': 0xffc5,
-    'F9': 0xffc6, 'F10': 0xffc7, 'F11': 0xffc8, 'F12': 0xffc9,
+    Backspace: 0xff08,
+    Tab: 0xff09,
+    Enter: 0xff0d,
+    Escape: 0xff1b,
+    Delete: 0xffff,
+    Home: 0xff50,
+    End: 0xff57,
+    PageUp: 0xff55,
+    PageDown: 0xff56,
+    ArrowLeft: 0xff51,
+    ArrowUp: 0xff52,
+    ArrowRight: 0xff53,
+    ArrowDown: 0xff54,
+    Shift: 0xffe1,
+    Control: 0xffe3,
+    Alt: 0xffe9,
+    Meta: 0xffe7,
+    F1: 0xffbe,
+    F2: 0xffbf,
+    F3: 0xffc0,
+    F4: 0xffc1,
+    F5: 0xffc2,
+    F6: 0xffc3,
+    F7: 0xffc4,
+    F8: 0xffc5,
+    F9: 0xffc6,
+    F10: 0xffc7,
+    F11: 0xffc8,
+    F12: 0xffc9,
   };
   if (e.key in specialKeys) return specialKeys[e.key];
   if (e.key === 'Dead') {
     const deadKeyMap: { [code: string]: number } = {
-      'BracketLeft': 0x5e, 'Quote': 0xb4, 'Backquote': 0x60,
+      BracketLeft: 0x5e,
+      Quote: 0xb4,
+      Backquote: 0x60,
     };
     if (e.code && e.code in deadKeyMap) return deadKeyMap[e.code];
     return null;
@@ -360,8 +391,12 @@ function VNCPanel({
   onStatusChange: (status: 'connecting' | 'connected' | 'disconnected') => void;
 }) {
   const [errorMessage, setErrorMessage] = useState('');
-  const [framebufferSize, setFramebufferSize] = useState<{ width: number; height: number } | null>(null);
-  const [localStatus, setLocalStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [framebufferSize, setFramebufferSize] = useState<{ width: number; height: number } | null>(
+    null
+  );
+  const [localStatus, setLocalStatus] = useState<'connecting' | 'connected' | 'disconnected'>(
+    'connecting'
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vncRef = useRef<any>(null);
 
@@ -806,7 +841,9 @@ function VNCPanel({
 export default function VMConsole(props: VMConsoleProps) {
   const { item, vm, onClose, initialTab = 'vnc', ...other } = props;
   const [activeTab, setActiveTab] = useState<'vnc' | 'terminal'>(initialTab);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [connectionStatus, setConnectionStatus] = useState<
+    'connecting' | 'connected' | 'disconnected'
+  >('connecting');
 
   // Reset tab when dialog opens
   useEffect(() => {
@@ -816,20 +853,26 @@ export default function VMConsole(props: VMConsoleProps) {
     }
   }, [props.open, initialTab]);
 
-  const handleVNCStatus = useCallback((status: 'connecting' | 'connected' | 'disconnected') => {
-    if (activeTab === 'vnc') setConnectionStatus(status);
-  }, [activeTab]);
+  const handleVNCStatus = useCallback(
+    (status: 'connecting' | 'connected' | 'disconnected') => {
+      if (activeTab === 'vnc') setConnectionStatus(status);
+    },
+    [activeTab]
+  );
 
-  const handleTerminalStatus = useCallback((status: 'connecting' | 'connected') => {
-    if (activeTab === 'terminal') setConnectionStatus(status);
-  }, [activeTab]);
+  const handleTerminalStatus = useCallback(
+    (status: 'connecting' | 'connected') => {
+      if (activeTab === 'terminal') setConnectionStatus(status);
+    },
+    [activeTab]
+  );
 
   const statusColor =
     connectionStatus === 'connected'
       ? '#4caf50'
       : connectionStatus === 'connecting'
-        ? '#ff9800'
-        : '#f44336';
+      ? '#ff9800'
+      : '#f44336';
 
   return (
     <Dialog
@@ -851,7 +894,9 @@ export default function VMConsole(props: VMConsoleProps) {
               display: 'inline-block',
             }}
           />
-          <Box sx={{ width: '1px', height: 24, backgroundColor: 'rgba(255,255,255,0.3)', mx: 0.5 }} />
+          <Box
+            sx={{ width: '1px', height: 24, backgroundColor: 'rgba(255,255,255,0.3)', mx: 0.5 }}
+          />
           <ToggleButtonGroup
             value={activeTab}
             exclusive

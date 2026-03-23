@@ -66,12 +66,18 @@ export default function CRDDocsViewer({ apiVersion, kind }: CRDDocsViewerProps) 
           throw new Error(`CRD not found for ${kind} in group ${group}`);
         }
 
-        const matchingMeta = (matchingCrd as Record<string, unknown>).metadata as Record<string, unknown>;
+        const matchingMeta = (matchingCrd as Record<string, unknown>).metadata as Record<
+          string,
+          unknown
+        >;
         setCrdName(matchingMeta.name as string);
 
-        const matchingSpec = (matchingCrd as Record<string, unknown>).spec as Record<string, unknown>;
+        const matchingSpec = (matchingCrd as Record<string, unknown>).spec as Record<
+          string,
+          unknown
+        >;
         const versions = (matchingSpec?.versions || []) as Array<Record<string, unknown>>;
-        const matchingVersion = versions.find((v) => v.name === version) || versions[0];
+        const matchingVersion = versions.find(v => v.name === version) || versions[0];
 
         const schema = matchingVersion?.schema as Record<string, unknown> | undefined;
         const openAPIV3Schema = schema?.openAPIV3Schema as Record<string, unknown> | undefined;
@@ -267,7 +273,7 @@ export default function CRDDocsViewer({ apiVersion, kind }: CRDDocsViewerProps) 
                 Allowed values:
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {currentProperty.enum.map((val) => (
+                {currentProperty.enum.map(val => (
                   <Chip key={val} label={val} size="small" variant="outlined" />
                 ))}
               </Box>
@@ -299,9 +305,7 @@ export default function CRDDocsViewer({ apiVersion, kind }: CRDDocsViewerProps) 
       {/* Properties list */}
       {properties.length === 0 ? (
         <Alert severity="info">
-          <Typography variant="body2">
-            No sub-properties available for this field.
-          </Typography>
+          <Typography variant="body2">No sub-properties available for this field.</Typography>
         </Alert>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -343,9 +347,7 @@ export default function CRDDocsViewer({ apiVersion, kind }: CRDDocsViewerProps) 
                     />
                   )}
                   {isRequired && <Chip label="required" size="small" color="error" />}
-                  {hasChildren && (
-                    <Icon icon="mdi:chevron-right" style={{ marginLeft: 'auto' }} />
-                  )}
+                  {hasChildren && <Icon icon="mdi:chevron-right" style={{ marginLeft: 'auto' }} />}
                 </Box>
                 {prop.description && (
                   <Typography

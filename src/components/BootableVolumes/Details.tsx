@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { Link,Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { Link, Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Card, CardContent, Chip, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -26,11 +26,7 @@ export default function DataSourceDetails() {
         withEvents
         actions={[
           <Tooltip title="Edit with Wizard">
-            <IconButton
-              key="edit-wizard"
-              onClick={() => setEditOpen(true)}
-              size="small"
-            >
+            <IconButton key="edit-wizard" onClick={() => setEditOpen(true)} size="small">
               <Icon icon="mdi:auto-fix" />
             </IconButton>
           </Tooltip>,
@@ -67,17 +63,45 @@ export default function DataSourceDetails() {
                 <Box sx={{ mt: 0.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {(() => {
                     const conditions = dataSource.status?.conditions || [];
-                    const readyCondition = conditions.find((c: KubeCondition) => c.type === 'Ready');
-                    const runningCondition = conditions.find((c: KubeCondition) => c.type === 'Running');
+                    const readyCondition = conditions.find(
+                      (c: KubeCondition) => c.type === 'Ready'
+                    );
+                    const runningCondition = conditions.find(
+                      (c: KubeCondition) => c.type === 'Running'
+                    );
 
                     if (readyCondition?.status === 'True') {
                       return <Chip label="Ready" size="small" color="success" />;
                     } else if (runningCondition?.status === 'True') {
-                      return <Chip label="Running" size="small" color="info" icon={<Icon icon="mdi:sync" />} />;
-                    } else if (readyCondition?.reason === 'Pending' || readyCondition?.reason === 'Progressing') {
-                      return <Chip label={readyCondition.reason} size="small" color="warning" icon={<Icon icon="mdi:clock-outline" />} />;
+                      return (
+                        <Chip
+                          label="Running"
+                          size="small"
+                          color="info"
+                          icon={<Icon icon="mdi:sync" />}
+                        />
+                      );
+                    } else if (
+                      readyCondition?.reason === 'Pending' ||
+                      readyCondition?.reason === 'Progressing'
+                    ) {
+                      return (
+                        <Chip
+                          label={readyCondition.reason}
+                          size="small"
+                          color="warning"
+                          icon={<Icon icon="mdi:clock-outline" />}
+                        />
+                      );
                     } else if (readyCondition?.status === 'False') {
-                      return <Chip label="Error" size="small" color="error" icon={<Icon icon="mdi:alert-circle" />} />;
+                      return (
+                        <Chip
+                          label="Error"
+                          size="small"
+                          color="error"
+                          icon={<Icon icon="mdi:alert-circle" />}
+                        />
+                      );
                     }
                     return <Chip label="Unknown" size="small" color="default" />;
                   })()}
@@ -115,15 +139,16 @@ export default function DataSourceDetails() {
               </Box>
 
               <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 0.5 }}
+                >
                   Default Instance Type
                 </Typography>
                 {dataSource.getInstanceType() !== '-' ? (
                   <Box sx={{ display: 'block' }}>
-                    <Link
-                      routeName="instancetype"
-                      params={{ name: dataSource.getInstanceType() }}
-                    >
+                    <Link routeName="instancetype" params={{ name: dataSource.getInstanceType() }}>
                       {dataSource.getInstanceType()}
                     </Link>
                   </Box>
@@ -133,15 +158,16 @@ export default function DataSourceDetails() {
               </Box>
 
               <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 0.5 }}
+                >
                   Default Preference
                 </Typography>
                 {dataSource.getPreference() !== '-' ? (
                   <Box sx={{ display: 'block' }}>
-                    <Link
-                      routeName="preference"
-                      params={{ name: dataSource.getPreference() }}
-                    >
+                    <Link routeName="preference" params={{ name: dataSource.getPreference() }}>
                       {dataSource.getPreference()}
                     </Link>
                   </Box>
@@ -170,7 +196,11 @@ export default function DataSourceDetails() {
               </Box>
 
               <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 0.5 }}
+                >
                   Source PVC
                 </Typography>
                 {dataSource.getSourcePVCName() !== '-' ? (
@@ -203,7 +233,11 @@ export default function DataSourceDetails() {
               </Box>
 
               <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 0.5 }}
+                >
                   Managed by DataImportCron
                 </Typography>
                 {dataSource.getDataImportCron() !== '-' ? (
@@ -226,8 +260,8 @@ export default function DataSourceDetails() {
               {dataSource.getDataImportCron() !== '-' && (
                 <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
                   <Typography variant="caption" color="text.secondary">
-                    This DataSource is automatically updated by a DataImportCron schedule.
-                    New versions will be imported periodically.
+                    This DataSource is automatically updated by a DataImportCron schedule. New
+                    versions will be imported periodically.
                   </Typography>
                 </Box>
               )}

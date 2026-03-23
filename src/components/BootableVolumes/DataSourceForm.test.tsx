@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import DataSourceForm from './DataSourceForm';
 
@@ -69,7 +69,9 @@ describe('DataSourceForm', () => {
     it('shows PVC fields when PVC selected', () => {
       render(<DataSourceForm resource={makeDataSource()} onChange={vi.fn()} />);
 
-      expect(screen.getByText('Reference an existing PVC as the source for this DataSource')).toBeInTheDocument();
+      expect(
+        screen.getByText('Reference an existing PVC as the source for this DataSource')
+      ).toBeInTheDocument();
     });
 
     it('switches to VolumeSnapshot type', () => {
@@ -89,7 +91,9 @@ describe('DataSourceForm', () => {
       });
       render(<DataSourceForm resource={res} onChange={vi.fn()} />);
 
-      expect(screen.getByText('Reference an existing VolumeSnapshot as the source for this DataSource')).toBeInTheDocument();
+      expect(
+        screen.getByText('Reference an existing VolumeSnapshot as the source for this DataSource')
+      ).toBeInTheDocument();
     });
 
     it('switches to DataSource reference type', () => {
@@ -108,7 +112,9 @@ describe('DataSourceForm', () => {
       });
       render(<DataSourceForm resource={res} onChange={vi.fn()} />);
 
-      expect(screen.getByText('Reference another DataSource (maximum depth of 1)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Reference another DataSource (maximum depth of 1)')
+      ).toBeInTheDocument();
     });
   });
 
@@ -118,7 +124,9 @@ describe('DataSourceForm', () => {
     it('shows DataImportCron note', () => {
       render(<DataSourceForm resource={makeDataSource()} onChange={vi.fn()} />);
 
-      expect(screen.getByText(/DataSources are typically managed automatically by DataImportCrons/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/DataSources are typically managed automatically by DataImportCrons/)
+      ).toBeInTheDocument();
     });
   });
 });

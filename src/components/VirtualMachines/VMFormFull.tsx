@@ -56,7 +56,19 @@ interface NetworkInterface {
 
 interface AdditionalDisk {
   name: string;
-  sourceType: 'empty' | 'containerDisk' | 'persistentVolumeClaim' | 'snapshot' | 'clone' | 'dataVolume' | 'dataVolumeExisting' | 'ephemeral' | 'hostDisk' | 'configMap' | 'secret' | 'serviceAccount';
+  sourceType:
+    | 'empty'
+    | 'containerDisk'
+    | 'persistentVolumeClaim'
+    | 'snapshot'
+    | 'clone'
+    | 'dataVolume'
+    | 'dataVolumeExisting'
+    | 'ephemeral'
+    | 'hostDisk'
+    | 'configMap'
+    | 'secret'
+    | 'serviceAccount';
   sourceDetail?: string;
   sourceNamespace?: string;
   bus: 'virtio' | 'sata' | 'scsi';
@@ -128,13 +140,19 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   // Initialize from resource when it changes
   React.useEffect(() => {
     const labelObj = resource.metadata?.labels || {};
-    const labelEntries = Object.entries(labelObj).map(([key, value]) => ({ key, value: String(value) }));
+    const labelEntries = Object.entries(labelObj).map(([key, value]) => ({
+      key,
+      value: String(value),
+    }));
     setLabels(labelEntries.length > 0 ? labelEntries : []);
   }, [resource.metadata?.labels]);
 
   React.useEffect(() => {
     const annotationObj = resource.metadata?.annotations || {};
-    const annotationEntries = Object.entries(annotationObj).map(([key, value]) => ({ key, value: String(value) }));
+    const annotationEntries = Object.entries(annotationObj).map(([key, value]) => ({
+      key,
+      value: String(value),
+    }));
     setAnnotations(annotationEntries.length > 0 ? annotationEntries : []);
   }, [resource.metadata?.annotations]);
 
@@ -142,11 +160,14 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   const bootSourceId = resource.spec?.dataVolumeTemplates?.[0]?.spec?.sourceRef?.name || '';
   const resourceMode = resource.spec?.instancetype ? 'instanceType' : 'custom';
   const selectedInstanceTypeName = resource.spec?.instancetype?.name || '';
-  const selectedInstanceType = clusterInstanceTypes.find(it => it.getName() === selectedInstanceTypeName) || null;
+  const selectedInstanceType =
+    clusterInstanceTypes.find(it => it.getName() === selectedInstanceTypeName) || null;
 
   // SSH Key from resource
   // eslint-disable-next-line no-unused-vars
-  const sshKey = resource.spec?.template?.spec?.accessCredentials?.[0]?.sshPublicKey?.source?.secret?.secretName || '';
+  const sshKey =
+    resource.spec?.template?.spec?.accessCredentials?.[0]?.sshPublicKey?.source?.secret
+      ?.secretName || '';
 
   // Run strategy
   // eslint-disable-next-line no-unused-vars
@@ -154,7 +175,8 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
   // Custom CPU/Memory
   const customCpu = resource.spec?.template?.spec?.domain?.cpu?.cores?.toString() || '2';
-  const customMemoryValue = resource.spec?.template?.spec?.domain?.resources?.requests?.memory || '4Gi';
+  const customMemoryValue =
+    resource.spec?.template?.spec?.domain?.resources?.requests?.memory || '4Gi';
   const customMemoryMatch = customMemoryValue.match(/^(\d+)(Mi|Gi)$/);
   const customMemory = customMemoryMatch ? customMemoryMatch[1] : '4';
   const customMemoryUnit = (customMemoryMatch ? customMemoryMatch[2] : 'Gi') as 'Mi' | 'Gi';
@@ -178,7 +200,7 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
       return {
         name: iface.name || `net-${idx}`,
-        type: isPod ? 'pod' as const : 'nad' as const,
+        type: isPod ? ('pod' as const) : ('nad' as const),
         nadName,
         model: iface.model as 'e1000e' | 'virtio',
         macAddress: iface.macAddress,
@@ -196,8 +218,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
     const disks = resource.spec?.template?.spec?.domain?.devices?.disks || [];
 
     // Parse volumes, excluding cloudinitdisk and rootdisk
-    const additionalVolumes = volumes.filter((v: KubeResourceBuilder) =>
-      v.name !== 'cloudinitdisk' && !v.name?.includes('root') && !v.name?.includes('boot')
+    const additionalVolumes = volumes.filter(
+      (v: KubeResourceBuilder) =>
+        v.name !== 'cloudinitdisk' && !v.name?.includes('root') && !v.name?.includes('boot')
     );
 
     return additionalVolumes.map((vol: KubeResourceBuilder) => {
@@ -263,7 +286,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   // Initialize node selectors from resource
   React.useEffect(() => {
     const selectorObj = resource.spec?.template?.spec?.nodeSelector || {};
-    const entries = Object.entries(selectorObj).map(([key, value]) => ({ key, value: String(value) }));
+    const entries = Object.entries(selectorObj).map(([key, value]) => ({
+      key,
+      value: String(value),
+    }));
     setCurrentNodeSelectors(entries);
   }, [resource.spec?.template?.spec?.nodeSelector]);
 
@@ -327,11 +353,12 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           type: 'podAffinity',
           condition: 'required',
           topologyKey: term.topologyKey,
-          podLabels: term.labelSelector?.matchExpressions?.map((exp: KubeResourceBuilder) => ({
-            key: exp.key,
-            operator: exp.operator,
-            values: exp.values || [],
-          })) || [],
+          podLabels:
+            term.labelSelector?.matchExpressions?.map((exp: KubeResourceBuilder) => ({
+              key: exp.key,
+              operator: exp.operator,
+              values: exp.values || [],
+            })) || [],
         });
       });
     }
@@ -344,11 +371,14 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           condition: 'preferred',
           weight: pref.weight,
           topologyKey: pref.podAffinityTerm.topologyKey,
-          podLabels: pref.podAffinityTerm.labelSelector?.matchExpressions?.map((exp: KubeResourceBuilder) => ({
-            key: exp.key,
-            operator: exp.operator,
-            values: exp.values || [],
-          })) || [],
+          podLabels:
+            pref.podAffinityTerm.labelSelector?.matchExpressions?.map(
+              (exp: KubeResourceBuilder) => ({
+                key: exp.key,
+                operator: exp.operator,
+                values: exp.values || [],
+              })
+            ) || [],
         });
       });
     }
@@ -361,11 +391,12 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           type: 'podAntiAffinity',
           condition: 'required',
           topologyKey: term.topologyKey,
-          podLabels: term.labelSelector?.matchExpressions?.map((exp: KubeResourceBuilder) => ({
-            key: exp.key,
-            operator: exp.operator,
-            values: exp.values || [],
-          })) || [],
+          podLabels:
+            term.labelSelector?.matchExpressions?.map((exp: KubeResourceBuilder) => ({
+              key: exp.key,
+              operator: exp.operator,
+              values: exp.values || [],
+            })) || [],
         });
       });
     }
@@ -378,11 +409,14 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           condition: 'preferred',
           weight: pref.weight,
           topologyKey: pref.podAffinityTerm.topologyKey,
-          podLabels: pref.podAffinityTerm.labelSelector?.matchExpressions?.map((exp: KubeResourceBuilder) => ({
-            key: exp.key,
-            operator: exp.operator,
-            values: exp.values || [],
-          })) || [],
+          podLabels:
+            pref.podAffinityTerm.labelSelector?.matchExpressions?.map(
+              (exp: KubeResourceBuilder) => ({
+                key: exp.key,
+                operator: exp.operator,
+                values: exp.values || [],
+              })
+            ) || [],
         });
       });
     }
@@ -393,35 +427,49 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   const enableLiveMigrate = resource.spec?.template?.spec?.evictionStrategy === 'LiveMigrate';
 
   // Parse advanced details (Virtual Hardware + User Data)
-  const firmwareType = resource.spec?.template?.spec?.domain?.firmware?.bootloader?.efi ? 'uefi' : 'bios';
+  const firmwareType = resource.spec?.template?.spec?.domain?.firmware?.bootloader?.efi
+    ? 'uefi'
+    : 'bios';
   const cpuModel = resource.spec?.template?.spec?.domain?.cpu?.model || '';
-  const enableNestedVirtualization = resource.spec?.template?.spec?.domain?.cpu?.features?.some((f: KubeResourceBuilder) => f.name === 'vmx' || f.name === 'svm') || false;
+  const enableNestedVirtualization =
+    resource.spec?.template?.spec?.domain?.cpu?.features?.some(
+      (f: KubeResourceBuilder) => f.name === 'vmx' || f.name === 'svm'
+    ) || false;
   const machineType = resource.spec?.template?.spec?.domain?.machine?.type || '';
   const enableAcpi = resource.spec?.template?.spec?.domain?.features?.acpi?.enabled !== false;
   const timezone = resource.spec?.template?.spec?.domain?.clock?.timezone || '';
 
   // User Data configuration
-  const userDataMode = resource.spec?.template?.spec?.volumes?.some((v: KubeResourceBuilder) => v.cloudInitConfigDrive) ? 'ignition' : 'cloudInit';
-  const cloudInitVolume = resource.spec?.template?.spec?.volumes?.find((v: KubeResourceBuilder) => v.cloudInitNoCloud);
-  const ignitionVolume = resource.spec?.template?.spec?.volumes?.find((v: KubeResourceBuilder) => v.cloudInitConfigDrive);
+  const userDataMode = resource.spec?.template?.spec?.volumes?.some(
+    (v: KubeResourceBuilder) => v.cloudInitConfigDrive
+  )
+    ? 'ignition'
+    : 'cloudInit';
+  const cloudInitVolume = resource.spec?.template?.spec?.volumes?.find(
+    (v: KubeResourceBuilder) => v.cloudInitNoCloud
+  );
+  const ignitionVolume = resource.spec?.template?.spec?.volumes?.find(
+    (v: KubeResourceBuilder) => v.cloudInitConfigDrive
+  );
 
   // Parse Cloud-Init data
   const cloudInitUserData = cloudInitVolume?.cloudInitNoCloud?.userData || '';
   const cloudInitNetworkData = cloudInitVolume?.cloudInitNoCloud?.networkData || '';
   const cloudInitUserDataSecret = cloudInitVolume?.cloudInitNoCloud?.secretRef?.name || '';
-  const cloudInitNetworkDataSecret = cloudInitVolume?.cloudInitNoCloud?.networkDataSecretRef?.name || '';
+  const cloudInitNetworkDataSecret =
+    cloudInitVolume?.cloudInitNoCloud?.networkDataSecretRef?.name || '';
 
   // Parse Ignition data
   const ignitionData = ignitionVolume?.cloudInitConfigDrive?.userData || '';
   const ignitionDataSecret = ignitionVolume?.cloudInitConfigDrive?.secretRef?.name || '';
 
   // Local state for UI interactions (disk form, user data types, etc.)
-  const [cloudInitUserDataType, setCloudInitUserDataType] = useState<'inline' | 'base64' | 'secret'>(
-    cloudInitUserDataSecret ? 'secret' : 'inline'
-  );
-  const [cloudInitNetworkDataType, setCloudInitNetworkDataType] = useState<'inline' | 'base64' | 'secret'>(
-    cloudInitNetworkDataSecret ? 'secret' : 'inline'
-  );
+  const [cloudInitUserDataType, setCloudInitUserDataType] = useState<
+    'inline' | 'base64' | 'secret'
+  >(cloudInitUserDataSecret ? 'secret' : 'inline');
+  const [cloudInitNetworkDataType, setCloudInitNetworkDataType] = useState<
+    'inline' | 'base64' | 'secret'
+  >(cloudInitNetworkDataSecret ? 'secret' : 'inline');
   const [ignitionDataType, setIgnitionDataType] = useState<'inline' | 'base64' | 'secret'>(
     ignitionDataSecret ? 'secret' : 'inline'
   );
@@ -469,10 +517,16 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
   React.useEffect(() => {
     ApiProxy.request('/api/v1/namespaces')
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const nsList = response?.items?.map((ns: { metadata: { name: string } }) => ns.metadata.name) || ['default'];
-        setNamespaces(nsList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const nsList = response?.items?.map(
+            (ns: { metadata: { name: string } }) => ns.metadata.name
+          ) || ['default'];
+          setNamespaces(nsList);
+        }
+      )
       .catch(err => {
         console.error('Failed to fetch namespaces:', err);
       });
@@ -484,74 +538,113 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
     // Fetch ConfigMaps
     ApiProxy.request(`/api/v1/namespaces/${namespace}/configmaps`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const cmList = response?.items?.map((cm: { metadata: { name: string } }) => cm.metadata.name) || [];
-        setConfigMaps(cmList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const cmList =
+            response?.items?.map((cm: { metadata: { name: string } }) => cm.metadata.name) || [];
+          setConfigMaps(cmList);
+        }
+      )
       .catch(err => console.error('Failed to fetch configmaps:', err));
 
     // Fetch Secrets
     ApiProxy.request(`/api/v1/namespaces/${namespace}/secrets`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const secretList = response?.items?.map((s: { metadata: { name: string } }) => s.metadata.name) || [];
-        setSecrets(secretList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const secretList =
+            response?.items?.map((s: { metadata: { name: string } }) => s.metadata.name) || [];
+          setSecrets(secretList);
+        }
+      )
       .catch(err => console.error('Failed to fetch secrets:', err));
 
     // Fetch ServiceAccounts
     ApiProxy.request(`/api/v1/namespaces/${namespace}/serviceaccounts`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const saList = response?.items?.map((sa: { metadata: { name: string } }) => sa.metadata.name) || [];
-        setServiceAccounts(saList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const saList =
+            response?.items?.map((sa: { metadata: { name: string } }) => sa.metadata.name) || [];
+          setServiceAccounts(saList);
+        }
+      )
       .catch(err => console.error('Failed to fetch serviceaccounts:', err));
 
     // Fetch PVCs
     ApiProxy.request(`/api/v1/namespaces/${namespace}/persistentvolumeclaims`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const pvcList = response?.items?.map((pvc: { metadata: { name: string } }) => pvc.metadata.name) || [];
-        setPvcs(pvcList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const pvcList =
+            response?.items?.map((pvc: { metadata: { name: string } }) => pvc.metadata.name) || [];
+          setPvcs(pvcList);
+        }
+      )
       .catch(err => console.error('Failed to fetch pvcs:', err));
 
     // Fetch VolumeSnapshots
     ApiProxy.request(`/apis/snapshot.storage.k8s.io/v1/namespaces/${namespace}/volumesnapshots`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const vsList = response?.items?.map((vs: { metadata: { name: string } }) => vs.metadata.name) || [];
-        setVolumeSnapshots(vsList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const vsList =
+            response?.items?.map((vs: { metadata: { name: string } }) => vs.metadata.name) || [];
+          setVolumeSnapshots(vsList);
+        }
+      )
       .catch(err => console.error('Failed to fetch volume snapshots:', err));
 
     // Fetch DataVolumes
     ApiProxy.request(`/apis/cdi.kubevirt.io/v1beta1/namespaces/${namespace}/datavolumes`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const dvList = response?.items?.map((dv: { metadata: { name: string } }) => dv.metadata.name) || [];
-        setDataVolumes(dvList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const dvList =
+            response?.items?.map((dv: { metadata: { name: string } }) => dv.metadata.name) || [];
+          setDataVolumes(dvList);
+        }
+      )
       .catch(err => console.error('Failed to fetch datavolumes:', err));
   }, [namespace]);
 
   // Fetch StorageClasses and Nodes (cluster-wide)
   React.useEffect(() => {
     ApiProxy.request('/apis/storage.k8s.io/v1/storageclasses')
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const scList = response?.items?.map((sc: { metadata: { name: string } }) => sc.metadata.name) || [];
-        setStorageClasses(scList);
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const scList =
+            response?.items?.map((sc: { metadata: { name: string } }) => sc.metadata.name) || [];
+          setStorageClasses(scList);
+        }
+      )
       .catch(err => console.error('Failed to fetch storage classes:', err));
 
     // Fetch nodes and extract unique label keys
     ApiProxy.request('/api/v1/nodes')
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const nodes = response?.items || [];
-        const labelKeysSet = new Set<string>();
-        nodes.forEach((node: KubeResourceBuilder) => {
-          if (node.metadata?.labels) {
-            Object.keys(node.metadata.labels).forEach(key => labelKeysSet.add(key));
-          }
-        });
-        setNodeLabels(Array.from(labelKeysSet).sort());
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const nodes = response?.items || [];
+          const labelKeysSet = new Set<string>();
+          nodes.forEach((node: KubeResourceBuilder) => {
+            if (node.metadata?.labels) {
+              Object.keys(node.metadata.labels).forEach(key => labelKeysSet.add(key));
+            }
+          });
+          setNodeLabels(Array.from(labelKeysSet).sort());
+        }
+      )
       .catch(err => console.error('Failed to fetch nodes:', err));
   }, []);
 
@@ -700,7 +793,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
     validAnnotations.forEach(entry => {
       annotationObj[entry.key] = entry.value;
     });
-    updateMetadata({ annotations: Object.keys(annotationObj).length > 0 ? annotationObj : undefined });
+    updateMetadata({
+      annotations: Object.keys(annotationObj).length > 0 ? annotationObj : undefined,
+    });
   };
 
   // Boot Source handlers
@@ -902,7 +997,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
   const addNetworkInterface = () => {
     const newName = `net-${currentNetworkInterfaces.length}`;
-    const newInterfaces = [...currentNetworkInterfaces, { name: newName, type: 'nad' as const, model: 'virtio' as const }];
+    const newInterfaces = [
+      ...currentNetworkInterfaces,
+      { name: newName, type: 'nad' as const, model: 'virtio' as const },
+    ];
     handleNetworkInterfacesChange(newInterfaces);
   };
 
@@ -977,10 +1075,15 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   const fetchPvcsForNamespace = (ns: string) => {
     if (cloneSourcePvcs[ns]) return;
     ApiProxy.request(`/api/v1/namespaces/${ns}/persistentvolumeclaims`)
-      .then((response: { items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }> }) => {
-        const pvcList = response?.items?.map((pvc: { metadata: { name: string } }) => pvc.metadata.name) || [];
-        setCloneSourcePvcs(prev => ({ ...prev, [ns]: pvcList }));
-      })
+      .then(
+        (response: {
+          items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+        }) => {
+          const pvcList =
+            response?.items?.map((pvc: { metadata: { name: string } }) => pvc.metadata.name) || [];
+          setCloneSourcePvcs(prev => ({ ...prev, [ns]: pvcList }));
+        }
+      )
       .catch(err => console.error(`Failed to fetch PVCs for namespace ${ns}:`, err));
   };
 
@@ -1006,7 +1109,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   }, [showDiskForm, diskFormData.sourceType, diskFormData.sourceNamespace, namespace]);
 
   const startAddDisk = () => {
-    const diskNumber = currentAdditionalDisks.filter(d => !['configMap', 'secret', 'serviceAccount'].includes(d.sourceType)).length + 1;
+    const diskNumber =
+      currentAdditionalDisks.filter(
+        d => !['configMap', 'secret', 'serviceAccount'].includes(d.sourceType)
+      ).length + 1;
     setDiskFormData({
       name: `disk-${diskNumber}`,
       sourceType: 'empty',
@@ -1244,7 +1350,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
   };
 
   const addSpecialVolume = () => {
-    const volumeNumber = currentAdditionalDisks.filter(d => ['configMap', 'secret', 'serviceAccount'].includes(d.sourceType)).length + 1;
+    const volumeNumber =
+      currentAdditionalDisks.filter(d =>
+        ['configMap', 'secret', 'serviceAccount'].includes(d.sourceType)
+      ).length + 1;
     const newDiskName = `volume-${volumeNumber}`;
 
     const volumes = resource.spec?.template?.spec?.volumes || [];
@@ -1443,12 +1552,24 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
     const affinity: KubeResourceBuilder = {};
 
     // Group rules by type and condition
-    const nodeAffinityRequired = rules.filter(r => r.type === 'nodeAffinity' && r.condition === 'required');
-    const nodeAffinityPreferred = rules.filter(r => r.type === 'nodeAffinity' && r.condition === 'preferred');
-    const podAffinityRequired = rules.filter(r => r.type === 'podAffinity' && r.condition === 'required');
-    const podAffinityPreferred = rules.filter(r => r.type === 'podAffinity' && r.condition === 'preferred');
-    const podAntiAffinityRequired = rules.filter(r => r.type === 'podAntiAffinity' && r.condition === 'required');
-    const podAntiAffinityPreferred = rules.filter(r => r.type === 'podAntiAffinity' && r.condition === 'preferred');
+    const nodeAffinityRequired = rules.filter(
+      r => r.type === 'nodeAffinity' && r.condition === 'required'
+    );
+    const nodeAffinityPreferred = rules.filter(
+      r => r.type === 'nodeAffinity' && r.condition === 'preferred'
+    );
+    const podAffinityRequired = rules.filter(
+      r => r.type === 'podAffinity' && r.condition === 'required'
+    );
+    const podAffinityPreferred = rules.filter(
+      r => r.type === 'podAffinity' && r.condition === 'preferred'
+    );
+    const podAntiAffinityRequired = rules.filter(
+      r => r.type === 'podAntiAffinity' && r.condition === 'required'
+    );
+    const podAntiAffinityPreferred = rules.filter(
+      r => r.type === 'podAntiAffinity' && r.condition === 'preferred'
+    );
 
     // Build nodeAffinity
     if (nodeAffinityRequired.length > 0 || nodeAffinityPreferred.length > 0) {
@@ -1467,16 +1588,17 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
       }
 
       if (nodeAffinityPreferred.length > 0) {
-        affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution = nodeAffinityPreferred.map(rule => ({
-          weight: rule.weight || 1,
-          preference: {
-            matchExpressions: (rule.nodeLabels || []).map(label => ({
-              key: label.key,
-              operator: label.operator,
-              values: label.values,
-            })),
-          },
-        }));
+        affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution =
+          nodeAffinityPreferred.map(rule => ({
+            weight: rule.weight || 1,
+            preference: {
+              matchExpressions: (rule.nodeLabels || []).map(label => ({
+                key: label.key,
+                operator: label.operator,
+                values: label.values,
+              })),
+            },
+          }));
       }
     }
 
@@ -1485,22 +1607,8 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
       affinity.podAffinity = {};
 
       if (podAffinityRequired.length > 0) {
-        affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution = podAffinityRequired.map(rule => ({
-          topologyKey: rule.topologyKey || 'kubernetes.io/hostname',
-          labelSelector: {
-            matchExpressions: (rule.podLabels || []).map(label => ({
-              key: label.key,
-              operator: label.operator,
-              values: label.values,
-            })),
-          },
-        }));
-      }
-
-      if (podAffinityPreferred.length > 0) {
-        affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution = podAffinityPreferred.map(rule => ({
-          weight: rule.weight || 1,
-          podAffinityTerm: {
+        affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution =
+          podAffinityRequired.map(rule => ({
             topologyKey: rule.topologyKey || 'kubernetes.io/hostname',
             labelSelector: {
               matchExpressions: (rule.podLabels || []).map(label => ({
@@ -1509,8 +1617,24 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 values: label.values,
               })),
             },
-          },
-        }));
+          }));
+      }
+
+      if (podAffinityPreferred.length > 0) {
+        affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution =
+          podAffinityPreferred.map(rule => ({
+            weight: rule.weight || 1,
+            podAffinityTerm: {
+              topologyKey: rule.topologyKey || 'kubernetes.io/hostname',
+              labelSelector: {
+                matchExpressions: (rule.podLabels || []).map(label => ({
+                  key: label.key,
+                  operator: label.operator,
+                  values: label.values,
+                })),
+              },
+            },
+          }));
       }
     }
 
@@ -1519,22 +1643,8 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
       affinity.podAntiAffinity = {};
 
       if (podAntiAffinityRequired.length > 0) {
-        affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution = podAntiAffinityRequired.map(rule => ({
-          topologyKey: rule.topologyKey || 'kubernetes.io/hostname',
-          labelSelector: {
-            matchExpressions: (rule.podLabels || []).map(label => ({
-              key: label.key,
-              operator: label.operator,
-              values: label.values,
-            })),
-          },
-        }));
-      }
-
-      if (podAntiAffinityPreferred.length > 0) {
-        affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution = podAntiAffinityPreferred.map(rule => ({
-          weight: rule.weight || 1,
-          podAffinityTerm: {
+        affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution =
+          podAntiAffinityRequired.map(rule => ({
             topologyKey: rule.topologyKey || 'kubernetes.io/hostname',
             labelSelector: {
               matchExpressions: (rule.podLabels || []).map(label => ({
@@ -1543,8 +1653,24 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 values: label.values,
               })),
             },
-          },
-        }));
+          }));
+      }
+
+      if (podAntiAffinityPreferred.length > 0) {
+        affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution =
+          podAntiAffinityPreferred.map(rule => ({
+            weight: rule.weight || 1,
+            podAffinityTerm: {
+              topologyKey: rule.topologyKey || 'kubernetes.io/hostname',
+              labelSelector: {
+                matchExpressions: (rule.podLabels || []).map(label => ({
+                  key: label.key,
+                  operator: label.operator,
+                  values: label.values,
+                })),
+              },
+            },
+          }));
       }
     }
 
@@ -1623,31 +1749,34 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
   const handleUserDataModeChange = (mode: 'cloudInit' | 'ignition') => {
     const volumes = resource.spec?.template?.spec?.volumes || [];
-    const otherVolumes = volumes.filter((v: KubeResourceBuilder) => !v.cloudInitNoCloud && !v.cloudInitConfigDrive);
+    const otherVolumes = volumes.filter(
+      (v: KubeResourceBuilder) => !v.cloudInitNoCloud && !v.cloudInitConfigDrive
+    );
 
     // Also ensure cloudinitdisk exists in devices.disks
     const disks = resource.spec?.template?.spec?.domain?.devices?.disks || [];
     const hasCloudInitDisk = disks.some((d: KubeResourceBuilder) => d.name === 'cloudinitdisk');
 
-    const newVolumes = mode === 'cloudInit'
-      ? [
-          ...otherVolumes,
-          {
-            name: 'cloudinitdisk',
-            cloudInitNoCloud: {
-              userData: '#cloud-config\n',
+    const newVolumes =
+      mode === 'cloudInit'
+        ? [
+            ...otherVolumes,
+            {
+              name: 'cloudinitdisk',
+              cloudInitNoCloud: {
+                userData: '#cloud-config\n',
+              },
             },
-          },
-        ]
-      : [
-          ...otherVolumes,
-          {
-            name: 'cloudinitdisk',
-            cloudInitConfigDrive: {
-              userData: '{"ignition": {"version": "3.3.0"}}',
+          ]
+        : [
+            ...otherVolumes,
+            {
+              name: 'cloudinitdisk',
+              cloudInitConfigDrive: {
+                userData: '{"ignition": {"version": "3.3.0"}}',
+              },
             },
-          },
-        ];
+          ];
 
     const newDisks = hasCloudInitDisk
       ? disks
@@ -1765,7 +1894,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {/* Name and Metadata Section */}
       <Accordion defaultExpanded sx={{ borderLeft: '3px solid #795548' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(121, 85, 72, 0.06)' }}>
+        <AccordionSummary
+          expandIcon={<Icon icon="mdi:chevron-down" />}
+          sx={{ bgcolor: 'rgba(121, 85, 72, 0.06)' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:tag-outline" color="#795548" />
             <Typography variant="h6">Name and Metadata</Typography>
@@ -1790,7 +1922,12 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
             onChange={(_, newValue) => handleNamespaceChange(newValue || 'default')}
             disabled={editMode}
             renderInput={params => (
-              <TextField {...params} label="Namespace" required helperText={editMode ? 'Namespace cannot be changed' : 'Namespace for the VM'} />
+              <TextField
+                {...params}
+                label="Namespace"
+                required
+                helperText={editMode ? 'Namespace cannot be changed' : 'Namespace for the VM'}
+              />
             )}
             sx={{ mb: 2 }}
           />
@@ -1899,51 +2036,57 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
       {/* Boot Source Section — hidden in edit mode (boot disks should not be changed) */}
       {!editMode && (
-      <Accordion defaultExpanded sx={{ borderLeft: '3px solid #ff9800' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(255, 152, 0, 0.06)' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Icon icon="mdi:disc" color="#ff9800" />
-            <Typography variant="h6">Boot Source</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FormControl fullWidth>
-            <Select
-              value={bootSourceId}
-              onChange={e => handleBootSourceChange(e.target.value)}
-              displayEmpty
-            >
-              <MenuItem value="" disabled>
-                Select a boot source
-              </MenuItem>
-              {dataSources?.map(ds => (
-                <MenuItem key={ds.metadata.uid} value={ds.metadata.uid}>
-                  {ds.getName()} - {ds.getOperatingSystem()} ({ds.getSize()})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {selectedBootSource && (
-            <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-              <Typography variant="body2">
-                <strong>OS:</strong> {selectedBootSource.getOperatingSystem()}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Size:</strong> {selectedBootSource.getSize()}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Storage Class:</strong> {selectedBootSource.getStorageClass()}
-              </Typography>
+        <Accordion defaultExpanded sx={{ borderLeft: '3px solid #ff9800' }}>
+          <AccordionSummary
+            expandIcon={<Icon icon="mdi:chevron-down" />}
+            sx={{ bgcolor: 'rgba(255, 152, 0, 0.06)' }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Icon icon="mdi:disc" color="#ff9800" />
+              <Typography variant="h6">Boot Source</Typography>
             </Box>
-          )}
-        </AccordionDetails>
-      </Accordion>
+          </AccordionSummary>
+          <AccordionDetails>
+            <FormControl fullWidth>
+              <Select
+                value={bootSourceId}
+                onChange={e => handleBootSourceChange(e.target.value)}
+                displayEmpty
+              >
+                <MenuItem value="" disabled>
+                  Select a boot source
+                </MenuItem>
+                {dataSources?.map(ds => (
+                  <MenuItem key={ds.metadata.uid} value={ds.metadata.uid}>
+                    {ds.getName()} - {ds.getOperatingSystem()} ({ds.getSize()})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {selectedBootSource && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                <Typography variant="body2">
+                  <strong>OS:</strong> {selectedBootSource.getOperatingSystem()}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Size:</strong> {selectedBootSource.getSize()}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Storage Class:</strong> {selectedBootSource.getStorageClass()}
+                </Typography>
+              </Box>
+            )}
+          </AccordionDetails>
+        </Accordion>
       )}
 
       {/* Resources Section */}
       <Accordion sx={{ borderLeft: '3px solid #9c27b0' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(156, 39, 176, 0.06)' }}>
+        <AccordionSummary
+          expandIcon={<Icon icon="mdi:chevron-down" />}
+          sx={{ bgcolor: 'rgba(156, 39, 176, 0.06)' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:memory" color="#9c27b0" />
             <Typography variant="h6">Resources</Typography>
@@ -1956,11 +2099,7 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
               value={resourceMode}
               onChange={e => handleResourceModeChange(e.target.value as 'instanceType' | 'custom')}
             >
-              <FormControlLabel
-                value="instanceType"
-                control={<Radio />}
-                label="Instance Type"
-              />
+              <FormControlLabel value="instanceType" control={<Radio />} label="Instance Type" />
               <FormControlLabel value="custom" control={<Radio />} label="Custom" />
             </RadioGroup>
           </FormControl>
@@ -1972,7 +2111,7 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 options={clusterInstanceTypes}
                 value={selectedInstanceType}
                 onChange={(_, newValue) => handleInstanceTypeChange(newValue)}
-                getOptionLabel={(option) => option.getName()}
+                getOptionLabel={option => option.getName()}
                 renderOption={(props, option) => (
                   <li {...props} key={option.metadata.uid}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -1985,7 +2124,7 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                     </Box>
                   </li>
                 )}
-                renderInput={(params) => (
+                renderInput={params => (
                   <TextField
                     {...params}
                     label="Select an instance type"
@@ -1994,7 +2133,7 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   />
                 )}
                 ListboxProps={{
-                  style: { maxHeight: 300 }
+                  style: { maxHeight: 300 },
                 }}
               />
 
@@ -2032,7 +2171,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       fullWidth
                       label="Core(s)"
                       value={cpuCores}
-                      onChange={e => handleAdvancedTopologyChange(e.target.value, cpuSockets, cpuThreads)}
+                      onChange={e =>
+                        handleAdvancedTopologyChange(e.target.value, cpuSockets, cpuThreads)
+                      }
                       inputProps={{ min: 1, type: 'number' }}
                       sx={{ mb: 1 }}
                     />
@@ -2040,7 +2181,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       fullWidth
                       label="Socket(s)"
                       value={cpuSockets}
-                      onChange={e => handleAdvancedTopologyChange(cpuCores, e.target.value, cpuThreads)}
+                      onChange={e =>
+                        handleAdvancedTopologyChange(cpuCores, e.target.value, cpuThreads)
+                      }
                       inputProps={{ min: 1, type: 'number' }}
                       sx={{ mb: 1 }}
                     />
@@ -2048,7 +2191,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       fullWidth
                       label="Thread(s)"
                       value={cpuThreads}
-                      onChange={e => handleAdvancedTopologyChange(cpuCores, cpuSockets, e.target.value)}
+                      onChange={e =>
+                        handleAdvancedTopologyChange(cpuCores, cpuSockets, e.target.value)
+                      }
                       inputProps={{ min: 1, type: 'number' }}
                     />
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -2078,7 +2223,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   />
                   <Select
                     value={customMemoryUnit}
-                    onChange={e => handleCustomMemoryChange(customMemory, e.target.value as 'Mi' | 'Gi')}
+                    onChange={e =>
+                      handleCustomMemoryChange(customMemory, e.target.value as 'Mi' | 'Gi')
+                    }
                     sx={{ minWidth: 80 }}
                   >
                     <MenuItem value="Mi">MiB</MenuItem>
@@ -2093,7 +2240,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
       {/* Network Interfaces Section */}
       <Accordion sx={{ borderLeft: '3px solid #2196f3' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(33, 150, 243, 0.06)' }}>
+        <AccordionSummary
+          expandIcon={<Icon icon="mdi:chevron-down" />}
+          sx={{ bgcolor: 'rgba(33, 150, 243, 0.06)' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:lan" color="#2196f3" />
             <Typography variant="h6">Network Interfaces</Typography>
@@ -2104,7 +2254,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
             <Card key={index} sx={{ mb: 2, p: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={3}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Interface Name
                   </Typography>
                   <TextField
@@ -2115,7 +2269,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   />
                 </Grid>
                 <Grid item xs={3}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Network Type
                   </Typography>
                   <FormControl fullWidth size="small">
@@ -2139,7 +2297,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 <Grid item xs={4}>
                   {iface.type === 'nad' ? (
                     <>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Select NAD
                       </Typography>
                       <Autocomplete
@@ -2150,22 +2312,21 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         onChange={(_, newValue) =>
                           updateNetworkInterface(index, { nadName: newValue || undefined })
                         }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="Search network attachment..."
-                          />
+                        renderInput={params => (
+                          <TextField {...params} placeholder="Search network attachment..." />
                         )}
                       />
                     </>
                   ) : (
                     <>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Network Configuration
                       </Typography>
-                      <Typography variant="body2">
-                        Default pod networking
-                      </Typography>
+                      <Typography variant="body2">Default pod networking</Typography>
                     </>
                   )}
                 </Grid>
@@ -2195,7 +2356,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
       {/* Additional Disks Section */}
       <Accordion sx={{ borderLeft: '3px solid #ff9800' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(255, 152, 0, 0.06)' }}>
+        <AccordionSummary
+          expandIcon={<Icon icon="mdi:chevron-down" />}
+          sx={{ bgcolor: 'rgba(255, 152, 0, 0.06)' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:harddisk" color="#ff9800" />
             <Typography variant="h6">Disks</Typography>
@@ -2221,10 +2385,14 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   <Typography variant="body2">cloudinitdisk</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" color="text.secondary">Other</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Other
+                  </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" color="text.secondary">-</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2">Disk</Typography>
@@ -2233,7 +2401,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   <Typography variant="body2">virtio</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" color="text.secondary">-</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" disabled>
@@ -2260,7 +2430,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   <Typography variant="body2">virtio</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">{selectedBootSource?.getStorageClass() || '-'}</Typography>
+                  <Typography variant="body2">
+                    {selectedBootSource?.getStorageClass() || '-'}
+                  </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" disabled>
@@ -2319,7 +2491,14 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           {/* Disk Add/Edit Form */}
           {showDiskForm && (
             <Card sx={{ mb: 3, p: 2, bgcolor: 'action.hover' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2,
+                }}
+              >
                 <Typography variant="h6">
                   {diskEditIndex !== null ? 'Edit Disk' : 'Add Disk'}
                 </Typography>
@@ -2347,7 +2526,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Disk Name *
                   </Typography>
                   <TextField
@@ -2359,16 +2542,22 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   />
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Source Type
                   </Typography>
                   <FormControl fullWidth size="small">
                     <Select
                       value={diskFormData.sourceType}
-                      onChange={e => setDiskFormData({
-                        ...diskFormData,
-                        sourceType: e.target.value as AdditionalDisk['sourceType']
-                      })}
+                      onChange={e =>
+                        setDiskFormData({
+                          ...diskFormData,
+                          sourceType: e.target.value as AdditionalDisk['sourceType'],
+                        })
+                      }
                       displayEmpty
                     >
                       <MenuItem value="empty">Empty Disk</MenuItem>
@@ -2386,14 +2575,20 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                 {diskFormData.sourceType === 'containerDisk' && (
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
                       Container Image
                     </Typography>
                     <TextField
                       fullWidth
                       size="small"
                       value={diskFormData.sourceDetail || ''}
-                      onChange={e => setDiskFormData({ ...diskFormData, sourceDetail: e.target.value })}
+                      onChange={e =>
+                        setDiskFormData({ ...diskFormData, sourceDetail: e.target.value })
+                      }
                       placeholder="registry.example.com/image:tag"
                     />
                   </Grid>
@@ -2401,7 +2596,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                 {diskFormData.sourceType === 'persistentVolumeClaim' && (
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
                       PVC Name
                     </Typography>
                     <Autocomplete
@@ -2409,13 +2608,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       size="small"
                       options={pvcs}
                       value={diskFormData.sourceDetail || ''}
-                      onChange={(_, newValue) => setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          placeholder="Select PVC..."
-                        />
-                      )}
+                      onChange={(_, newValue) =>
+                        setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })
+                      }
+                      renderInput={params => <TextField {...params} placeholder="Select PVC..." />}
                     />
                   </Grid>
                 )}
@@ -2423,7 +2619,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 {diskFormData.sourceType === 'snapshot' && (
                   <>
                     <Grid item xs={12}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Snapshot Name
                       </Typography>
                       <Autocomplete
@@ -2431,17 +2631,20 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         size="small"
                         options={volumeSnapshots}
                         value={diskFormData.sourceDetail || ''}
-                        onChange={(_, newValue) => setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="Select snapshot..."
-                          />
+                        onChange={(_, newValue) =>
+                          setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })
+                        }
+                        renderInput={params => (
+                          <TextField {...params} placeholder="Select snapshot..." />
                         )}
                       />
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Size
                       </Typography>
                       <TextField
@@ -2456,7 +2659,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       />
                     </Grid>
                     <Grid item xs={2}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Unit
                       </Typography>
                       <FormControl fullWidth size="small">
@@ -2479,7 +2686,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 {diskFormData.sourceType === 'clone' && (
                   <>
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Source Namespace
                       </Typography>
                       <Autocomplete
@@ -2489,19 +2700,24 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         value={diskFormData.sourceNamespace || namespace}
                         onChange={(_, newValue) => {
                           const ns = newValue || namespace;
-                          setDiskFormData({ ...diskFormData, sourceNamespace: ns, sourceDetail: undefined });
+                          setDiskFormData({
+                            ...diskFormData,
+                            sourceNamespace: ns,
+                            sourceDetail: undefined,
+                          });
                           fetchPvcsForNamespace(ns);
                         }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="Select namespace..."
-                          />
+                        renderInput={params => (
+                          <TextField {...params} placeholder="Select namespace..." />
                         )}
                       />
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Source PVC Name
                       </Typography>
                       <Autocomplete
@@ -2509,17 +2725,20 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         size="small"
                         options={cloneSourcePvcs[diskFormData.sourceNamespace || namespace] || []}
                         value={diskFormData.sourceDetail || ''}
-                        onChange={(_, newValue) => setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="Select PVC..."
-                          />
+                        onChange={(_, newValue) =>
+                          setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })
+                        }
+                        renderInput={params => (
+                          <TextField {...params} placeholder="Select PVC..." />
                         )}
                       />
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Size
                       </Typography>
                       <TextField
@@ -2534,7 +2753,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       />
                     </Grid>
                     <Grid item xs={2}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Unit
                       </Typography>
                       <FormControl fullWidth size="small">
@@ -2556,7 +2779,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                 {diskFormData.sourceType === 'dataVolumeExisting' && (
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
                       DataVolume Name
                     </Typography>
                     <Autocomplete
@@ -2564,12 +2791,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       size="small"
                       options={dataVolumes}
                       value={diskFormData.sourceDetail || ''}
-                      onChange={(_, newValue) => setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          placeholder="Select DataVolume..."
-                        />
+                      onChange={(_, newValue) =>
+                        setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })
+                      }
+                      renderInput={params => (
+                        <TextField {...params} placeholder="Select DataVolume..." />
                       )}
                     />
                   </Grid>
@@ -2578,17 +2804,27 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 {diskFormData.sourceType === 'dataVolume' && (
                   <>
                     <Grid item xs={12}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Import Source
                       </Typography>
                       <Select
                         fullWidth
                         size="small"
                         value={diskFormData.dataVolumeSourceType || 'http'}
-                        onChange={e => setDiskFormData({
-                          ...diskFormData,
-                          dataVolumeSourceType: e.target.value as 'http' | 'registry' | 'blank' | 'upload'
-                        })}
+                        onChange={e =>
+                          setDiskFormData({
+                            ...diskFormData,
+                            dataVolumeSourceType: e.target.value as
+                              | 'http'
+                              | 'registry'
+                              | 'blank'
+                              | 'upload',
+                          })
+                        }
                       >
                         <MenuItem value="http">HTTP/HTTPS URL</MenuItem>
                         <MenuItem value="registry">Container Registry</MenuItem>
@@ -2599,14 +2835,20 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                     {diskFormData.dataVolumeSourceType === 'http' && (
                       <Grid item xs={12}>
-                        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mb: 0.5, display: 'block' }}
+                        >
                           URL
                         </Typography>
                         <TextField
                           fullWidth
                           size="small"
                           value={diskFormData.dataVolumeUrl || ''}
-                          onChange={e => setDiskFormData({ ...diskFormData, dataVolumeUrl: e.target.value })}
+                          onChange={e =>
+                            setDiskFormData({ ...diskFormData, dataVolumeUrl: e.target.value })
+                          }
                           placeholder="https://example.com/disk-image.iso"
                           helperText="URL to ISO, qcow2, or raw disk image"
                         />
@@ -2615,14 +2857,20 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                     {diskFormData.dataVolumeSourceType === 'registry' && (
                       <Grid item xs={12}>
-                        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mb: 0.5, display: 'block' }}
+                        >
                           Registry URL
                         </Typography>
                         <TextField
                           fullWidth
                           size="small"
                           value={diskFormData.dataVolumeUrl || ''}
-                          onChange={e => setDiskFormData({ ...diskFormData, dataVolumeUrl: e.target.value })}
+                          onChange={e =>
+                            setDiskFormData({ ...diskFormData, dataVolumeUrl: e.target.value })
+                          }
                           placeholder="docker.io/user/image:tag"
                           helperText="Container image with disk"
                         />
@@ -2641,7 +2889,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                 {diskFormData.sourceType === 'ephemeral' && (
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
                       PVC Name (for ephemeral backing)
                     </Typography>
                     <Autocomplete
@@ -2649,27 +2901,30 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       size="small"
                       options={pvcs}
                       value={diskFormData.sourceDetail || ''}
-                      onChange={(_, newValue) => setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          placeholder="Select PVC..."
-                        />
-                      )}
+                      onChange={(_, newValue) =>
+                        setDiskFormData({ ...diskFormData, sourceDetail: newValue || undefined })
+                      }
+                      renderInput={params => <TextField {...params} placeholder="Select PVC..." />}
                     />
                   </Grid>
                 )}
 
                 {diskFormData.sourceType === 'hostDisk' && (
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
                       Host Path
                     </Typography>
                     <TextField
                       fullWidth
                       size="small"
                       value={diskFormData.sourceDetail || ''}
-                      onChange={e => setDiskFormData({ ...diskFormData, sourceDetail: e.target.value })}
+                      onChange={e =>
+                        setDiskFormData({ ...diskFormData, sourceDetail: e.target.value })
+                      }
                       placeholder="/path/to/disk.img"
                       helperText="Path to disk image on the host node"
                     />
@@ -2679,7 +2934,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 {diskFormData.sourceType === 'empty' && (
                   <>
                     <Grid item xs={4}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Size
                       </Typography>
                       <TextField
@@ -2694,7 +2953,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       />
                     </Grid>
                     <Grid item xs={2}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Unit
                       </Typography>
                       <FormControl fullWidth size="small">
@@ -2715,13 +2978,22 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 )}
 
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Interface
                   </Typography>
                   <FormControl fullWidth size="small">
                     <Select
                       value={diskFormData.bus}
-                      onChange={e => setDiskFormData({ ...diskFormData, bus: e.target.value as 'virtio' | 'sata' | 'scsi' })}
+                      onChange={e =>
+                        setDiskFormData({
+                          ...diskFormData,
+                          bus: e.target.value as 'virtio' | 'sata' | 'scsi',
+                        })
+                      }
                     >
                       <MenuItem value="virtio">VirtIO</MenuItem>
                       <MenuItem value="sata">SATA</MenuItem>
@@ -2731,10 +3003,16 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 </Grid>
 
                 {/* Storage-related fields for types that create new storage */}
-                {(['empty', 'snapshot', 'clone', 'dataVolume', 'ephemeral'].includes(diskFormData.sourceType)) && (
+                {['empty', 'snapshot', 'clone', 'dataVolume', 'ephemeral'].includes(
+                  diskFormData.sourceType
+                ) && (
                   <>
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Storage Class *
                       </Typography>
                       <Autocomplete
@@ -2742,28 +3020,35 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         size="small"
                         options={storageClasses}
                         value={diskFormData.storageClass || ''}
-                        onChange={(_, newValue) => setDiskFormData({ ...diskFormData, storageClass: newValue || undefined })}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder="Select storage class..."
-                            required
-                          />
+                        onChange={(_, newValue) =>
+                          setDiskFormData({ ...diskFormData, storageClass: newValue || undefined })
+                        }
+                        renderInput={params => (
+                          <TextField {...params} placeholder="Select storage class..." required />
                         )}
                       />
                     </Grid>
 
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Access Mode
                       </Typography>
                       <FormControl fullWidth size="small">
                         <Select
                           value={diskFormData.accessMode || 'ReadWriteOnce'}
-                          onChange={e => setDiskFormData({
-                            ...diskFormData,
-                            accessMode: e.target.value as 'ReadWriteOnce' | 'ReadWriteMany' | 'ReadOnlyMany'
-                          })}
+                          onChange={e =>
+                            setDiskFormData({
+                              ...diskFormData,
+                              accessMode: e.target.value as
+                                | 'ReadWriteOnce'
+                                | 'ReadWriteMany'
+                                | 'ReadOnlyMany',
+                            })
+                          }
                         >
                           <MenuItem value="ReadWriteOnce">ReadWriteOnce (RWO)</MenuItem>
                           <MenuItem value="ReadWriteMany">ReadWriteMany (RWX)</MenuItem>
@@ -2773,16 +3058,22 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                     </Grid>
 
                     <Grid item xs={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 0.5, display: 'block' }}
+                      >
                         Volume Mode
                       </Typography>
                       <FormControl fullWidth size="small">
                         <Select
                           value={diskFormData.volumeMode || 'Block'}
-                          onChange={e => setDiskFormData({
-                            ...diskFormData,
-                            volumeMode: e.target.value as 'Filesystem' | 'Block'
-                          })}
+                          onChange={e =>
+                            setDiskFormData({
+                              ...diskFormData,
+                              volumeMode: e.target.value as 'Filesystem' | 'Block',
+                            })
+                          }
                         >
                           <MenuItem value="Filesystem">Filesystem</MenuItem>
                           <MenuItem value="Block">Block</MenuItem>
@@ -2795,7 +3086,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         control={
                           <Checkbox
                             checked={diskFormData.preallocation || false}
-                            onChange={e => setDiskFormData({ ...diskFormData, preallocation: e.target.checked })}
+                            onChange={e =>
+                              setDiskFormData({ ...diskFormData, preallocation: e.target.checked })
+                            }
                           />
                         }
                         label="Thick Provisioning (Preallocation)"
@@ -2833,12 +3126,16 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
             <TableBody>
               {currentAdditionalDisks
                 .map((disk, realIndex) => ({ disk, realIndex }))
-                .filter(({ disk }) => ['configMap', 'secret', 'serviceAccount'].includes(disk.sourceType))
+                .filter(({ disk }) =>
+                  ['configMap', 'secret', 'serviceAccount'].includes(disk.sourceType)
+                )
                 .map(({ disk, realIndex }) => {
                   const availableNames =
-                    disk.sourceType === 'configMap' ? configMaps :
-                    disk.sourceType === 'secret' ? secrets :
-                    serviceAccounts;
+                    disk.sourceType === 'configMap'
+                      ? configMaps
+                      : disk.sourceType === 'secret'
+                      ? secrets
+                      : serviceAccounts;
 
                   return (
                     <TableRow key={realIndex}>
@@ -2846,10 +3143,15 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         <FormControl fullWidth size="small">
                           <Select
                             value={disk.sourceType}
-                            onChange={e => updateDisk(realIndex, {
-                              sourceType: e.target.value as 'configMap' | 'secret' | 'serviceAccount',
-                              sourceDetail: undefined
-                            })}
+                            onChange={e =>
+                              updateDisk(realIndex, {
+                                sourceType: e.target.value as
+                                  | 'configMap'
+                                  | 'secret'
+                                  | 'serviceAccount',
+                                sourceDetail: undefined,
+                              })
+                            }
                           >
                             <MenuItem value="configMap">ConfigMap</MenuItem>
                             <MenuItem value="secret">Secret</MenuItem>
@@ -2863,10 +3165,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                           size="small"
                           options={availableNames}
                           value={disk.sourceDetail || ''}
-                          onChange={(_, newValue) => updateDisk(realIndex, { sourceDetail: newValue || undefined })}
-                          renderInput={(params) => (
-                            <TextField {...params} placeholder="Select..." />
-                          )}
+                          onChange={(_, newValue) =>
+                            updateDisk(realIndex, { sourceDetail: newValue || undefined })
+                          }
+                          renderInput={params => <TextField {...params} placeholder="Select..." />}
                         />
                       </TableCell>
                       <TableCell>
@@ -2877,7 +3179,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                               updateDisk(realIndex, {
                                 volumeMode: e.target.value as 'Filesystem' | 'Block',
                                 // When switching to Block, ensure we have a serial (use existing or sanitized name)
-                                serial: e.target.value === 'Filesystem' ? undefined : (disk.serial || disk.name.replace(/-/g, ''))
+                                serial:
+                                  e.target.value === 'Filesystem'
+                                    ? undefined
+                                    : disk.serial || disk.name.replace(/-/g, ''),
                               });
                             }}
                           >
@@ -2896,7 +3201,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                             placeholder="Serial number"
                           />
                         ) : (
-                          <Typography variant="body2" color="text.secondary">-</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            -
+                          </Typography>
                         )}
                       </TableCell>
                       <TableCell align="right">
@@ -2907,7 +3214,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                     </TableRow>
                   );
                 })}
-              {currentAdditionalDisks.filter(d => ['configMap', 'secret', 'serviceAccount'].includes(d.sourceType)).length === 0 && (
+              {currentAdditionalDisks.filter(d =>
+                ['configMap', 'secret', 'serviceAccount'].includes(d.sourceType)
+              ).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} align="center">
                     <Typography variant="body2" color="text.secondary">
@@ -2931,7 +3240,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
       {/* Scheduling Section */}
       <Accordion sx={{ borderLeft: '3px solid #00bcd4' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(0, 188, 212, 0.06)' }}>
+        <AccordionSummary
+          expandIcon={<Icon icon="mdi:chevron-down" />}
+          sx={{ bgcolor: 'rgba(0, 188, 212, 0.06)' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:calendar-clock" color="#00bcd4" />
             <Typography variant="h6">Scheduling</Typography>
@@ -2973,7 +3285,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
               <Grid item xs={2}>
                 <IconButton
                   size="small"
-                  onClick={() => handleNodeSelectorsChange(currentNodeSelectors.filter((_, i) => i !== index))}
+                  onClick={() =>
+                    handleNodeSelectorsChange(currentNodeSelectors.filter((_, i) => i !== index))
+                  }
                   color="error"
                 >
                   <Icon icon="mdi:delete" />
@@ -2983,7 +3297,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           ))}
           <Button
             startIcon={<Icon icon="mdi:plus" />}
-            onClick={() => handleNodeSelectorsChange([...currentNodeSelectors, { key: '', value: '' }])}
+            onClick={() =>
+              handleNodeSelectorsChange([...currentNodeSelectors, { key: '', value: '' }])
+            }
             variant="outlined"
             size="small"
             sx={{ mb: 3 }}
@@ -3029,7 +3345,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 <Grid item xs={2}>
                   <IconButton
                     size="small"
-                    onClick={() => handleTolerationsChange(currentTolerations.filter((_, i) => i !== index))}
+                    onClick={() =>
+                      handleTolerationsChange(currentTolerations.filter((_, i) => i !== index))
+                    }
                     color="error"
                   >
                     <Icon icon="mdi:delete" />
@@ -3037,14 +3355,21 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 </Grid>
                 <Grid item xs={12}>
                   <FormControl fullWidth size="small">
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
                       Effect
                     </Typography>
                     <Select
                       value={toleration.effect}
                       onChange={e => {
                         const newTolerations = [...currentTolerations];
-                        newTolerations[index].effect = e.target.value as 'NoSchedule' | 'PreferNoSchedule' | 'NoExecute';
+                        newTolerations[index].effect = e.target.value as
+                          | 'NoSchedule'
+                          | 'PreferNoSchedule'
+                          | 'NoExecute';
                         handleTolerationsChange(newTolerations);
                       }}
                     >
@@ -3059,7 +3384,12 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           ))}
           <Button
             startIcon={<Icon icon="mdi:plus" />}
-            onClick={() => handleTolerationsChange([...currentTolerations, { key: '', value: '', effect: 'NoSchedule' }])}
+            onClick={() =>
+              handleTolerationsChange([
+                ...currentTolerations,
+                { key: '', value: '', effect: 'NoSchedule' },
+              ])
+            }
             variant="outlined"
             size="small"
             sx={{ mb: 3 }}
@@ -3075,13 +3405,22 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           </Typography>
           {currentAffinityRules.map((rule, ruleIndex) => (
             <Card key={ruleIndex} sx={{ mb: 2, p: 2, border: '1px solid', borderColor: 'divider' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2,
+                }}
+              >
                 <Typography variant="body2" fontWeight="bold">
                   Affinity Rule #{ruleIndex + 1}
                 </Typography>
                 <IconButton
                   size="small"
-                  onClick={() => handleAffinityChange(currentAffinityRules.filter((_, i) => i !== ruleIndex))}
+                  onClick={() =>
+                    handleAffinityChange(currentAffinityRules.filter((_, i) => i !== ruleIndex))
+                  }
                   color="error"
                 >
                   <Icon icon="mdi:delete" />
@@ -3091,7 +3430,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
               <Grid container spacing={2}>
                 {/* Type Selection */}
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Type
                   </Typography>
                   <FormControl fullWidth size="small">
@@ -3116,7 +3459,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
                 {/* Condition Selection */}
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
                     Condition
                   </Typography>
                   <FormControl fullWidth size="small">
@@ -3180,7 +3527,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                       <Typography variant="body2" fontWeight="medium" sx={{ mb: 1, mt: 1 }}>
                         Match Pod Labels
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mb: 1, display: 'block' }}
+                      >
                         Complex nested structure - simplified for now. Full implementation pending.
                       </Typography>
                     </Grid>
@@ -3205,11 +3556,16 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                             onChange={(_, newValue) => {
                               const newRules = [...currentAffinityRules];
                               const newLabels = [...(newRules[ruleIndex].nodeLabels || [])];
-                              newLabels[labelIndex] = { ...newLabels[labelIndex], key: newValue || '' };
+                              newLabels[labelIndex] = {
+                                ...newLabels[labelIndex],
+                                key: newValue || '',
+                              };
                               newRules[ruleIndex].nodeLabels = newLabels;
                               handleAffinityChange(newRules);
                             }}
-                            renderInput={params => <TextField {...params} placeholder="Label key" />}
+                            renderInput={params => (
+                              <TextField {...params} placeholder="Label key" />
+                            )}
                           />
                         </Grid>
                         <Grid item xs={3}>
@@ -3220,7 +3576,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                             onChange={e => {
                               const newRules = [...currentAffinityRules];
                               const newLabels = [...(newRules[ruleIndex].nodeLabels || [])];
-                              newLabels[labelIndex] = { ...newLabels[labelIndex], operator: e.target.value };
+                              newLabels[labelIndex] = {
+                                ...newLabels[labelIndex],
+                                operator: e.target.value,
+                              };
                               newRules[ruleIndex].nodeLabels = newLabels;
                               handleAffinityChange(newRules);
                             }}
@@ -3244,14 +3603,18 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                               const newLabels = [...(newRules[ruleIndex].nodeLabels || [])];
                               newLabels[labelIndex] = {
                                 ...newLabels[labelIndex],
-                                values: e.target.value ? e.target.value.split(',').map(v => v.trim()) : []
+                                values: e.target.value
+                                  ? e.target.value.split(',').map(v => v.trim())
+                                  : [],
                               };
                               newRules[ruleIndex].nodeLabels = newLabels;
                               handleAffinityChange(newRules);
                             }}
-                            disabled={label.operator === 'Exists' || label.operator === 'DoesNotExist'}
+                            disabled={
+                              label.operator === 'Exists' || label.operator === 'DoesNotExist'
+                            }
                             helperText={
-                              (label.operator === 'Exists' || label.operator === 'DoesNotExist')
+                              label.operator === 'Exists' || label.operator === 'DoesNotExist'
                                 ? 'Values not needed for this operator'
                                 : 'Comma-separated values'
                             }
@@ -3262,7 +3625,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                             size="small"
                             onClick={() => {
                               const newRules = [...currentAffinityRules];
-                              newRules[ruleIndex].nodeLabels = (newRules[ruleIndex].nodeLabels || []).filter((_, i) => i !== labelIndex);
+                              newRules[ruleIndex].nodeLabels = (
+                                newRules[ruleIndex].nodeLabels || []
+                              ).filter((_, i) => i !== labelIndex);
                               handleAffinityChange(newRules);
                             }}
                             color="error"
@@ -3279,7 +3644,11 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                         if (!newRules[ruleIndex].nodeLabels) {
                           newRules[ruleIndex].nodeLabels = [];
                         }
-                        newRules[ruleIndex].nodeLabels.push({ key: '', operator: 'In', values: [] });
+                        newRules[ruleIndex].nodeLabels.push({
+                          key: '',
+                          operator: 'In',
+                          values: [],
+                        });
                         handleAffinityChange(newRules);
                       }}
                       variant="text"
@@ -3295,7 +3664,12 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           ))}
           <Button
             startIcon={<Icon icon="mdi:plus" />}
-            onClick={() => handleAffinityChange([...currentAffinityRules, { type: 'nodeAffinity', condition: 'required' }])}
+            onClick={() =>
+              handleAffinityChange([
+                ...currentAffinityRules,
+                { type: 'nodeAffinity', condition: 'required' },
+              ])
+            }
             variant="outlined"
             size="small"
             sx={{ mb: 3 }}
@@ -3327,7 +3701,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
 
       {/* Advanced Details Section */}
       <Accordion sx={{ borderLeft: '3px solid #607d8b' }}>
-        <AccordionSummary expandIcon={<Icon icon="mdi:chevron-down" />} sx={{ bgcolor: 'rgba(96, 125, 139, 0.06)' }}>
+        <AccordionSummary
+          expandIcon={<Icon icon="mdi:chevron-down" />}
+          sx={{ bgcolor: 'rgba(96, 125, 139, 0.06)' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:cog-outline" color="#607d8b" />
             <Typography variant="h6">Advanced Details</Typography>
@@ -3364,7 +3741,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
             <Select
               size="small"
               value={firmwareType}
-              onChange={e => handleFirmwareChange(e.target.value as 'bios' | 'uefi' | 'uefi-secure')}
+              onChange={e =>
+                handleFirmwareChange(e.target.value as 'bios' | 'uefi' | 'uefi-secure')
+              }
             >
               <MenuItem value="bios">BIOS Legacy</MenuItem>
               <MenuItem value="uefi">UEFI</MenuItem>
@@ -3467,15 +3846,13 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
           <Box sx={{ mb: 2 }}>
             <FormControlLabel
               control={
-                <Checkbox
-                  checked={enableAcpi}
-                  onChange={e => handleAcpiChange(e.target.checked)}
-                />
+                <Checkbox checked={enableAcpi} onChange={e => handleAcpiChange(e.target.checked)} />
               }
               label="Enable ACPI"
             />
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', ml: 4 }}>
-              Advanced Configuration and Power Interface - allows guest OS to communicate with virtual hardware for power management (shutdown/reboot/suspend)
+              Advanced Configuration and Power Interface - allows guest OS to communicate with
+              virtual hardware for power management (shutdown/reboot/suspend)
             </Typography>
           </Box>
 
@@ -3543,8 +3920,16 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
               value={userDataMode}
               onChange={e => handleUserDataModeChange(e.target.value as 'cloudInit' | 'ignition')}
             >
-              <FormControlLabel value="cloudInit" control={<Radio />} label="Cloud-Init (CloudInitNoCloud)" />
-              <FormControlLabel value="ignition" control={<Radio />} label="Ignition (CloudInitConfigDrive)" />
+              <FormControlLabel
+                value="cloudInit"
+                control={<Radio />}
+                label="Cloud-Init (CloudInitNoCloud)"
+              />
+              <FormControlLabel
+                value="ignition"
+                control={<Radio />}
+                label="Ignition (CloudInitConfigDrive)"
+              />
             </RadioGroup>
           </FormControl>
 
@@ -3559,7 +3944,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   <RadioGroup
                     row
                     value={cloudInitUserDataType}
-                    onChange={e => setCloudInitUserDataType(e.target.value as 'inline' | 'base64' | 'secret')}
+                    onChange={e =>
+                      setCloudInitUserDataType(e.target.value as 'inline' | 'base64' | 'secret')
+                    }
                   >
                     <FormControlLabel value="inline" control={<Radio />} label="Inline" />
                     <FormControlLabel value="base64" control={<Radio />} label="Base64" />
@@ -3598,13 +3985,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                     fullWidth
                     options={secrets}
                     value={cloudInitUserDataSecret}
-                    onChange={(_, newValue) => handleCloudInitUserDataChange('secret', newValue || '')}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        placeholder="Select secret..."
-                      />
-                    )}
+                    onChange={(_, newValue) =>
+                      handleCloudInitUserDataChange('secret', newValue || '')
+                    }
+                    renderInput={params => <TextField {...params} placeholder="Select secret..." />}
                   />
                 )}
               </Box>
@@ -3618,7 +4002,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   <RadioGroup
                     row
                     value={cloudInitNetworkDataType}
-                    onChange={e => setCloudInitNetworkDataType(e.target.value as 'inline' | 'base64' | 'secret')}
+                    onChange={e =>
+                      setCloudInitNetworkDataType(e.target.value as 'inline' | 'base64' | 'secret')
+                    }
                   >
                     <FormControlLabel value="inline" control={<Radio />} label="Inline" />
                     <FormControlLabel value="base64" control={<Radio />} label="Base64" />
@@ -3657,13 +4043,10 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                     fullWidth
                     options={secrets}
                     value={cloudInitNetworkDataSecret}
-                    onChange={(_, newValue) => handleCloudInitNetworkDataChange('secret', newValue || '')}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        placeholder="Select secret..."
-                      />
-                    )}
+                    onChange={(_, newValue) =>
+                      handleCloudInitNetworkDataChange('secret', newValue || '')
+                    }
+                    renderInput={params => <TextField {...params} placeholder="Select secret..." />}
                   />
                 )}
               </Box>
@@ -3679,7 +4062,9 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                 <RadioGroup
                   row
                   value={ignitionDataType}
-                  onChange={e => setIgnitionDataType(e.target.value as 'inline' | 'base64' | 'secret')}
+                  onChange={e =>
+                    setIgnitionDataType(e.target.value as 'inline' | 'base64' | 'secret')
+                  }
                 >
                   <FormControlLabel value="inline" control={<Radio />} label="Inline" />
                   <FormControlLabel value="base64" control={<Radio />} label="Base64" />
@@ -3719,12 +4104,7 @@ export default function VMFormFull({ resource, onChange, editMode = false }: VMF
                   options={secrets}
                   value={ignitionDataSecret}
                   onChange={(_, newValue) => handleIgnitionDataChange('secret', newValue || '')}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Select secret..."
-                    />
-                  )}
+                  renderInput={params => <TextField {...params} placeholder="Select secret..." />}
                 />
               )}
             </Box>

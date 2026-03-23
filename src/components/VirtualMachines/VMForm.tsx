@@ -44,17 +44,17 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
   useEffect(() => {
     ApiProxy.request('/api/v1/namespaces')
       .then((response: KubeListResponse<KubeNamedItem>) => {
-        const nsList = response?.items?.map((ns) => ns.metadata.name) || [];
+        const nsList = response?.items?.map(ns => ns.metadata.name) || [];
         setNamespaces(nsList);
       })
-      .catch((err) => console.error('Failed to fetch namespaces:', err));
+      .catch(err => console.error('Failed to fetch namespaces:', err));
 
     ApiProxy.request('/apis/storage.k8s.io/v1/storageclasses')
       .then((response: KubeListResponse<KubeNamedItem>) => {
-        const scList = response?.items?.map((sc) => sc.metadata.name) || [];
+        const scList = response?.items?.map(sc => sc.metadata.name) || [];
         setStorageClasses(scList);
       })
-      .catch((err) => console.error('Failed to fetch storage classes:', err));
+      .catch(err => console.error('Failed to fetch storage classes:', err));
   }, []);
 
   const updateMetadata = (field: string, value: unknown) => {
@@ -104,7 +104,8 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
   const customMemoryUnit = customMemoryMatch ? customMemoryMatch[2] : 'Gi';
 
   // Storage size
-  const storageSize = resource.spec?.dataVolumeTemplates?.[0]?.spec?.pvc?.resources?.requests?.storage;
+  const storageSize =
+    resource.spec?.dataVolumeTemplates?.[0]?.spec?.pvc?.resources?.requests?.storage;
   const storageSizeMatch = storageSize?.match(/^(\d+)(Gi|Mi|Ti)$/);
   const storageSizeValue = storageSizeMatch ? storageSizeMatch[1] : '';
   const storageSizeUnit = storageSizeMatch ? storageSizeMatch[2] : 'Gi';
@@ -144,22 +145,24 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
         ...resource,
         spec: {
           ...resource.spec,
-          dataVolumeTemplates: resource.spec?.dataVolumeTemplates ? [
-            {
-              ...resource.spec.dataVolumeTemplates[0],
-              spec: {
-                ...resource.spec.dataVolumeTemplates[0]?.spec,
-                pvc: {
-                  ...resource.spec.dataVolumeTemplates[0]?.spec?.pvc,
-                  resources: {
-                    requests: {
-                      storage: undefined,
+          dataVolumeTemplates: resource.spec?.dataVolumeTemplates
+            ? [
+                {
+                  ...resource.spec.dataVolumeTemplates[0],
+                  spec: {
+                    ...resource.spec.dataVolumeTemplates[0]?.spec,
+                    pvc: {
+                      ...resource.spec.dataVolumeTemplates[0]?.spec?.pvc,
+                      resources: {
+                        requests: {
+                          storage: undefined,
+                        },
+                      },
                     },
                   },
                 },
-              },
-            },
-          ] : [],
+              ]
+            : [],
         },
       });
     } else {
@@ -171,7 +174,9 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
             ...resource.spec,
             dataVolumeTemplates: [
               {
-                ...(resource.spec?.dataVolumeTemplates?.[0] || { metadata: { name: `${resource.metadata?.name || 'vm'}-disk` } }),
+                ...(resource.spec?.dataVolumeTemplates?.[0] || {
+                  metadata: { name: `${resource.metadata?.name || 'vm'}-disk` },
+                }),
                 spec: {
                   ...resource.spec?.dataVolumeTemplates?.[0]?.spec,
                   pvc: {
@@ -212,7 +217,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               required
               label="Name"
               value={resource.metadata?.name || ''}
-              onChange={(e) => updateMetadata('name', e.target.value)}
+              onChange={e => updateMetadata('name', e.target.value)}
               helperText="Unique name for the Virtual Machine"
             />
           </Grid>
@@ -224,10 +229,10 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               select
               label="Namespace"
               value={resource.metadata?.namespace || 'default'}
-              onChange={(e) => updateMetadata('namespace', e.target.value)}
+              onChange={e => updateMetadata('namespace', e.target.value)}
               helperText="Namespace for the Virtual Machine"
             >
-              {namespaces.map((ns) => (
+              {namespaces.map(ns => (
                 <MenuItem key={ns} value={ns}>
                   {ns}
                 </MenuItem>
@@ -238,8 +243,14 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
           <Grid item xs={12}>
             <Autocomplete
               options={dataSources || []}
-              getOptionLabel={(ds) => `${ds.getName()} (${ds.getNamespace()})`}
-              value={dataSources?.find((ds) => ds.getName() === resource.spec?.dataVolumeTemplates?.[0]?.spec?.source?.pvc?.name) || null}
+              getOptionLabel={ds => `${ds.getName()} (${ds.getNamespace()})`}
+              value={
+                dataSources?.find(
+                  ds =>
+                    ds.getName() ===
+                    resource.spec?.dataVolumeTemplates?.[0]?.spec?.source?.pvc?.name
+                ) || null
+              }
               onChange={(_, value) => {
                 if (value) {
                   onChange({
@@ -265,7 +276,10 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                                   storage: value.getSize() || '30Gi',
                                 },
                               },
-                              storageClassName: value.getStorageClass() !== '-' ? value.getStorageClass() : undefined,
+                              storageClassName:
+                                value.getStorageClass() !== '-'
+                                  ? value.getStorageClass()
+                                  : undefined,
                             },
                           },
                         },
@@ -274,7 +288,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                   });
                 }
               }}
-              renderInput={(params) => (
+              renderInput={params => (
                 <TextField
                   {...params}
                   label="Boot Source (DataSource)"
@@ -300,7 +314,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               <RadioGroup
                 row
                 value={useInstanceType ? 'instanceType' : 'custom'}
-                onChange={(e) => {
+                onChange={e => {
                   if (e.target.value === 'instanceType') {
                     updateSpec({
                       instancetype: {
@@ -315,7 +329,11 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                   }
                 }}
               >
-                <FormControlLabel value="instanceType" control={<Radio />} label="Use Instance Type" />
+                <FormControlLabel
+                  value="instanceType"
+                  control={<Radio />}
+                  label="Use Instance Type"
+                />
                 <FormControlLabel value="custom" control={<Radio />} label="Custom Resources" />
               </RadioGroup>
             </FormControl>
@@ -326,8 +344,11 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               <Grid item xs={12} md={6}>
                 <Autocomplete
                   options={instanceTypes || []}
-                  getOptionLabel={(it) => `${it.getName()} (${it.getCPU()} CPU, ${it.getMemory()})`}
-                  value={instanceTypes?.find((it) => it.getName() === resource.spec?.instancetype?.name) || null}
+                  getOptionLabel={it => `${it.getName()} (${it.getCPU()} CPU, ${it.getMemory()})`}
+                  value={
+                    instanceTypes?.find(it => it.getName() === resource.spec?.instancetype?.name) ||
+                    null
+                  }
                   onChange={(_, value) => {
                     updateSpec({
                       instancetype: {
@@ -336,7 +357,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                       },
                     });
                   }}
-                  renderInput={(params) => (
+                  renderInput={params => (
                     <TextField
                       {...params}
                       label="Instance Type"
@@ -349,8 +370,11 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               <Grid item xs={12} md={6}>
                 <Autocomplete
                   options={preferences || []}
-                  getOptionLabel={(pref) => pref.getDisplayName() || pref.getName()}
-                  value={preferences?.find((pref) => pref.getName() === resource.spec?.preference?.name) || null}
+                  getOptionLabel={pref => pref.getDisplayName() || pref.getName()}
+                  value={
+                    preferences?.find(pref => pref.getName() === resource.spec?.preference?.name) ||
+                    null
+                  }
                   onChange={(_, value) => {
                     if (value) {
                       updateSpec({
@@ -365,7 +389,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                       onChange({ ...resource, spec: newSpec });
                     }
                   }}
-                  renderInput={(params) => (
+                  renderInput={params => (
                     <TextField
                       {...params}
                       label="Preference (Optional)"
@@ -383,7 +407,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                   required
                   label="CPU Cores"
                   value={customCpu}
-                  onChange={(e) => {
+                  onChange={e => {
                     const val = e.target.value;
                     if (val === '') {
                       updateTemplate({
@@ -432,7 +456,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                   required
                   label="Memory"
                   value={customMemoryValue}
-                  onChange={(e) => handleCustomMemoryChange(e.target.value, customMemoryUnit)}
+                  onChange={e => handleCustomMemoryChange(e.target.value, customMemoryUnit)}
                   inputProps={{ min: 1, type: 'number' }}
                   helperText="Amount of memory"
                   sx={{
@@ -457,7 +481,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
                   select
                   label="Unit"
                   value={customMemoryUnit}
-                  onChange={(e) => handleCustomMemoryChange(customMemoryValue, e.target.value)}
+                  onChange={e => handleCustomMemoryChange(customMemoryValue, e.target.value)}
                 >
                   <MenuItem value="Mi">Mi</MenuItem>
                   <MenuItem value="Gi">Gi</MenuItem>
@@ -482,7 +506,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               required
               label="Storage Size"
               value={storageSizeValue}
-              onChange={(e) => handleStorageSizeChange(e.target.value, storageSizeUnit)}
+              onChange={e => handleStorageSizeChange(e.target.value, storageSizeUnit)}
               inputProps={{ min: 1, type: 'number' }}
               helperText="Size of the root disk"
               sx={{
@@ -507,7 +531,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               select
               label="Unit"
               value={storageSizeUnit}
-              onChange={(e) => handleStorageSizeChange(storageSizeValue, e.target.value)}
+              onChange={e => handleStorageSizeChange(storageSizeValue, e.target.value)}
             >
               <MenuItem value="Mi">Mi</MenuItem>
               <MenuItem value="Gi">Gi</MenuItem>
@@ -521,7 +545,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               select
               label="Storage Class"
               value={resource.spec?.dataVolumeTemplates?.[0]?.spec?.pvc?.storageClassName || ''}
-              onChange={(e) => {
+              onChange={e => {
                 onChange({
                   ...resource,
                   spec: {
@@ -544,7 +568,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
               helperText="Storage class for the disk"
             >
               <MenuItem value="">Default</MenuItem>
-              {storageClasses.map((sc) => (
+              {storageClasses.map(sc => (
                 <MenuItem key={sc} value={sc}>
                   {sc}
                 </MenuItem>
@@ -565,7 +589,7 @@ export default function VMForm({ resource, onChange }: VMFormProps) {
           control={
             <Switch
               checked={resource.spec?.running || false}
-              onChange={(e) => updateSpec({ running: e.target.checked })}
+              onChange={e => updateSpec({ running: e.target.checked })}
             />
           }
           label={

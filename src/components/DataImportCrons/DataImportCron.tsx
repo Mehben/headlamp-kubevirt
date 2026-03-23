@@ -1,5 +1,5 @@
 import { KubeObject } from '@kinvolk/headlamp-plugin/lib/K8s/cluster';
-import { DataImportCronImport,KubeCondition } from '../../types';
+import { DataImportCronImport, KubeCondition } from '../../types';
 
 class DataImportCron extends KubeObject {
   get spec() {

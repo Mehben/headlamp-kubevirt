@@ -25,9 +25,7 @@ function StoryWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SnackbarProvider maxSnack={3}>
       <BrowserRouter>
-        <Box sx={{ p: 3, maxWidth: 1000 }}>
-          {children}
-        </Box>
+        <Box sx={{ p: 3, maxWidth: 1000 }}>{children}</Box>
       </BrowserRouter>
     </SnackbarProvider>
   );
@@ -38,10 +36,12 @@ function StoryWrapper({ children }: { children: React.ReactNode }) {
 function ColorPaletteShowcase() {
   return (
     <StoryWrapper>
-      <Typography variant="h5" gutterBottom>Form Section Color Palette</Typography>
+      <Typography variant="h5" gutterBottom>
+        Form Section Color Palette
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Every form across the plugin uses these semantic colors.
-        Colors match the Settings page Feature Gate categories exactly.
+        Every form across the plugin uses these semantic colors. Colors match the Settings page
+        Feature Gate categories exactly.
       </Typography>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -54,8 +54,14 @@ function ColorPaletteShowcase() {
             noGrid
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Chip label={name} size="small" sx={{ bgcolor: hex, color: '#fff', fontWeight: 600, fontFamily: 'monospace' }} />
-              <Typography variant="body2" color="text.secondary">{hex}</Typography>
+              <Chip
+                label={name}
+                size="small"
+                sx={{ bgcolor: hex, color: '#fff', fontWeight: 600, fontFamily: 'monospace' }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {hex}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
                 {PALETTE_USAGE[name]}
               </Typography>
@@ -116,17 +122,22 @@ function RealisticFormTemplate() {
 
   return (
     <StoryWrapper>
-      <Typography variant="h5" gutterBottom>Form Template (all section types)</Typography>
+      <Typography variant="h5" gutterBottom>
+        Form Template (all section types)
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        This demonstrates every FormSection color in a realistic form layout.
-        No form in the plugin will have all of these — this is a showcase of what's available.
+        This demonstrates every FormSection color in a realistic form layout. No form in the plugin
+        will have all of these — this is a showcase of what's available.
       </Typography>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Basic Info — other (brown) */}
         <FormSection icon="mdi:information-outline" title="Basic Information" color="other" noGrid>
           <TextField
-            fullWidth label="Name" required value={name}
+            fullWidth
+            label="Name"
+            required
+            value={name}
             onChange={e => setName(e.target.value)}
             helperText="Unique resource name"
             sx={{ mb: 2 }}
@@ -147,9 +158,17 @@ function RealisticFormTemplate() {
           <FormControl component="fieldset" sx={{ mb: 2 }}>
             <FormLabel>Source Kind</FormLabel>
             <RadioGroup value={sourceKind} onChange={e => setSourceKind(e.target.value)}>
-              <FormControlLabel value="VirtualMachine" control={<Radio />} label="Virtual Machine" />
+              <FormControlLabel
+                value="VirtualMachine"
+                control={<Radio />}
+                label="Virtual Machine"
+              />
               <FormControlLabel value="PersistentVolumeClaim" control={<Radio />} label="PVC" />
-              <FormControlLabel value="VirtualMachineSnapshot" control={<Radio />} label="VM Snapshot" />
+              <FormControlLabel
+                value="VirtualMachineSnapshot"
+                control={<Radio />}
+                label="VM Snapshot"
+              />
             </RadioGroup>
           </FormControl>
           <Autocomplete
@@ -166,18 +185,29 @@ function RealisticFormTemplate() {
         {/* Compute — compute (purple) */}
         <FormSection icon="mdi:cpu-64-bit" title="CPU & Memory" color="compute">
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2" gutterBottom>CPU Cores: {cpuCores}</Typography>
+            <Typography variant="body2" gutterBottom>
+              CPU Cores: {cpuCores}
+            </Typography>
             <Slider
-              value={cpuCores} onChange={(_, v) => setCpuCores(v as number)}
-              min={1} max={16} step={1} marks
+              value={cpuCores}
+              onChange={(_, v) => setCpuCores(v as number)}
+              min={1}
+              max={16}
+              step={1}
+              marks
               valueLabelDisplay="auto"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2" gutterBottom>Memory (GiB): {memoryGi}</Typography>
+            <Typography variant="body2" gutterBottom>
+              Memory (GiB): {memoryGi}
+            </Typography>
             <Slider
-              value={memoryGi} onChange={(_, v) => setMemoryGi(v as number)}
-              min={1} max={64} step={1}
+              value={memoryGi}
+              onChange={(_, v) => setMemoryGi(v as number)}
+              min={1}
+              max={64}
+              step={1}
               valueLabelDisplay="auto"
             />
           </Grid>
@@ -196,7 +226,9 @@ function RealisticFormTemplate() {
             </RadioGroup>
           </FormControl>
           <TextField
-            fullWidth label="VLAN ID" value={vlanId}
+            fullWidth
+            label="VLAN ID"
+            value={vlanId}
             onChange={e => setVlanId(e.target.value)}
             placeholder="Optional"
             helperText="Leave empty for untagged"
@@ -264,9 +296,12 @@ function RealisticFormTemplate() {
 function CreateButtonShowcase() {
   return (
     <StoryWrapper>
-      <Typography variant="h5" gutterBottom>Create Button Variants</Typography>
+      <Typography variant="h5" gutterBottom>
+        Create Button Variants
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Every list page has this split button. "Form" opens the form dialog, "YAML" opens the editor tab.
+        Every list page has this split button. "Form" opens the form dialog, "YAML" opens the editor
+        tab.
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -300,7 +335,9 @@ function CreateButtonShowcase() {
 function PlainSections() {
   return (
     <StoryWrapper>
-      <Typography variant="h5" gutterBottom>Plain FormSection (no color)</Typography>
+      <Typography variant="h5" gutterBottom>
+        Plain FormSection (no color)
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Without the color prop, FormSection renders as a neutral outlined Paper.
       </Typography>
@@ -310,9 +347,15 @@ function PlainSections() {
           <TextField fullWidth label="Example Field" />
         </FormSection>
         <FormSection icon="mdi:information-outline" title="Section With Grid (3 cols)" columns={12}>
-          <Grid item xs={4}><TextField fullWidth label="Field A" /></Grid>
-          <Grid item xs={4}><TextField fullWidth label="Field B" /></Grid>
-          <Grid item xs={4}><TextField fullWidth label="Field C" /></Grid>
+          <Grid item xs={4}>
+            <TextField fullWidth label="Field A" />
+          </Grid>
+          <Grid item xs={4}>
+            <TextField fullWidth label="Field B" />
+          </Grid>
+          <Grid item xs={4}>
+            <TextField fullWidth label="Field C" />
+          </Grid>
         </FormSection>
       </Box>
     </StoryWrapper>

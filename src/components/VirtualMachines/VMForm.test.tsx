@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
-import {describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import VMForm from './VMForm';
 
 // Mock ApiProxy
@@ -100,7 +100,9 @@ describe('VMForm', () => {
     it('renders boot source autocomplete', () => {
       render(<VMForm resource={makeVM()} onChange={vi.fn()} />);
 
-      expect(screen.getByText('Select a bootable volume (DataSource) to boot from')).toBeInTheDocument();
+      expect(
+        screen.getByText('Select a bootable volume (DataSource) to boot from')
+      ).toBeInTheDocument();
     });
   });
 
@@ -161,7 +163,13 @@ describe('VMForm', () => {
           dataVolumeTemplates: [
             {
               metadata: { name: 'test-vm-disk' },
-              spec: { source: {}, pvc: { accessModes: ['ReadWriteOnce'], resources: { requests: { storage: '30Gi' } } } },
+              spec: {
+                source: {},
+                pvc: {
+                  accessModes: ['ReadWriteOnce'],
+                  resources: { requests: { storage: '30Gi' } },
+                },
+              },
             },
           ],
         },
@@ -182,7 +190,13 @@ describe('VMForm', () => {
           dataVolumeTemplates: [
             {
               metadata: { name: 'test-vm-disk' },
-              spec: { source: {}, pvc: { accessModes: ['ReadWriteOnce'], resources: { requests: { storage: '30Gi' } } } },
+              spec: {
+                source: {},
+                pvc: {
+                  accessModes: ['ReadWriteOnce'],
+                  resources: { requests: { storage: '30Gi' } },
+                },
+              },
             },
           ],
         },

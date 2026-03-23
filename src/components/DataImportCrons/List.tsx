@@ -52,7 +52,7 @@ export default function DataImportCronList() {
     errors &&
     errors.length > 0 &&
     errors.some(
-      (error) =>
+      error =>
         error?.status === 404 ||
         error?.message?.includes('not found') ||
         error?.message?.includes('the server could not find the requested resource')
@@ -74,8 +74,8 @@ export default function DataImportCronList() {
           CDI (Containerized Data Importer) Not Installed
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600 }}>
-          The DataImportCron feature requires CDI to be installed in your cluster. CDI provides
-          the DataImportCron resources used for automatically importing and updating DataSources.
+          The DataImportCron feature requires CDI to be installed in your cluster. CDI provides the
+          DataImportCron resources used for automatically importing and updating DataSources.
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Install CDI to enable this feature:{' '}
@@ -101,104 +101,123 @@ export default function DataImportCronList() {
             <CreateButtonWithMode
               key="create"
               label="Create DataImportCron"
-              onCreateForm={() => { setCreateInitialTab(0); setCreateDialogOpen(true); }}
-              onCreateYAML={() => { setCreateInitialTab(1); setCreateDialogOpen(true); }}
+              onCreateForm={() => {
+                setCreateInitialTab(0);
+                setCreateDialogOpen(true);
+              }}
+              onCreateYAML={() => {
+                setCreateInitialTab(1);
+                setCreateDialogOpen(true);
+              }}
             />,
           ],
         }}
         columns={[
-        {
-          id: 'name',
-          label: 'Name',
-          getValue: (dic) => dic.getName(),
-          render: (dic) => (
-            <Link
-              routeName="/kubevirt/dataimportcrons/:namespace/:name"
-              params={{ name: dic.getName(), namespace: dic.getNamespace() }}
-            >
-              {dic.getName()}
-            </Link>
-          ),
-        },
-        {
-          id: 'namespace',
-          label: 'Namespace',
-          getValue: (dic) => dic.getNamespace(),
-          render: (dic) => (
-            <Chip label={dic.getNamespace()} size="small" variant="outlined" />
-          ),
-        },
-        {
-          id: 'managed-datasource',
-          label: 'Managed DataSource',
-          getValue: (dic) => dic.getManagedDataSource(),
-          render: (dic) => (
-            <Link
-              routeName="datasource"
-              params={{ name: dic.getManagedDataSource(), namespace: dic.getNamespace() }}
-            >
-              {dic.getManagedDataSource()}
-            </Link>
-          ),
-        },
-        {
-          id: 'schedule',
-          label: 'Schedule',
-          getValue: (dic) => dic.getSchedule(),
-        },
-        {
-          id: 'source-type',
-          label: 'Source Type',
-          getValue: (dic) => dic.getSourceType(),
-        },
-        {
-          id: 'source-url',
-          label: 'Source URL',
-          getValue: (dic) => dic.getSourceURL(),
-          render: (dic) => {
-            const url = dic.getSourceURL();
-            if (url === '-') return url;
-            return (
-              <Typography variant="body2" sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {url}
-              </Typography>
-            );
+          {
+            id: 'name',
+            label: 'Name',
+            getValue: dic => dic.getName(),
+            render: dic => (
+              <Link
+                routeName="/kubevirt/dataimportcrons/:namespace/:name"
+                params={{ name: dic.getName(), namespace: dic.getNamespace() }}
+              >
+                {dic.getName()}
+              </Link>
+            ),
           },
-        },
-        {
-          id: 'garbage-collect',
-          label: 'Garbage Collect',
-          getValue: (dic) => dic.getGarbageCollect(),
-        },
-        {
-          id: 'imports-to-keep',
-          label: 'Imports to Keep',
-          getValue: (dic) => dic.getImportsToKeep(),
-        },
-        {
-          id: 'status',
-          label: 'Status',
-          getValue: (dic) => {
-            if (dic.isUpToDate()) return 'Up to Date';
-            if (dic.isProgressing()) return 'Progressing';
-            return 'Out of Date';
+          {
+            id: 'namespace',
+            label: 'Namespace',
+            getValue: dic => dic.getNamespace(),
+            render: dic => <Chip label={dic.getNamespace()} size="small" variant="outlined" />,
           },
-          render: (dic) => {
-            if (dic.isUpToDate()) {
-              return <Chip label="Up to Date" size="small" color="success" />;
-            } else if (dic.isProgressing()) {
-              return <Chip label="Progressing" size="small" color="info" icon={<Icon icon="mdi:sync" />} />;
-            }
-            return <Chip label="Out of Date" size="small" color="warning" />;
+          {
+            id: 'managed-datasource',
+            label: 'Managed DataSource',
+            getValue: dic => dic.getManagedDataSource(),
+            render: dic => (
+              <Link
+                routeName="datasource"
+                params={{ name: dic.getManagedDataSource(), namespace: dic.getNamespace() }}
+              >
+                {dic.getManagedDataSource()}
+              </Link>
+            ),
           },
-        },
-        {
-          id: 'last-execution',
-          label: 'Last Execution',
-          getValue: (dic) => dic.getLastExecutionTimestamp(),
-        },
-        'age',
-      ]}
+          {
+            id: 'schedule',
+            label: 'Schedule',
+            getValue: dic => dic.getSchedule(),
+          },
+          {
+            id: 'source-type',
+            label: 'Source Type',
+            getValue: dic => dic.getSourceType(),
+          },
+          {
+            id: 'source-url',
+            label: 'Source URL',
+            getValue: dic => dic.getSourceURL(),
+            render: dic => {
+              const url = dic.getSourceURL();
+              if (url === '-') return url;
+              return (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    maxWidth: 300,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {url}
+                </Typography>
+              );
+            },
+          },
+          {
+            id: 'garbage-collect',
+            label: 'Garbage Collect',
+            getValue: dic => dic.getGarbageCollect(),
+          },
+          {
+            id: 'imports-to-keep',
+            label: 'Imports to Keep',
+            getValue: dic => dic.getImportsToKeep(),
+          },
+          {
+            id: 'status',
+            label: 'Status',
+            getValue: dic => {
+              if (dic.isUpToDate()) return 'Up to Date';
+              if (dic.isProgressing()) return 'Progressing';
+              return 'Out of Date';
+            },
+            render: dic => {
+              if (dic.isUpToDate()) {
+                return <Chip label="Up to Date" size="small" color="success" />;
+              } else if (dic.isProgressing()) {
+                return (
+                  <Chip
+                    label="Progressing"
+                    size="small"
+                    color="info"
+                    icon={<Icon icon="mdi:sync" />}
+                  />
+                );
+              }
+              return <Chip label="Out of Date" size="small" color="warning" />;
+            },
+          },
+          {
+            id: 'last-execution',
+            label: 'Last Execution',
+            getValue: dic => dic.getLastExecutionTimestamp(),
+          },
+          'age',
+        ]}
       />
 
       <CreateResourceDialog

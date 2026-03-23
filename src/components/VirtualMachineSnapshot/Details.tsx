@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
 import { Link, Resource, SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import { Box, Button,Card, CardContent, Chip, Grid, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -14,7 +14,7 @@ function CreateExportDialog({
   open,
   onClose,
   snapshotName,
-  snapshotNamespace
+  snapshotNamespace,
 }: {
   open: boolean;
   onClose: () => void;
@@ -46,11 +46,14 @@ function CreateExportDialog({
         },
       };
 
-      await ApiProxy.request(`/apis/export.kubevirt.io/v1beta1/namespaces/${snapshotNamespace}/virtualmachineexports`, {
-        method: 'POST',
-        body: JSON.stringify(exportResource),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await ApiProxy.request(
+        `/apis/export.kubevirt.io/v1beta1/namespaces/${snapshotNamespace}/virtualmachineexports`,
+        {
+          method: 'POST',
+          body: JSON.stringify(exportResource),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
       enqueueSnackbar(`Export ${exportName} created successfully`, { variant: 'success' });
       onClose();
@@ -79,7 +82,7 @@ function CreateExportDialog({
       }}
       onClick={onClose}
     >
-      <Card sx={{ minWidth: 400, maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
+      <Card sx={{ minWidth: 400, maxWidth: 500 }} onClick={e => e.stopPropagation()}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Create Export from Snapshot
@@ -93,7 +96,7 @@ function CreateExportDialog({
             </Typography>
             <select
               value={ttl}
-              onChange={(e) => setTtl(e.target.value)}
+              onChange={e => setTtl(e.target.value)}
               style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
             >
               <option value="1h">1 hour</option>
@@ -148,17 +151,21 @@ export default function VirtualMachineSnapshotDetails() {
         name={name}
         namespace={namespace}
         withEvents
-        actions={vmExportEnabled ? [
-          <Button
-            key="export"
-            variant="outlined"
-            size="small"
-            startIcon={<Icon icon="mdi:export" />}
-            onClick={() => setExportDialogOpen(true)}
-          >
-            Export
-          </Button>
-        ] : []}
+        actions={
+          vmExportEnabled
+            ? [
+                <Button
+                  key="export"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Icon icon="mdi:export" />}
+                  onClick={() => setExportDialogOpen(true)}
+                >
+                  Export
+                </Button>,
+              ]
+            : []
+        }
       />
       <Grid container spacing={3} sx={{ mt: 2, px: 2 }}>
         {/* Overview */}
@@ -266,11 +273,12 @@ export default function VirtualMachineSnapshotDetails() {
                 </Box>
               )}
 
-              {snapshot.getIncludedVolumes().length === 0 && snapshot.getExcludedVolumes().length === 0 && (
-                <Typography variant="body2" color="text.secondary">
-                  No volume information available
-                </Typography>
-              )}
+              {snapshot.getIncludedVolumes().length === 0 &&
+                snapshot.getExcludedVolumes().length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    No volume information available
+                  </Typography>
+                )}
             </CardContent>
           </Card>
         </Grid>
@@ -282,27 +290,93 @@ export default function VirtualMachineSnapshotDetails() {
               <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
                 <Box component="thead">
                   <Box component="tr">
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Type</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Status</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Reason</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Message</Box>
-                    <Box component="th" sx={{ textAlign: 'left', p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>Last Transition</Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Type
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Status
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Reason
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Message
+                    </Box>
+                    <Box
+                      component="th"
+                      sx={{
+                        textAlign: 'left',
+                        p: 1,
+                        borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                      }}
+                    >
+                      Last Transition
+                    </Box>
                   </Box>
                 </Box>
                 <Box component="tbody">
                   {snapshot.status.conditions.map((condition: KubeCondition, idx: number) => (
                     <Box component="tr" key={idx}>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>{condition.type}</Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
+                        {condition.type}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
                         <Chip
                           label={condition.status}
                           size="small"
                           color={condition.status === 'True' ? 'success' : 'default'}
                         />
                       </Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>{condition.reason || '-'}</Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>{condition.message || '-'}</Box>
-                      <Box component="td" sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
+                        {condition.reason || '-'}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
+                        {condition.message || '-'}
+                      </Box>
+                      <Box
+                        component="td"
+                        sx={{ p: 1, borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                      >
                         {condition.lastTransitionTime
                           ? new Date(condition.lastTransitionTime).toLocaleString()
                           : '-'}

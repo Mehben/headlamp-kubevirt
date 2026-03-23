@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import ImportVolumeForm from './ImportVolumeForm';
 
@@ -60,7 +60,11 @@ describe('ImportVolumeForm', () => {
     it('shows URL field for HTTP source', () => {
       render(<ImportVolumeForm resource={makeDV()} onChange={vi.fn()} />);
 
-      expect(screen.getByText('Import disk image from an HTTP/HTTPS URL. Supports ISO, qcow2, and raw formats.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Import disk image from an HTTP/HTTPS URL. Supports ISO, qcow2, and raw formats.'
+        )
+      ).toBeInTheDocument();
       expect(screen.getByLabelText('URL *')).toBeInTheDocument();
     });
 
@@ -68,7 +72,9 @@ describe('ImportVolumeForm', () => {
       const onChange = vi.fn();
       render(<ImportVolumeForm resource={makeDV()} onChange={onChange} />);
 
-      fireEvent.change(screen.getByLabelText('URL *'), { target: { value: 'https://example.com/disk.qcow2' } });
+      fireEvent.change(screen.getByLabelText('URL *'), {
+        target: { value: 'https://example.com/disk.qcow2' },
+      });
 
       expect(onChange.mock.calls[0][0].spec.source.http.url).toBe('https://example.com/disk.qcow2');
     });
@@ -76,7 +82,17 @@ describe('ImportVolumeForm', () => {
 
   describe('Registry Source', () => {
     it('shows registry URL field', () => {
-      const dv = makeDV({ spec: { source: { registry: { url: '' } }, storage: { resources: { requests: { storage: '30Gi' } }, accessModes: ['ReadWriteOnce'], volumeMode: 'Filesystem' }, contentType: 'kubevirt' } });
+      const dv = makeDV({
+        spec: {
+          source: { registry: { url: '' } },
+          storage: {
+            resources: { requests: { storage: '30Gi' } },
+            accessModes: ['ReadWriteOnce'],
+            volumeMode: 'Filesystem',
+          },
+          contentType: 'kubevirt',
+        },
+      });
       render(<ImportVolumeForm resource={dv} onChange={vi.fn()} />);
 
       expect(screen.getByLabelText('Registry URL *')).toBeInTheDocument();
@@ -86,7 +102,17 @@ describe('ImportVolumeForm', () => {
 
   describe('Blank Source', () => {
     it('shows blank disk message', () => {
-      const dv = makeDV({ spec: { source: { blank: {} }, storage: { resources: { requests: { storage: '30Gi' } }, accessModes: ['ReadWriteOnce'], volumeMode: 'Filesystem' }, contentType: 'kubevirt' } });
+      const dv = makeDV({
+        spec: {
+          source: { blank: {} },
+          storage: {
+            resources: { requests: { storage: '30Gi' } },
+            accessModes: ['ReadWriteOnce'],
+            volumeMode: 'Filesystem',
+          },
+          contentType: 'kubevirt',
+        },
+      });
       render(<ImportVolumeForm resource={dv} onChange={vi.fn()} />);
 
       expect(screen.getByText('Create an empty disk with the specified size.')).toBeInTheDocument();
@@ -95,7 +121,17 @@ describe('ImportVolumeForm', () => {
 
   describe('Upload Source', () => {
     it('shows virtctl command for upload', () => {
-      const dv = makeDV({ spec: { source: { upload: {} }, storage: { resources: { requests: { storage: '30Gi' } }, accessModes: ['ReadWriteOnce'], volumeMode: 'Filesystem' }, contentType: 'kubevirt' } });
+      const dv = makeDV({
+        spec: {
+          source: { upload: {} },
+          storage: {
+            resources: { requests: { storage: '30Gi' } },
+            accessModes: ['ReadWriteOnce'],
+            volumeMode: 'Filesystem',
+          },
+          contentType: 'kubevirt',
+        },
+      });
       render(<ImportVolumeForm resource={dv} onChange={vi.fn()} />);
 
       // Multiple virtctl commands shown (create+upload and upload-only)
@@ -107,7 +143,17 @@ describe('ImportVolumeForm', () => {
 
   describe('PVC Clone Source', () => {
     it('shows PVC clone fields', () => {
-      const dv = makeDV({ spec: { source: { pvc: { name: '', namespace: 'default' } }, storage: { resources: { requests: { storage: '30Gi' } }, accessModes: ['ReadWriteOnce'], volumeMode: 'Filesystem' }, contentType: 'kubevirt' } });
+      const dv = makeDV({
+        spec: {
+          source: { pvc: { name: '', namespace: 'default' } },
+          storage: {
+            resources: { requests: { storage: '30Gi' } },
+            accessModes: ['ReadWriteOnce'],
+            volumeMode: 'Filesystem',
+          },
+          contentType: 'kubevirt',
+        },
+      });
       render(<ImportVolumeForm resource={dv} onChange={vi.fn()} />);
 
       expect(screen.getByText('Clone an existing PVC to create a new volume.')).toBeInTheDocument();
@@ -116,7 +162,17 @@ describe('ImportVolumeForm', () => {
 
   describe('Snapshot Source', () => {
     it('shows snapshot restore fields', () => {
-      const dv = makeDV({ spec: { source: { snapshot: { name: '', namespace: 'default' } }, storage: { resources: { requests: { storage: '30Gi' } }, accessModes: ['ReadWriteOnce'], volumeMode: 'Filesystem' }, contentType: 'kubevirt' } });
+      const dv = makeDV({
+        spec: {
+          source: { snapshot: { name: '', namespace: 'default' } },
+          storage: {
+            resources: { requests: { storage: '30Gi' } },
+            accessModes: ['ReadWriteOnce'],
+            volumeMode: 'Filesystem',
+          },
+          contentType: 'kubevirt',
+        },
+      });
       render(<ImportVolumeForm resource={dv} onChange={vi.fn()} />);
 
       expect(screen.getByText('Restore from an existing VolumeSnapshot.')).toBeInTheDocument();
@@ -144,7 +200,9 @@ describe('ImportVolumeForm', () => {
     it('renders storage class autocomplete', () => {
       render(<ImportVolumeForm resource={makeDV()} onChange={vi.fn()} />);
 
-      expect(screen.getByText('Storage class for the PVC (leave empty for default)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Storage class for the PVC (leave empty for default)')
+      ).toBeInTheDocument();
     });
 
     it('renders access mode selector', () => {
@@ -166,7 +224,17 @@ describe('ImportVolumeForm', () => {
     });
 
     it('hides content type for blank sources', () => {
-      const dv = makeDV({ spec: { source: { blank: {} }, storage: { resources: { requests: { storage: '30Gi' } }, accessModes: ['ReadWriteOnce'], volumeMode: 'Filesystem' }, contentType: 'kubevirt' } });
+      const dv = makeDV({
+        spec: {
+          source: { blank: {} },
+          storage: {
+            resources: { requests: { storage: '30Gi' } },
+            accessModes: ['ReadWriteOnce'],
+            volumeMode: 'Filesystem',
+          },
+          contentType: 'kubevirt',
+        },
+      });
       render(<ImportVolumeForm resource={dv} onChange={vi.fn()} />);
 
       expect(screen.queryByText('Content Type')).not.toBeInTheDocument();

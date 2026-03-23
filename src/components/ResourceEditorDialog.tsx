@@ -17,7 +17,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import yaml from 'js-yaml';
 import { useSnackbar } from 'notistack';
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CRDDocsViewer from './common/CRDDocsViewer';
 
 const { SimpleEditor } = Resource;
@@ -102,33 +102,41 @@ export default function ResourceEditorDialog({
       <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 3, py: 2, flexGrow: 1 }}>
           <Icon icon="mdi:pencil" width={20} />
-          <Typography variant="h6">
-            Edit: {title}
-          </Typography>
+          <Typography variant="h6">Edit: {title}</Typography>
         </Box>
         <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mr: 1 }}>
           <Tab label="Editor" icon={<Icon icon="mdi:code-braces" />} iconPosition="start" />
-          <Tab label="Documentation" icon={<Icon icon="mdi:book-open-page-variant" />} iconPosition="start" />
+          <Tab
+            label="Documentation"
+            icon={<Icon icon="mdi:book-open-page-variant" />}
+            iconPosition="start"
+          />
         </Tabs>
-        <IconButton
-          onClick={handleClose}
-          sx={{ mr: 1 }}
-          size="small"
-        >
+        <IconButton onClick={handleClose} sx={{ mr: 1 }} size="small">
           <Icon icon="mdi:close" />
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ p: 0, height: '70vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <DialogContent
+        sx={{ p: 0, height: '70vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      >
         {activeTab === 0 ? (
           // Editor Tab
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <Box sx={{ p: 1.5, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
+            <Box
+              sx={{
+                p: 1.5,
+                borderBottom: 1,
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
               <FormControlLabel
                 control={
                   <Switch
                     checked={useMinimalEditor}
-                    onChange={(e) => setUseMinimalEditor(e.target.checked)}
+                    onChange={e => setUseMinimalEditor(e.target.checked)}
                     size="small"
                   />
                 }
@@ -143,11 +151,7 @@ export default function ResourceEditorDialog({
             <Box sx={{ flex: 1, minHeight: 0, position: 'relative', p: 2 }}>
               {useMinimalEditor ? (
                 <Box sx={{ height: '100%', overflow: 'auto' }}>
-                  <SimpleEditor
-                    language="yaml"
-                    value={yamlContent}
-                    onChange={handleYamlChange}
-                  />
+                  <SimpleEditor language="yaml" value={yamlContent} onChange={handleYamlChange} />
                 </Box>
               ) : (
                 <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, bottom: 16 }}>
@@ -192,7 +196,9 @@ export default function ResourceEditorDialog({
         <Button
           variant="contained"
           onClick={handleSave}
-          startIcon={saving ? <Icon icon="mdi:loading" className="spin" /> : <Icon icon="mdi:content-save" />}
+          startIcon={
+            saving ? <Icon icon="mdi:loading" className="spin" /> : <Icon icon="mdi:content-save" />
+          }
           disabled={saving || !!yamlError}
         >
           {saving ? 'Saving...' : 'Save & Apply'}

@@ -24,11 +24,7 @@ export default function PreferenceDetails() {
         name={name}
         actions={[
           <Tooltip title="Edit with Wizard">
-            <IconButton
-              key="edit-wizard"
-              onClick={() => setEditOpen(true)}
-              size="small"
-            >
+            <IconButton key="edit-wizard" onClick={() => setEditOpen(true)} size="small">
               <Icon icon="mdi:auto-fix" />
             </IconButton>
           </Tooltip>,
@@ -50,11 +46,7 @@ export default function PreferenceDetails() {
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {preference.getIconClass() !== '-' && (
-                    <Icon
-                      icon={mapIconClass(preference.getIconClass())}
-                      width="24"
-                      height="24"
-                    />
+                    <Icon icon={mapIconClass(preference.getIconClass())} width="24" height="24" />
                   )}
                   <Typography variant="body1">{preference.getName()}</Typography>
                 </Box>
@@ -155,7 +147,9 @@ export default function PreferenceDetails() {
                       label={preference.hasSecureBoot() ? 'Enabled' : 'Disabled'}
                       size="small"
                       color={preference.hasSecureBoot() ? 'success' : 'default'}
-                      icon={preference.hasSecureBoot() ? <Icon icon="mdi:shield-check" /> : undefined}
+                      icon={
+                        preference.hasSecureBoot() ? <Icon icon="mdi:shield-check" /> : undefined
+                      }
                     />
                   </Box>
                 </Box>

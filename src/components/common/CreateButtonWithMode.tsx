@@ -8,7 +8,11 @@ interface CreateButtonWithModeProps {
   onCreateYAML: () => void;
 }
 
-export default function CreateButtonWithMode({ label, onCreateForm, onCreateYAML }: CreateButtonWithModeProps) {
+export default function CreateButtonWithMode({
+  label,
+  onCreateForm,
+  onCreateYAML,
+}: CreateButtonWithModeProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -34,17 +38,10 @@ export default function CreateButtonWithMode({ label, onCreateForm, onCreateYAML
   return (
     <>
       <ButtonGroup variant="contained">
-        <Button
-          onClick={onCreateForm}
-          startIcon={<Icon icon="mdi:plus" />}
-        >
+        <Button onClick={onCreateForm} startIcon={<Icon icon="mdi:plus" />}>
           {label}
         </Button>
-        <Button
-          size="small"
-          onClick={handleClick}
-          sx={{ px: 0.5 }}
-        >
+        <Button size="small" onClick={handleClick} sx={{ px: 0.5 }}>
           <Icon icon="mdi:menu-down" />
         </Button>
       </ButtonGroup>

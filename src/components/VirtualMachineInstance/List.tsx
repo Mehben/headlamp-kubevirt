@@ -34,10 +34,10 @@ export default function VirtualMachineInstanceList() {
               phase === 'Running'
                 ? 'success'
                 : phase === 'Succeeded'
-                  ? 'info'
-                  : phase === 'Failed'
-                    ? 'error'
-                    : 'default';
+                ? 'info'
+                : phase === 'Failed'
+                ? 'error'
+                : 'default';
             return <Chip label={phase} size="small" color={color} />;
           },
         },

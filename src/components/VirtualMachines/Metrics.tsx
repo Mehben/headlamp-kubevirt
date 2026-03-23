@@ -1,15 +1,16 @@
 import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
-import {
-  Box,
-  Card,
-  CardContent,
-  FormControl,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { CartesianGrid, Legend,Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { ChartTooltipProps } from '../../types';
 
 interface MetricsProps {
@@ -30,15 +31,23 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
 
   // Time series data for graphs
   const [cpuTimeSeries, setCpuTimeSeries] = useState<TimeSeriesData[]>([]);
-  const [memoryTimeSeries, setMemoryTimeSeries] = useState<Array<{ time: string; used: number; total: number }>>([]);
-  const [networkTimeSeries, setNetworkTimeSeries] = useState<Array<{ time: string; rx: number; tx: number }>>([]);
-  const [storageTimeSeries, setStorageTimeSeries] = useState<Array<{ time: string; read: number; write: number }>>([]);
+  const [memoryTimeSeries, setMemoryTimeSeries] = useState<
+    Array<{ time: string; used: number; total: number }>
+  >([]);
+  const [networkTimeSeries, setNetworkTimeSeries] = useState<
+    Array<{ time: string; rx: number; tx: number }>
+  >([]);
+  const [storageTimeSeries, setStorageTimeSeries] = useState<
+    Array<{ time: string; read: number; write: number }>
+  >([]);
 
   // Current values for display
   const [cpuCurrent, setCpuCurrent] = useState<{ usage: number; total: number } | null>(null);
   const [memoryCurrent, setMemoryCurrent] = useState<{ used: number; total: number } | null>(null);
   const [networkCurrent, setNetworkCurrent] = useState<{ rx: number; tx: number } | null>(null);
-  const [storageCurrent, setStorageCurrent] = useState<{ read: number; write: number } | null>(null);
+  const [storageCurrent, setStorageCurrent] = useState<{ read: number; write: number } | null>(
+    null
+  );
 
   // Convert time range to seconds for Prometheus query_range
   const getTimeRangeSeconds = (range: string): number => {
@@ -52,14 +61,17 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
     const fetchMetrics = async () => {
       try {
         // Find Prometheus service dynamically
-        const svcResp = await ApiProxy.request('/api/v1/services').catch(() => null) as Record<string, unknown> | null;
+        const svcResp = (await ApiProxy.request('/api/v1/services').catch(() => null)) as Record<
+          string,
+          unknown
+        > | null;
         const svcItems = (svcResp?.items || []) as Array<Record<string, unknown>>;
-        const promSvc = svcItems.find((svc) => {
+        const promSvc = svcItems.find(svc => {
           const meta = svc.metadata as Record<string, unknown> | undefined;
           const spec = svc.spec as Record<string, unknown> | undefined;
           const name = (meta?.name as string) || '';
           const ports = (spec?.ports || []) as Array<{ port: number }>;
-          return name.includes('prometheus') && ports.some((p) => p.port === 9090);
+          return name.includes('prometheus') && ports.some(p => p.port === 9090);
         });
 
         if (!promSvc) {
@@ -71,7 +83,9 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
         const promBaseUrl = `/api/v1/namespaces/${promMeta.namespace}/services/${promMeta.name}:9090/proxy`;
 
         // Verify Prometheus is actually reachable
-        const healthCheck = await ApiProxy.request(`${promBaseUrl}/api/v1/query?query=up`).catch(() => null);
+        const healthCheck = await ApiProxy.request(`${promBaseUrl}/api/v1/query?query=up`).catch(
+          () => null
+        );
         if (!healthCheck?.data) {
           setPrometheusAvailable(false);
           return;
@@ -87,7 +101,9 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
         // Fetch CPU time series and current value
         const cpuQuery = `rate(kubevirt_vmi_cpu_usage_seconds_total{name="${vmName}",namespace="${namespace}"}[5m]) * 100`;
         const cpuRangeResp = await ApiProxy.request(
-          `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(cpuQuery)}&start=${start}&end=${now}&step=${step}`
+          `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+            cpuQuery
+          )}&start=${start}&end=${now}&step=${step}`
         ).catch(() => null);
 
         if (cpuRangeResp?.data?.result?.[0]) {
@@ -107,9 +123,12 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
 
             // Try runtime topology first (from VMI)
             const vmiStatus = vmiData?.status as Record<string, unknown> | undefined;
-            const currentCPUTopology = vmiStatus?.currentCPUTopology as { sockets: number; cores: number; threads: number } | undefined;
+            const currentCPUTopology = vmiStatus?.currentCPUTopology as
+              | { sockets: number; cores: number; threads: number }
+              | undefined;
             if (currentCPUTopology) {
-              vCpuCount = currentCPUTopology.sockets * currentCPUTopology.cores * currentCPUTopology.threads;
+              vCpuCount =
+                currentCPUTopology.sockets * currentCPUTopology.cores * currentCPUTopology.threads;
             }
             // Fall back to configured topology (from VM spec)
             else {
@@ -117,7 +136,9 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
               const vmTemplate = vmSpec?.template as Record<string, unknown> | undefined;
               const vmTemplateSpec = vmTemplate?.spec as Record<string, unknown> | undefined;
               const vmDomain = vmTemplateSpec?.domain as Record<string, unknown> | undefined;
-              const cpu = vmDomain?.cpu as { sockets?: number; cores?: number; threads?: number } | undefined;
+              const cpu = vmDomain?.cpu as
+                | { sockets?: number; cores?: number; threads?: number }
+                | undefined;
               if (cpu) {
                 vCpuCount = (cpu.sockets || 1) * (cpu.cores || 1) * (cpu.threads || 1);
               }
@@ -134,10 +155,14 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
 
         const [memUsedResp, memTotalResp] = await Promise.all([
           ApiProxy.request(
-            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(memUsedQuery)}&start=${start}&end=${now}&step=${step}`
+            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+              memUsedQuery
+            )}&start=${start}&end=${now}&step=${step}`
           ).catch(() => null),
           ApiProxy.request(
-            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(memTotalQuery)}&start=${start}&end=${now}&step=${step}`
+            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+              memTotalQuery
+            )}&start=${start}&end=${now}&step=${step}`
           ).catch(() => null),
         ]);
 
@@ -145,11 +170,13 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
           const usedValues = memUsedResp.data.result[0].values || [];
           const totalValues = memTotalResp.data.result[0].values || [];
 
-          const formatted = usedValues.map(([timestamp, usedValue]: [number, string], idx: number) => ({
-            time: new Date(timestamp * 1000).toLocaleTimeString(),
-            used: parseFloat(usedValue),
-            total: totalValues[idx] ? parseFloat(totalValues[idx][1]) : 0,
-          }));
+          const formatted = usedValues.map(
+            ([timestamp, usedValue]: [number, string], idx: number) => ({
+              time: new Date(timestamp * 1000).toLocaleTimeString(),
+              used: parseFloat(usedValue),
+              total: totalValues[idx] ? parseFloat(totalValues[idx][1]) : 0,
+            })
+          );
           setMemoryTimeSeries(formatted);
 
           if (formatted.length > 0) {
@@ -164,10 +191,14 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
 
         const [rxResp, txResp] = await Promise.all([
           ApiProxy.request(
-            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(networkRxQuery)}&start=${start}&end=${now}&step=${step}`
+            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+              networkRxQuery
+            )}&start=${start}&end=${now}&step=${step}`
           ).catch(() => null),
           ApiProxy.request(
-            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(networkTxQuery)}&start=${start}&end=${now}&step=${step}`
+            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+              networkTxQuery
+            )}&start=${start}&end=${now}&step=${step}`
           ).catch(() => null),
         ]);
 
@@ -194,10 +225,14 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
 
         const [readResp, writeResp] = await Promise.all([
           ApiProxy.request(
-            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(storageReadQuery)}&start=${start}&end=${now}&step=${step}`
+            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+              storageReadQuery
+            )}&start=${start}&end=${now}&step=${step}`
           ).catch(() => null),
           ApiProxy.request(
-            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(storageWriteQuery)}&start=${start}&end=${now}&step=${step}`
+            `${promBaseUrl}/api/v1/query_range?query=${encodeURIComponent(
+              storageWriteQuery
+            )}&start=${start}&end=${now}&step=${step}`
           ).catch(() => null),
         ]);
 
@@ -205,11 +240,13 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
           const readValues = readResp.data.result[0].values || [];
           const writeValues = writeResp.data.result[0].values || [];
 
-          const formatted = readValues.map(([timestamp, readValue]: [number, string], idx: number) => ({
-            time: new Date(timestamp * 1000).toLocaleTimeString(),
-            read: parseFloat(readValue),
-            write: writeValues[idx] ? parseFloat(writeValues[idx][1]) : 0,
-          }));
+          const formatted = readValues.map(
+            ([timestamp, readValue]: [number, string], idx: number) => ({
+              time: new Date(timestamp * 1000).toLocaleTimeString(),
+              read: parseFloat(readValue),
+              write: writeValues[idx] ? parseFloat(writeValues[idx][1]) : 0,
+            })
+          );
           setStorageTimeSeries(formatted);
 
           if (formatted.length > 0) {
@@ -242,7 +279,9 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
     if (active && payload && payload.length) {
       return (
         <Box sx={{ bgcolor: 'background.paper', p: 1, border: '1px solid #ccc', borderRadius: 1 }}>
-          <Typography variant="caption" display="block">{label}</Typography>
+          <Typography variant="caption" display="block">
+            {label}
+          </Typography>
           {payload.map((entry: ChartTooltipProps['payload'][number], index: number) => (
             <Typography key={index} variant="caption" display="block" sx={{ color: entry.color }}>
               {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}
@@ -278,147 +317,213 @@ export default function VMMetrics({ vmName, namespace, vmiData, vmItem }: Metric
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: 'repeat(2, 1fr)' }} gap={2}>
         {/* CPU Chart */}
         <Card variant="outlined">
-        <CardContent>
-          <Typography variant="subtitle2" color="#3e8635" fontWeight={600} mb={1}>
-            CPU Usage
-          </Typography>
-          {cpuCurrent ? (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Current: {cpuCurrent.usage.toFixed(1)}% of {cpuCurrent.total} vCPU
+          <CardContent>
+            <Typography variant="subtitle2" color="#3e8635" fontWeight={600} mb={1}>
+              CPU Usage
             </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              No data
-            </Typography>
-          )}
-          {cpuTimeSeries.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={cpuTimeSeries}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} label={{ value: '%', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line type="monotone" dataKey="value" stroke="#3e8635" name="CPU %" dot={false} strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              No chart data available
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
+            {cpuCurrent ? (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Current: {cpuCurrent.usage.toFixed(1)}% of {cpuCurrent.total} vCPU
+              </Typography>
+            ) : (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                No data
+              </Typography>
+            )}
+            {cpuTimeSeries.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={cpuTimeSeries}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    label={{ value: '%', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3e8635"
+                    name="CPU %"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No chart data available
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Memory Chart */}
         <Card variant="outlined">
-        <CardContent>
-          <Typography variant="subtitle2" color="#2196f3" fontWeight={600} mb={1}>
-            Memory Usage
-          </Typography>
-          {memoryCurrent ? (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Current: {memoryCurrent.used.toFixed(1)} GiB / {memoryCurrent.total.toFixed(1)} GiB ({((memoryCurrent.used / memoryCurrent.total) * 100).toFixed(1)}%)
+          <CardContent>
+            <Typography variant="subtitle2" color="#2196f3" fontWeight={600} mb={1}>
+              Memory Usage
             </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              No data
-            </Typography>
-          )}
-          {memoryTimeSeries.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={memoryTimeSeries}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} label={{ value: 'GiB', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line type="monotone" dataKey="used" stroke="#2196f3" name="Used" dot={false} strokeWidth={2} />
-                <Line type="monotone" dataKey="total" stroke="#cccccc" name="Total" dot={false} strokeWidth={2} strokeDasharray="5 5" />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              No chart data available
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
+            {memoryCurrent ? (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Current: {memoryCurrent.used.toFixed(1)} GiB / {memoryCurrent.total.toFixed(1)} GiB
+                ({((memoryCurrent.used / memoryCurrent.total) * 100).toFixed(1)}%)
+              </Typography>
+            ) : (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                No data
+              </Typography>
+            )}
+            {memoryTimeSeries.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={memoryTimeSeries}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    label={{ value: 'GiB', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="used"
+                    stroke="#2196f3"
+                    name="Used"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#cccccc"
+                    name="Total"
+                    dot={false}
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No chart data available
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Network Chart */}
         <Card variant="outlined">
-        <CardContent>
-          <Typography variant="subtitle2" color="#00acc1" fontWeight={600} mb={1}>
-            Network Traffic
-          </Typography>
-          {networkCurrent ? (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Current: ↓ {networkCurrent.rx.toFixed(1)} KB/s | ↑ {networkCurrent.tx.toFixed(1)} KB/s
+          <CardContent>
+            <Typography variant="subtitle2" color="#00acc1" fontWeight={600} mb={1}>
+              Network Traffic
             </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              No data
-            </Typography>
-          )}
-          {networkTimeSeries.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={networkTimeSeries}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} label={{ value: 'KB/s', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line type="monotone" dataKey="rx" stroke="#3e8635" name="Receive" dot={false} strokeWidth={2} />
-                <Line type="monotone" dataKey="tx" stroke="#2196f3" name="Transmit" dot={false} strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              No chart data available
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
+            {networkCurrent ? (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Current: ↓ {networkCurrent.rx.toFixed(1)} KB/s | ↑ {networkCurrent.tx.toFixed(1)}{' '}
+                KB/s
+              </Typography>
+            ) : (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                No data
+              </Typography>
+            )}
+            {networkTimeSeries.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={networkTimeSeries}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    label={{ value: 'KB/s', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="rx"
+                    stroke="#3e8635"
+                    name="Receive"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="tx"
+                    stroke="#2196f3"
+                    name="Transmit"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No chart data available
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Storage Chart */}
         <Card variant="outlined">
-        <CardContent>
-          <Typography variant="subtitle2" color="#f0ab00" fontWeight={600} mb={1}>
-            Storage Throughput
-          </Typography>
-          {storageCurrent ? (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Current: R {storageCurrent.read.toFixed(1)} KB/s | W {storageCurrent.write.toFixed(1)} KB/s
+          <CardContent>
+            <Typography variant="subtitle2" color="#f0ab00" fontWeight={600} mb={1}>
+              Storage Throughput
             </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              No data
-            </Typography>
-          )}
-          {storageTimeSeries.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={storageTimeSeries}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} label={{ value: 'KB/s', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line type="monotone" dataKey="read" stroke="#3e8635" name="Read" dot={false} strokeWidth={2} />
-                <Line type="monotone" dataKey="write" stroke="#f0ab00" name="Write" dot={false} strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              No chart data available
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
+            {storageCurrent ? (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Current: R {storageCurrent.read.toFixed(1)} KB/s | W{' '}
+                {storageCurrent.write.toFixed(1)} KB/s
+              </Typography>
+            ) : (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                No data
+              </Typography>
+            )}
+            {storageTimeSeries.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={storageTimeSeries}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    label={{ value: 'KB/s', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="read"
+                    stroke="#3e8635"
+                    name="Read"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="write"
+                    stroke="#f0ab00"
+                    name="Write"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No chart data available
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
       </Box>
 
       <Box mt={3}>
         <Typography variant="caption" color="text.secondary">
-          Metrics refresh every 30 seconds. Adjust the time range selector to view different historical periods.
+          Metrics refresh every 30 seconds. Adjust the time range selector to view different
+          historical periods.
         </Typography>
       </Box>
     </Box>

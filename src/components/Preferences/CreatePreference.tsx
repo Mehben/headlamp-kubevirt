@@ -133,7 +133,9 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
       enqueueSnackbar(`Preference ${name} created successfully`, { variant: 'success' });
       onClose();
     } catch (error: unknown) {
-      enqueueSnackbar(`Failed to create Preference: ${(error as Error).message}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to create Preference: ${(error as Error).message}`, {
+        variant: 'error',
+      });
     }
   };
 
@@ -156,7 +158,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   required
                   label="Name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                   helperText="Unique identifier for this preference (e.g., my.custom.os)"
                 />
               </Grid>
@@ -166,7 +168,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   fullWidth
                   label="Display Name"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  onChange={e => setDisplayName(e.target.value)}
                   helperText="Human-readable name (e.g., My Custom OS)"
                 />
               </Grid>
@@ -177,7 +179,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   select
                   label="OS Type"
                   value={osType}
-                  onChange={(e) => setOsType(e.target.value)}
+                  onChange={e => setOsType(e.target.value)}
                   helperText="Operating system type for this preference"
                 >
                   <MenuItem value="linux">Linux</MenuItem>
@@ -203,7 +205,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   select
                   label="Disk Bus"
                   value={diskBus}
-                  onChange={(e) => setDiskBus(e.target.value)}
+                  onChange={e => setDiskBus(e.target.value)}
                   helperText="Preferred disk bus type"
                 >
                   <MenuItem value="virtio">VirtIO</MenuItem>
@@ -218,7 +220,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   select
                   label="Network Interface Model"
                   value={interfaceModel}
-                  onChange={(e) => setInterfaceModel(e.target.value)}
+                  onChange={e => setInterfaceModel(e.target.value)}
                   helperText="Preferred network interface model"
                 >
                   <MenuItem value="virtio">VirtIO</MenuItem>
@@ -232,7 +234,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   control={
                     <Switch
                       checked={diskDedicatedIo}
-                      onChange={(e) => setDiskDedicatedIo(e.target.checked)}
+                      onChange={e => setDiskDedicatedIo(e.target.checked)}
                     />
                   }
                   label="Disk Dedicated IO Thread"
@@ -247,7 +249,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   control={
                     <Switch
                       checked={autoattachInput}
-                      onChange={(e) => setAutoattachInput(e.target.checked)}
+                      onChange={e => setAutoattachInput(e.target.checked)}
                     />
                   }
                   label="Auto-attach Input Device"
@@ -265,7 +267,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                       select
                       label="Input Bus"
                       value={inputBus}
-                      onChange={(e) => setInputBus(e.target.value)}
+                      onChange={e => setInputBus(e.target.value)}
                     >
                       <MenuItem value="">Default</MenuItem>
                       <MenuItem value="virtio">VirtIO</MenuItem>
@@ -279,7 +281,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                       select
                       label="Input Type"
                       value={inputType}
-                      onChange={(e) => setInputType(e.target.value)}
+                      onChange={e => setInputType(e.target.value)}
                     >
                       <MenuItem value="">Default</MenuItem>
                       <MenuItem value="tablet">Tablet</MenuItem>
@@ -303,12 +305,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <FormControlLabel
-                  control={
-                    <Switch
-                      checked={useEfi}
-                      onChange={(e) => setUseEfi(e.target.checked)}
-                    />
-                  }
+                  control={<Switch checked={useEfi} onChange={e => setUseEfi(e.target.checked)} />}
                   label="Use EFI Boot"
                 />
                 <Typography variant="caption" color="text.secondary" display="block" sx={{ ml: 4 }}>
@@ -322,12 +319,17 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                     control={
                       <Switch
                         checked={useSecureBoot}
-                        onChange={(e) => setUseSecureBoot(e.target.checked)}
+                        onChange={e => setUseSecureBoot(e.target.checked)}
                       />
                     }
                     label="Enable Secure Boot"
                   />
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ ml: 4 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    display="block"
+                    sx={{ ml: 4 }}
+                  >
                     Enable UEFI Secure Boot (requires EFI)
                   </Typography>
                 </Grid>
@@ -335,12 +337,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
 
               <Grid item xs={12}>
                 <FormControlLabel
-                  control={
-                    <Switch
-                      checked={useSmm}
-                      onChange={(e) => setUseSmm(e.target.checked)}
-                    />
-                  }
+                  control={<Switch checked={useSmm} onChange={e => setUseSmm(e.target.checked)} />}
                   label="Enable SMM (System Management Mode)"
                 />
                 <Typography variant="caption" color="text.secondary" display="block" sx={{ ml: 4 }}>
@@ -365,7 +362,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                   control={
                     <Switch
                       checked={hasMinRequirements}
-                      onChange={(e) => setHasMinRequirements(e.target.checked)}
+                      onChange={e => setHasMinRequirements(e.target.checked)}
                     />
                   }
                   label="Specify Minimum Requirements"
@@ -383,7 +380,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                       type="number"
                       label="Minimum CPU Cores"
                       value={minCpu}
-                      onChange={(e) => setMinCpu(e.target.value)}
+                      onChange={e => setMinCpu(e.target.value)}
                       inputProps={{ min: 1 }}
                     />
                   </Grid>
@@ -394,7 +391,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                       type="number"
                       label="Minimum Memory"
                       value={minMemory}
-                      onChange={(e) => setMinMemory(e.target.value)}
+                      onChange={e => setMinMemory(e.target.value)}
                       inputProps={{ min: 1 }}
                     />
                   </Grid>
@@ -405,7 +402,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
                       select
                       label="Unit"
                       value={minMemoryUnit}
-                      onChange={(e) => setMinMemoryUnit(e.target.value)}
+                      onChange={e => setMinMemoryUnit(e.target.value)}
                     >
                       <MenuItem value="Mi">Mi</MenuItem>
                       <MenuItem value="Gi">Gi</MenuItem>
@@ -419,11 +416,7 @@ export default function CreatePreference({ onClose }: CreatePreferenceProps) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          variant="contained"
-          startIcon={<Icon icon="mdi:check" />}
-          onClick={handleCreate}
-        >
+        <Button variant="contained" startIcon={<Icon icon="mdi:check" />} onClick={handleCreate}>
           Create
         </Button>
       </DialogActions>

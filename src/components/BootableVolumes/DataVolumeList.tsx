@@ -58,8 +58,8 @@ export default function DataVolumeList() {
           {
             id: 'name',
             label: 'Name',
-            getValue: (dv) => dv.getName(),
-            render: (dv) => (
+            getValue: dv => dv.getName(),
+            render: dv => (
               <Link
                 routeName="datavolume"
                 params={{ name: dv.getName(), namespace: dv.getNamespace() }}
@@ -72,31 +72,31 @@ export default function DataVolumeList() {
           {
             id: 'source',
             label: 'Source Type',
-            getValue: (dv) => dv.getSourceType(),
+            getValue: dv => dv.getSourceType(),
           },
           {
             id: 'size',
             label: 'Size',
-            getValue: (dv) => dv.getSize(),
+            getValue: dv => dv.getSize(),
           },
           {
             id: 'storage-class',
             label: 'Storage Class',
-            getValue: (dv) => dv.getStorageClass(),
+            getValue: dv => dv.getStorageClass(),
           },
           {
             id: 'content-type',
             label: 'Content Type',
-            getValue: (dv) => dv.getContentType(),
+            getValue: dv => dv.getContentType(),
           },
           {
             id: 'status',
             label: 'Status',
-            getValue: (dv) => {
+            getValue: dv => {
               const phase = dv.status?.phase || 'Unknown';
               return phase;
             },
-            render: (dv) => {
+            render: dv => {
               const phase = dv.status?.phase || 'Unknown';
               let color: 'success' | 'error' | 'warning' | 'info' | 'default' = 'default';
 

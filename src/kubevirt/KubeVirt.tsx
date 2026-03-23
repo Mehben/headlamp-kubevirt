@@ -1,5 +1,11 @@
 import { KubeObject } from '@kinvolk/headlamp-plugin/lib/K8s/cluster';
-import { KubeCondition, LiveUpdateConfig, MigrationConfig, NetworkConfig, PermittedHostDevices } from '../types';
+import {
+  KubeCondition,
+  LiveUpdateConfig,
+  MigrationConfig,
+  NetworkConfig,
+  PermittedHostDevices,
+} from '../types';
 
 class KubeVirt extends KubeObject {
   get spec() {
@@ -19,11 +25,15 @@ class KubeVirt extends KubeObject {
   }
 
   getPhase(): string {
-    const availableCondition = this.status?.conditions?.find((c: KubeCondition) => c.type === 'Available');
+    const availableCondition = this.status?.conditions?.find(
+      (c: KubeCondition) => c.type === 'Available'
+    );
     if (availableCondition?.status === 'True') {
       return 'Ready';
     }
-    const progressingCondition = this.status?.conditions?.find((c: KubeCondition) => c.type === 'Progressing');
+    const progressingCondition = this.status?.conditions?.find(
+      (c: KubeCondition) => c.type === 'Progressing'
+    );
     if (progressingCondition?.status === 'True') {
       return 'Progressing';
     }
@@ -58,11 +68,19 @@ class KubeVirt extends KubeObject {
     return this.spec?.configuration?.permittedHostDevices || {};
   }
 
-  getPciHostDevices(): Array<{ pciVendorSelector: string; resourceName: string; externalResourceProvider?: boolean }> {
+  getPciHostDevices(): Array<{
+    pciVendorSelector: string;
+    resourceName: string;
+    externalResourceProvider?: boolean;
+  }> {
     return this.spec?.configuration?.permittedHostDevices?.pciHostDevices || [];
   }
 
-  getMediatedDevices(): Array<{ mdevNameSelector: string; resourceName: string; externalResourceProvider?: boolean }> {
+  getMediatedDevices(): Array<{
+    mdevNameSelector: string;
+    resourceName: string;
+    externalResourceProvider?: boolean;
+  }> {
     return this.spec?.configuration?.permittedHostDevices?.mediatedDevices || [];
   }
 

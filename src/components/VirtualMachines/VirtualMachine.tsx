@@ -22,7 +22,10 @@ class VirtualMachine extends KubeObject {
         body: JSON.stringify({}),
       });
     } catch (error: unknown) {
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         return;
       }
       throw error;
@@ -38,7 +41,10 @@ class VirtualMachine extends KubeObject {
         body: JSON.stringify({}),
       });
     } catch (error: unknown) {
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         return;
       }
       throw error;
@@ -54,7 +60,10 @@ class VirtualMachine extends KubeObject {
         body: JSON.stringify({}),
       });
     } catch (error: unknown) {
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         return;
       }
       throw error;
@@ -70,7 +79,10 @@ class VirtualMachine extends KubeObject {
         body: JSON.stringify({ gracePeriod: 0 }),
       });
     } catch (error: unknown) {
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         return;
       }
       throw error;
@@ -94,7 +106,10 @@ class VirtualMachine extends KubeObject {
       });
     } catch (error: unknown) {
       // If the response is empty but the request succeeded (status 2xx), ignore the JSON parse error
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         // Success - migrate API returns empty response
         return;
       }
@@ -115,7 +130,10 @@ class VirtualMachine extends KubeObject {
       });
     } catch (error: unknown) {
       // If the response is empty but the request succeeded (status 2xx), ignore the JSON parse error
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         // Success - pause API returns empty response
         return;
       }
@@ -136,7 +154,10 @@ class VirtualMachine extends KubeObject {
       });
     } catch (error: unknown) {
       // If the response is empty but the request succeeded (status 2xx), ignore the JSON parse error
-      if ((error as Error)?.message?.includes('JSON') || (error as Error)?.message?.includes('Unexpected end')) {
+      if (
+        (error as Error)?.message?.includes('JSON') ||
+        (error as Error)?.message?.includes('Unexpected end')
+      ) {
         // Success - unpause API returns empty response
         return;
       }

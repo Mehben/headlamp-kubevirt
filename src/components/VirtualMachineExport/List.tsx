@@ -32,120 +32,126 @@ export default function VirtualMachineExportList() {
 
   return (
     <>
-    <Resource.ResourceListView
-      title="VM Exports"
-      resourceClass={VirtualMachineExport}
-      headerProps={{
-        titleSideActions: [
-          <CreateButtonWithMode
-            key="create"
-            label="Create Export"
-            onCreateForm={() => { setCreateInitialTab(0); setCreateOpen(true); }}
-            onCreateYAML={() => { setCreateInitialTab(1); setCreateOpen(true); }}
-          />,
-        ],
-      }}
-      actions={[
-        {
-          id: 'delete',
-          action: ({ item, closeMenu }: { item: VirtualMachineExport; closeMenu: () => void }) => {
-            return (
-              <MenuItem
-                onClick={async () => {
-                  closeMenu();
-                  if (!confirm(`Are you sure you want to delete export "${item.getName()}"?`)) {
-                    return;
-                  }
-                  try {
-                    await item.delete();
-                    enqueueSnackbar(`Export ${item.getName()} deleted`, { variant: 'success' });
-                  } catch (e) {
-                    enqueueSnackbar(`Failed to delete export: ${e}`, { variant: 'error' });
-                  }
-                }}
+      <Resource.ResourceListView
+        title="VM Exports"
+        resourceClass={VirtualMachineExport}
+        headerProps={{
+          titleSideActions: [
+            <CreateButtonWithMode
+              key="create"
+              label="Create Export"
+              onCreateForm={() => {
+                setCreateInitialTab(0);
+                setCreateOpen(true);
+              }}
+              onCreateYAML={() => {
+                setCreateInitialTab(1);
+                setCreateOpen(true);
+              }}
+            />,
+          ],
+        }}
+        actions={[
+          {
+            id: 'delete',
+            action: ({
+              item,
+              closeMenu,
+            }: {
+              item: VirtualMachineExport;
+              closeMenu: () => void;
+            }) => {
+              return (
+                <MenuItem
+                  onClick={async () => {
+                    closeMenu();
+                    if (!confirm(`Are you sure you want to delete export "${item.getName()}"?`)) {
+                      return;
+                    }
+                    try {
+                      await item.delete();
+                      enqueueSnackbar(`Export ${item.getName()} deleted`, { variant: 'success' });
+                    } catch (e) {
+                      enqueueSnackbar(`Failed to delete export: ${e}`, { variant: 'error' });
+                    }
+                  }}
+                >
+                  <ListItemIcon>
+                    <Icon icon="mdi:delete" />
+                  </ListItemIcon>
+                  <ListItemText>Delete</ListItemText>
+                </MenuItem>
+              );
+            },
+          },
+        ]}
+        columns={[
+          {
+            id: 'name',
+            label: 'Name',
+            getValue: vmExport => vmExport.getName(),
+            render: vmExport => (
+              <Link
+                routeName="export"
+                params={{ name: vmExport.getName(), namespace: vmExport.getNamespace() }}
               >
-                <ListItemIcon>
-                  <Icon icon="mdi:delete" />
-                </ListItemIcon>
-                <ListItemText>Delete</ListItemText>
-              </MenuItem>
-            );
+                {vmExport.getName()}
+              </Link>
+            ),
           },
-        },
-      ]}
-      columns={[
-        {
-          id: 'name',
-          label: 'Name',
-          getValue: (vmExport) => vmExport.getName(),
-          render: (vmExport) => (
-            <Link
-              routeName="export"
-              params={{ name: vmExport.getName(), namespace: vmExport.getNamespace() }}
-            >
-              {vmExport.getName()}
-            </Link>
-          ),
-        },
-        'namespace',
-        {
-          id: 'source',
-          label: 'Source',
-          getValue: (vmExport) => `${vmExport.getSourceKind()}/${vmExport.getSourceName()}`,
-          render: (vmExport) => (
-            <Tooltip title={vmExport.getSourceKind()}>
-              <span>{vmExport.getSourceName()}</span>
-            </Tooltip>
-          ),
-        },
-        {
-          id: 'status',
-          label: 'Status',
-          getValue: (vmExport) => vmExport.getPhase(),
-          render: (vmExport) => {
-            const phase = vmExport.getPhase();
-            const isReady = vmExport.isReady();
-            let color: 'success' | 'info' | 'error' | 'warning' | 'default' = 'default';
-            if (phase === 'Ready' && isReady) color = 'success';
-            else if (phase === 'Pending') color = 'info';
-            else if (phase === 'Failed') color = 'error';
-            else if (phase === 'Terminated') color = 'warning';
-            return (
-              <Chip
-                label={phase}
-                size="small"
-                color={color}
-              />
-            );
+          'namespace',
+          {
+            id: 'source',
+            label: 'Source',
+            getValue: vmExport => `${vmExport.getSourceKind()}/${vmExport.getSourceName()}`,
+            render: vmExport => (
+              <Tooltip title={vmExport.getSourceKind()}>
+                <span>{vmExport.getSourceName()}</span>
+              </Tooltip>
+            ),
           },
-        },
-        {
-          id: 'ttl',
-          label: 'TTL',
-          getValue: (vmExport) => vmExport.getTTLDuration() || '-',
-        },
-        {
-          id: 'expires',
-          label: 'Expires',
-          getValue: (vmExport) => {
-            const time = vmExport.getTTLExpirationTime();
-            if (!time) return '-';
-            return new Date(time).toLocaleString();
+          {
+            id: 'status',
+            label: 'Status',
+            getValue: vmExport => vmExport.getPhase(),
+            render: vmExport => {
+              const phase = vmExport.getPhase();
+              const isReady = vmExport.isReady();
+              let color: 'success' | 'info' | 'error' | 'warning' | 'default' = 'default';
+              if (phase === 'Ready' && isReady) color = 'success';
+              else if (phase === 'Pending') color = 'info';
+              else if (phase === 'Failed') color = 'error';
+              else if (phase === 'Terminated') color = 'warning';
+              return <Chip label={phase} size="small" color={color} />;
+            },
           },
-        },
-        'age',
-      ]}
-    />
+          {
+            id: 'ttl',
+            label: 'TTL',
+            getValue: vmExport => vmExport.getTTLDuration() || '-',
+          },
+          {
+            id: 'expires',
+            label: 'Expires',
+            getValue: vmExport => {
+              const time = vmExport.getTTLExpirationTime();
+              if (!time) return '-';
+              return new Date(time).toLocaleString();
+            },
+          },
+          'age',
+        ]}
+      />
 
-    <CreateResourceDialog
-      open={createOpen}
-      onClose={() => setCreateOpen(false)}
-      title="Create VM Export"
-      resourceClass={VirtualMachineExport}
-      initialResource={INITIAL_EXPORT}
-      initialTab={createInitialTab}
-      formComponent={VMExportForm}
-    />
+      <CreateResourceDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create VM Export"
+        resourceClass={VirtualMachineExport}
+        initialResource={INITIAL_EXPORT}
+        initialTab={createInitialTab}
+        formComponent={VMExportForm}
+      />
     </>
   );
 }

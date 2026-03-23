@@ -1,5 +1,5 @@
 import { Link, Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import {Chip, Typography } from '@mui/material';
+import { Chip, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import CreateButtonWithMode from '../common/CreateButtonWithMode';
 import CreateResourceDialog from '../common/CreateResourceDialog';
@@ -27,7 +27,10 @@ const INITIAL_NAD = {
   },
 };
 
-const TYPE_COLORS: Record<string, 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error'> = {
+const TYPE_COLORS: Record<
+  string,
+  'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error'
+> = {
   bridge: 'primary',
   macvlan: 'secondary',
   ipvlan: 'info',
@@ -53,10 +56,7 @@ export default function NADList() {
             label: 'Name',
             getValue: (nad: InstanceType<typeof NetworkAttachmentDefinition>) => nad.getName(),
             render: (nad: InstanceType<typeof NetworkAttachmentDefinition>) => (
-              <Link
-                routeName="nad"
-                params={{ name: nad.getName(), namespace: nad.getNamespace() }}
-              >
+              <Link routeName="nad" params={{ name: nad.getName(), namespace: nad.getNamespace() }}>
                 {nad.getName()}
               </Link>
             ),
@@ -65,7 +65,8 @@ export default function NADList() {
           {
             id: 'type',
             label: 'Type',
-            getValue: (nad: InstanceType<typeof NetworkAttachmentDefinition>) => nad.getNetworkType(),
+            getValue: (nad: InstanceType<typeof NetworkAttachmentDefinition>) =>
+              nad.getNetworkType(),
             render: (nad: InstanceType<typeof NetworkAttachmentDefinition>) => {
               const type = nad.getNetworkType();
               return (
@@ -84,13 +85,7 @@ export default function NADList() {
             getValue: (nad: InstanceType<typeof NetworkAttachmentDefinition>) => nad.getIPAMType(),
             render: (nad: InstanceType<typeof NetworkAttachmentDefinition>) => {
               const ipamType = nad.getIPAMType();
-              return (
-                <Chip
-                  label={ipamType}
-                  size="small"
-                  variant="outlined"
-                />
-              );
+              return <Chip label={ipamType} size="small" variant="outlined" />;
             },
           },
           {
@@ -115,7 +110,11 @@ export default function NADList() {
               if (config.mtu) parts.push(`mtu: ${config.mtu}`);
               if (config.mode) parts.push(`mode: ${config.mode}`);
               return (
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                >
                   {parts.join(' · ') || '-'}
                 </Typography>
               );
@@ -128,8 +127,14 @@ export default function NADList() {
             <CreateButtonWithMode
               key="create"
               label="Create Network"
-              onCreateForm={() => { setCreateInitialTab(0); setCreateOpen(true); }}
-              onCreateYAML={() => { setCreateInitialTab(1); setCreateOpen(true); }}
+              onCreateForm={() => {
+                setCreateInitialTab(0);
+                setCreateOpen(true);
+              }}
+              onCreateYAML={() => {
+                setCreateInitialTab(1);
+                setCreateOpen(true);
+              }}
             />,
           ],
         }}

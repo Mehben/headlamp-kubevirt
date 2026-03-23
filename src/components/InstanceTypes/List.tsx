@@ -67,8 +67,14 @@ export default function InstanceTypeList() {
             <CreateButtonWithMode
               key="create"
               label="Create Instance Type"
-              onCreateForm={() => { setCreateInitialTab(0); setCreateDialogOpen(true); }}
-              onCreateYAML={() => { setCreateInitialTab(1); setCreateDialogOpen(true); }}
+              onCreateForm={() => {
+                setCreateInitialTab(0);
+                setCreateDialogOpen(true);
+              }}
+              onCreateYAML={() => {
+                setCreateInitialTab(1);
+                setCreateDialogOpen(true);
+              }}
             />,
           ],
         }}
@@ -76,12 +82,9 @@ export default function InstanceTypeList() {
           {
             id: 'name',
             label: 'Name',
-            getValue: (it) => it.getName(),
-            render: (it) => (
-              <Link
-                routeName="/kubevirt/instancetypes/:name"
-                params={{ name: it.getName() }}
-              >
+            getValue: it => it.getName(),
+            render: it => (
+              <Link routeName="/kubevirt/instancetypes/:name" params={{ name: it.getName() }}>
                 {it.getName()}
               </Link>
             ),
@@ -89,17 +92,17 @@ export default function InstanceTypeList() {
           {
             id: 'cpu',
             label: 'CPU',
-            getValue: (it) => it.getCPU(),
+            getValue: it => it.getCPU(),
           },
           {
             id: 'memory',
             label: 'Memory',
-            getValue: (it) => it.getMemory(),
+            getValue: it => it.getMemory(),
           },
           {
             id: 'vendor',
             label: 'Vendor',
-            getValue: (it) => it.getVendor(),
+            getValue: it => it.getVendor(),
           },
           'age',
         ]}

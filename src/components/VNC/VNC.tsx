@@ -1,6 +1,6 @@
 import { Dialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import type { DialogProps } from '@mui/material';
-import { Alert,Box, Typography } from '@mui/material';
+import { Alert, Box, Typography } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,35 +17,35 @@ interface VNCProps extends DialogProps {
 function getKeysym(e: React.KeyboardEvent): number | null {
   // Special keys
   const specialKeys: { [key: string]: number } = {
-    'Backspace': 0xff08,
-    'Tab': 0xff09,
-    'Enter': 0xff0d,
-    'Escape': 0xff1b,
-    'Delete': 0xffff,
-    'Home': 0xff50,
-    'End': 0xff57,
-    'PageUp': 0xff55,
-    'PageDown': 0xff56,
-    'ArrowLeft': 0xff51,
-    'ArrowUp': 0xff52,
-    'ArrowRight': 0xff53,
-    'ArrowDown': 0xff54,
-    'Shift': 0xffe1,
-    'Control': 0xffe3,
-    'Alt': 0xffe9,
-    'Meta': 0xffe7,
-    'F1': 0xffbe,
-    'F2': 0xffbf,
-    'F3': 0xffc0,
-    'F4': 0xffc1,
-    'F5': 0xffc2,
-    'F6': 0xffc3,
-    'F7': 0xffc4,
-    'F8': 0xffc5,
-    'F9': 0xffc6,
-    'F10': 0xffc7,
-    'F11': 0xffc8,
-    'F12': 0xffc9,
+    Backspace: 0xff08,
+    Tab: 0xff09,
+    Enter: 0xff0d,
+    Escape: 0xff1b,
+    Delete: 0xffff,
+    Home: 0xff50,
+    End: 0xff57,
+    PageUp: 0xff55,
+    PageDown: 0xff56,
+    ArrowLeft: 0xff51,
+    ArrowUp: 0xff52,
+    ArrowRight: 0xff53,
+    ArrowDown: 0xff54,
+    Shift: 0xffe1,
+    Control: 0xffe3,
+    Alt: 0xffe9,
+    Meta: 0xffe7,
+    F1: 0xffbe,
+    F2: 0xffbf,
+    F3: 0xffc0,
+    F4: 0xffc1,
+    F5: 0xffc2,
+    F6: 0xffc3,
+    F7: 0xffc4,
+    F8: 0xffc5,
+    F9: 0xffc6,
+    F10: 0xffc7,
+    F11: 0xffc8,
+    F12: 0xffc9,
   };
 
   if (e.key in specialKeys) {
@@ -57,9 +57,9 @@ function getKeysym(e: React.KeyboardEvent): number | null {
   if (e.key === 'Dead') {
     // Try to detect which dead key based on e.code
     const deadKeyMap: { [code: string]: number } = {
-      'BracketLeft': 0x5e,  // ^ (circumflex) - same physical key as [ on US
-      'Quote': 0xb4,         // ´ (acute accent)
-      'Backquote': 0x60,     // ` (grave accent)
+      BracketLeft: 0x5e, // ^ (circumflex) - same physical key as [ on US
+      Quote: 0xb4, // ´ (acute accent)
+      Backquote: 0x60, // ` (grave accent)
     };
 
     if (e.code && e.code in deadKeyMap) {
@@ -81,9 +81,13 @@ function getKeysym(e: React.KeyboardEvent): number | null {
 export default function VNC(props: VNCProps) {
   const { item, onClose, ...other } = props;
   useTranslation(['translation', 'glossary']);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [connectionStatus, setConnectionStatus] = useState<
+    'connecting' | 'connected' | 'disconnected'
+  >('connecting');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [framebufferSize, setFramebufferSize] = useState<{ width: number; height: number } | null>(null);
+  const [framebufferSize, setFramebufferSize] = useState<{ width: number; height: number } | null>(
+    null
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vncRef = useRef<any>(null);
 
@@ -350,8 +354,7 @@ export default function VNC(props: VNCProps) {
           },
           {
             reconnectOnFailure: false,
-            connectCb: () => {
-            },
+            connectCb: () => {},
             failCb: () => {
               setConnectionStatus('disconnected');
               setErrorMessage('VNC connection failed. Check console for details.');
@@ -389,8 +392,8 @@ export default function VNC(props: VNCProps) {
                 connectionStatus === 'connected'
                   ? '#4caf50'
                   : connectionStatus === 'connecting'
-                    ? '#ff9800'
-                    : '#f44336',
+                  ? '#ff9800'
+                  : '#f44336',
               display: 'inline-block',
             }}
           />
@@ -453,7 +456,7 @@ export default function VNC(props: VNCProps) {
                 height: '100%',
                 objectFit: 'contain',
               }}
-              onMouseDown={(e) => {
+              onMouseDown={e => {
                 const socket = vncRef.current?.getSocket();
                 if (!socket || socket.readyState !== 1) return;
 
@@ -477,7 +480,7 @@ export default function VNC(props: VNCProps) {
                 msg[5] = y & 0xff;
                 socket.send(msg);
               }}
-              onMouseUp={(e) => {
+              onMouseUp={e => {
                 const socket = vncRef.current?.getSocket();
                 if (!socket || socket.readyState !== 1) return;
 
@@ -501,7 +504,7 @@ export default function VNC(props: VNCProps) {
                 msg[5] = y & 0xff;
                 socket.send(msg);
               }}
-              onMouseMove={(e) => {
+              onMouseMove={e => {
                 const socket = vncRef.current?.getSocket();
                 if (!socket || socket.readyState !== 1) return;
 
@@ -525,7 +528,7 @@ export default function VNC(props: VNCProps) {
                 msg[5] = y & 0xff;
                 socket.send(msg);
               }}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 e.preventDefault();
                 const socket = vncRef.current?.getSocket();
                 if (!socket || socket.readyState !== 1) return;
@@ -558,7 +561,7 @@ export default function VNC(props: VNCProps) {
                   sendKeyEvent(keysym, true);
                 }
               }}
-              onKeyUp={(e) => {
+              onKeyUp={e => {
                 e.preventDefault();
                 const socket = vncRef.current?.getSocket();
                 if (!socket || socket.readyState !== 1) return;
@@ -589,7 +592,6 @@ export default function VNC(props: VNCProps) {
                 if (isAltGr) {
                   sendKeyEvent(0xfe03, false); // ISO_Level3_Shift up
                 }
-
               }}
               onClick={() => {
                 // Focus the canvas so it receives keyboard events

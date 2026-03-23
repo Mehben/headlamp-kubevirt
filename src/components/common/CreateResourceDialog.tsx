@@ -22,7 +22,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import yaml from 'js-yaml';
 import { useSnackbar } from 'notistack';
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CRDDocsViewer from './CRDDocsViewer';
 
 const { SimpleEditor } = Resource;
@@ -34,7 +34,11 @@ interface CreateResourceDialogProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  resourceClass: { apiEndpoint: { put: (r: unknown) => Promise<unknown>; post: (r: unknown) => Promise<unknown> }; apiVersion: string; kind: string };
+  resourceClass: {
+    apiEndpoint: { put: (r: unknown) => Promise<unknown>; post: (r: unknown) => Promise<unknown> };
+    apiVersion: string;
+    kind: string;
+  };
   initialResource: KubeResourceBuilder;
   editMode?: boolean;
   initialTab?: number;
@@ -86,7 +90,6 @@ export default function CreateResourceDialog({
     }
   }, [resource, activeTab]);
 
-
   const handleYamlChange = (newYaml: string | undefined) => {
     if (!newYaml) return;
     setYamlContent(newYaml);
@@ -136,7 +139,10 @@ export default function CreateResourceDialog({
       setActiveTab(0);
       onClose();
     } catch (error: unknown) {
-      enqueueSnackbar(`Failed to ${editMode ? 'update' : 'create'} resource: ${(error as Error).message}`, { variant: 'error' });
+      enqueueSnackbar(
+        `Failed to ${editMode ? 'update' : 'create'} resource: ${(error as Error).message}`,
+        { variant: 'error' }
+      );
     }
   };
 
@@ -154,7 +160,7 @@ export default function CreateResourceDialog({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
         const content = e.target?.result as string;
         const parsed = yaml.load(content, { schema: yaml.JSON_SCHEMA });
@@ -211,19 +217,21 @@ export default function CreateResourceDialog({
         <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mr: 1 }}>
           <Tab label="Form" icon={<Icon icon="mdi:form-textbox" />} iconPosition="start" />
           <Tab label="Editor" icon={<Icon icon="mdi:code-braces" />} iconPosition="start" />
-          <Tab label="Documentation" icon={<Icon icon="mdi:book-open-page-variant" />} iconPosition="start" />
+          <Tab
+            label="Documentation"
+            icon={<Icon icon="mdi:book-open-page-variant" />}
+            iconPosition="start"
+          />
           <Tab label="Upload" icon={<Icon icon="mdi:upload" />} iconPosition="start" />
         </Tabs>
-        <IconButton
-          onClick={handleClose}
-          sx={{ mr: 1 }}
-          size="small"
-        >
+        <IconButton onClick={handleClose} sx={{ mr: 1 }} size="small">
           <Icon icon="mdi:close" />
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ p: 0, height: '70vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <DialogContent
+        sx={{ p: 0, height: '70vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      >
         {activeTab === 0 ? (
           // Form Tab
           <Box sx={{ p: 3, flex: 1, overflow: 'auto' }}>
@@ -232,12 +240,20 @@ export default function CreateResourceDialog({
         ) : activeTab === 1 ? (
           // Editor Tab
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <Box sx={{ p: 1.5, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
+            <Box
+              sx={{
+                p: 1.5,
+                borderBottom: 1,
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
               <FormControlLabel
                 control={
                   <Switch
                     checked={useMinimalEditor}
-                    onChange={(e) => setUseMinimalEditor(e.target.checked)}
+                    onChange={e => setUseMinimalEditor(e.target.checked)}
                     size="small"
                   />
                 }
@@ -252,11 +268,7 @@ export default function CreateResourceDialog({
             <Box sx={{ flex: 1, minHeight: 0, position: 'relative', p: 2 }}>
               {useMinimalEditor ? (
                 <Box sx={{ height: '100%', overflow: 'auto' }}>
-                  <SimpleEditor
-                    language="yaml"
-                    value={yamlContent}
-                    onChange={handleYamlChange}
-                  />
+                  <SimpleEditor language="yaml" value={yamlContent} onChange={handleYamlChange} />
                 </Box>
               ) : (
                 <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, bottom: 16 }}>
@@ -299,7 +311,15 @@ export default function CreateResourceDialog({
             </Tabs>
 
             {uploadMethod === 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, mt: 4 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 3,
+                  mt: 4,
+                }}
+              >
                 <Typography variant="h6" color="text.secondary">
                   Select a YAML or JSON file
                 </Typography>
@@ -334,7 +354,7 @@ export default function CreateResourceDialog({
                   label="Resource URL"
                   placeholder="https://example.com/resource.yaml"
                   value={uploadUrl}
-                  onChange={(e) => setUploadUrl(e.target.value)}
+                  onChange={e => setUploadUrl(e.target.value)}
                   helperText="Enter a URL to a YAML or JSON file"
                 />
                 <Button
@@ -373,12 +393,7 @@ export default function CreateResourceDialog({
       </DialogActions>
 
       {/* Review Dialog */}
-      <Dialog
-        open={reviewOpen}
-        onClose={() => setReviewOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={reviewOpen} onClose={() => setReviewOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon icon="mdi:eye-outline" />

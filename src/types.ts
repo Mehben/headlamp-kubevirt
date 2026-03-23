@@ -87,12 +87,22 @@ export interface VMCPUTopology {
 }
 
 export interface DataVolumeTemplate {
-  metadata: { name: string; namespace?: string; labels?: Record<string, string>; annotations?: Record<string, string> };
+  metadata: {
+    name: string;
+    namespace?: string;
+    labels?: Record<string, string>;
+    annotations?: Record<string, string>;
+  };
   spec: {
     source?: DataVolumeSource;
     sourceRef?: { kind: string; name: string; namespace?: string };
     storage?: DataVolumeStorage;
-    pvc?: { accessModes?: string[]; resources?: { requests?: { storage?: string } }; storageClassName?: string; volumeMode?: string };
+    pvc?: {
+      accessModes?: string[];
+      resources?: { requests?: { storage?: string } };
+      storageClassName?: string;
+      volumeMode?: string;
+    };
     contentType?: string;
   };
 }
@@ -109,7 +119,13 @@ export interface DataVolumeSource {
   s3?: { url: string; certConfigMap?: string; secretRef?: string };
   gcs?: { url: string };
   imageio?: { url: string; diskId: string; secretRef: string; certConfigMap?: string };
-  vddk?: { url: string; uuid: string; backingFile?: string; thumbprint?: string; secretRef?: string };
+  vddk?: {
+    url: string;
+    uuid: string;
+    backingFile?: string;
+    thumbprint?: string;
+    secretRef?: string;
+  };
 }
 
 export interface DataVolumeStorage {
@@ -243,8 +259,16 @@ export interface NetworkConfig {
 }
 
 export interface PermittedHostDevices {
-  pciHostDevices?: Array<{ pciVendorSelector: string; resourceName: string; externalResourceProvider?: boolean }>;
-  mediatedDevices?: Array<{ mdevNameSelector: string; resourceName: string; externalResourceProvider?: boolean }>;
+  pciHostDevices?: Array<{
+    pciVendorSelector: string;
+    resourceName: string;
+    externalResourceProvider?: boolean;
+  }>;
+  mediatedDevices?: Array<{
+    mdevNameSelector: string;
+    resourceName: string;
+    externalResourceProvider?: boolean;
+  }>;
 }
 
 // ─── Prometheus ─────────────────────────────────────────────────────

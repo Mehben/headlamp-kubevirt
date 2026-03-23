@@ -71,8 +71,14 @@ export default function PreferenceList() {
             <CreateButtonWithMode
               key="create"
               label="Create Preference"
-              onCreateForm={() => { setCreateInitialTab(0); setCreateDialogOpen(true); }}
-              onCreateYAML={() => { setCreateInitialTab(1); setCreateDialogOpen(true); }}
+              onCreateForm={() => {
+                setCreateInitialTab(0);
+                setCreateDialogOpen(true);
+              }}
+              onCreateYAML={() => {
+                setCreateInitialTab(1);
+                setCreateDialogOpen(true);
+              }}
             />,
           ],
         }}
@@ -80,23 +86,14 @@ export default function PreferenceList() {
           {
             id: 'name',
             label: 'Name',
-            getValue: (pref) => pref.getName(),
-            render: (pref) => {
+            getValue: pref => pref.getName(),
+            render: pref => {
               const iconClass = pref.getIconClass();
               const hasIcon = iconClass !== '-';
               return (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {hasIcon && (
-                    <Icon
-                      icon={mapIconClass(iconClass)}
-                      width="20"
-                      height="20"
-                    />
-                  )}
-                  <Link
-                    routeName="/kubevirt/preferences/:name"
-                    params={{ name: pref.getName() }}
-                  >
+                  {hasIcon && <Icon icon={mapIconClass(iconClass)} width="20" height="20" />}
+                  <Link routeName="/kubevirt/preferences/:name" params={{ name: pref.getName() }}>
                     {pref.getName()}
                   </Link>
                 </Box>
@@ -106,17 +103,17 @@ export default function PreferenceList() {
           {
             id: 'display-name',
             label: 'Display Name',
-            getValue: (pref) => pref.getDisplayName(),
+            getValue: pref => pref.getDisplayName(),
           },
           {
             id: 'os-type',
             label: 'OS Type',
-            getValue: (pref) => pref.getOSType(),
+            getValue: pref => pref.getOSType(),
           },
           {
             id: 'vendor',
             label: 'Vendor',
-            getValue: (pref) => pref.getVendor(),
+            getValue: pref => pref.getVendor(),
           },
           'age',
         ]}

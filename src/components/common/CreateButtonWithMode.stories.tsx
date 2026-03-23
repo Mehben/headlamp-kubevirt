@@ -6,9 +6,7 @@ export default {
   component: CreateButtonWithMode,
 } as Meta;
 
-const Template: StoryFn<typeof CreateButtonWithMode> = args => (
-  <CreateButtonWithMode {...args} />
-);
+const Template: StoryFn<typeof CreateButtonWithMode> = args => <CreateButtonWithMode {...args} />;
 
 export const CreateVM = Template.bind({});
 CreateVM.args = {

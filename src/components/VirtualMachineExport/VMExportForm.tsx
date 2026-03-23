@@ -25,21 +25,25 @@ interface KubeNamedItem {
 
 type SourceKind = 'VirtualMachine' | 'VirtualMachineSnapshot' | 'PersistentVolumeClaim';
 
-const SOURCE_KIND_CONFIG: Record<SourceKind, { apiGroup: string; label: string; listEndpoint: (ns: string) => string }> = {
+const SOURCE_KIND_CONFIG: Record<
+  SourceKind,
+  { apiGroup: string; label: string; listEndpoint: (ns: string) => string }
+> = {
   VirtualMachine: {
     apiGroup: 'kubevirt.io',
     label: 'Virtual Machine',
-    listEndpoint: (ns) => `/apis/kubevirt.io/v1/namespaces/${ns}/virtualmachines`,
+    listEndpoint: ns => `/apis/kubevirt.io/v1/namespaces/${ns}/virtualmachines`,
   },
   VirtualMachineSnapshot: {
     apiGroup: 'snapshot.kubevirt.io/v1beta1',
     label: 'VM Snapshot',
-    listEndpoint: (ns) => `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${ns}/virtualmachinesnapshots`,
+    listEndpoint: ns =>
+      `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${ns}/virtualmachinesnapshots`,
   },
   PersistentVolumeClaim: {
     apiGroup: '',
     label: 'PVC',
-    listEndpoint: (ns) => `/api/v1/namespaces/${ns}/persistentvolumeclaims`,
+    listEndpoint: ns => `/api/v1/namespaces/${ns}/persistentvolumeclaims`,
   },
 };
 
@@ -141,7 +145,12 @@ export default function VMExportForm({ resource, onChange, editMode = false }: V
           onChange={(_, v) => updateMetadata('namespace', v || 'default')}
           disabled={editMode}
           renderInput={params => (
-            <TextField {...params} label="Namespace" required helperText="Namespace of the source resource" />
+            <TextField
+              {...params}
+              label="Namespace"
+              required
+              helperText="Namespace of the source resource"
+            />
           )}
         />
       </FormSection>
@@ -187,7 +196,8 @@ export default function VMExportForm({ resource, onChange, editMode = false }: V
 
         {sourceKind === 'VirtualMachine' && (
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-            Running VMs will be exported but the export will stay Pending until the VM is stopped or has snapshottable volumes.
+            Running VMs will be exported but the export will stay Pending until the VM is stopped or
+            has snapshottable volumes.
           </Typography>
         )}
       </FormSection>

@@ -24,11 +24,11 @@ type PromResult = PrometheusQueryResult['data']['result'][number];
 
 // VM Status Colors - consistent across donut chart and legend
 const VM_STATUS_COLORS = {
-  error: '#c9190b',      // Red
-  running: '#3e8635',    // Green
-  stopped: '#6a6e73',    // Gray
-  migrating: '#2196f3',  // Blue
-  paused: '#f0ab00',     // Orange/Yellow
+  error: '#c9190b', // Red
+  running: '#3e8635', // Green
+  stopped: '#6a6e73', // Gray
+  migrating: '#2196f3', // Blue
+  paused: '#f0ab00', // Orange/Yellow
 } as const;
 
 export default function VirtualizationOverview() {
@@ -36,20 +36,37 @@ export default function VirtualizationOverview() {
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
   const [timeRange, setTimeRange] = useState<string>('30m');
   const [prometheusAvailable, setPrometheusAvailable] = useState(false);
-  const [topCpuConsumers, setTopCpuConsumers] = useState<Array<{name: string, value: number, vcpus?: number}>>([]);
-  const [topMemoryConsumers, setTopMemoryConsumers] = useState<Array<{name: string, value: number, total?: number}>>([]);
-  const [topMemorySwap, setTopMemorySwap] = useState<Array<{name: string, inValue: number, outValue: number}>>([]);
-  const [topNetworkTraffic, setTopNetworkTraffic] = useState<Array<{name: string, rxValue: number, txValue: number}>>([]);
-  const [topNetworkPackets, setTopNetworkPackets] = useState<Array<{name: string, rxValue: number, txValue: number}>>([]);
-  const [topNetworkErrors, setTopNetworkErrors] = useState<Array<{name: string, errorsValue: number, dropsValue: number}>>([]);
-  const [topStorageThroughput, setTopStorageThroughput] = useState<Array<{name: string, readValue: number, writeValue: number}>>([]);
-  const [topStorageIOPS, setTopStorageIOPS] = useState<Array<{name: string, readValue: number, writeValue: number}>>([]);
+  const [topCpuConsumers, setTopCpuConsumers] = useState<
+    Array<{ name: string; value: number; vcpus?: number }>
+  >([]);
+  const [topMemoryConsumers, setTopMemoryConsumers] = useState<
+    Array<{ name: string; value: number; total?: number }>
+  >([]);
+  const [topMemorySwap, setTopMemorySwap] = useState<
+    Array<{ name: string; inValue: number; outValue: number }>
+  >([]);
+  const [topNetworkTraffic, setTopNetworkTraffic] = useState<
+    Array<{ name: string; rxValue: number; txValue: number }>
+  >([]);
+  const [topNetworkPackets, setTopNetworkPackets] = useState<
+    Array<{ name: string; rxValue: number; txValue: number }>
+  >([]);
+  const [topNetworkErrors, setTopNetworkErrors] = useState<
+    Array<{ name: string; errorsValue: number; dropsValue: number }>
+  >([]);
+  const [topStorageThroughput, setTopStorageThroughput] = useState<
+    Array<{ name: string; readValue: number; writeValue: number }>
+  >([]);
+  const [topStorageIOPS, setTopStorageIOPS] = useState<
+    Array<{ name: string; readValue: number; writeValue: number }>
+  >([]);
 
   // Fetch namespaces
   React.useEffect(() => {
     ApiProxy.request('/api/v1/namespaces')
       .then((response: KubeListResponse<{ metadata: { name: string } }>) => {
-        const nsList = response?.items?.map((ns: { metadata: { name: string } }) => ns.metadata.name) || [];
+        const nsList =
+          response?.items?.map((ns: { metadata: { name: string } }) => ns.metadata.name) || [];
         setNamespaces(['all', ...nsList]);
       })
       .catch(() => {});
@@ -60,13 +77,25 @@ export default function VirtualizationOverview() {
     const fetchPrometheusMetrics = async () => {
       try {
         // Find Prometheus service and build its proxy URL dynamically
-        const svcResp = await ApiProxy.request('/api/v1/services').catch(() => null) as KubeListResponse<{ metadata: { name: string; namespace: string }; spec: { ports: Array<{ port: number }> } }> | null;
-        const promSvc = svcResp?.items?.find((svc: { metadata: { name: string; namespace: string }; spec: { ports: Array<{ port: number }> } }) => {
-          const name = svc.metadata?.name || '';
-          const ports = svc.spec?.ports || [];
-          // Look for a service that exposes port 9090 and has "prometheus" in the name
-          return name.includes('prometheus') && ports.some((p: { port: number }) => p.port === 9090);
-        });
+        const svcResp = (await ApiProxy.request('/api/v1/services').catch(
+          () => null
+        )) as KubeListResponse<{
+          metadata: { name: string; namespace: string };
+          spec: { ports: Array<{ port: number }> };
+        }> | null;
+        const promSvc = svcResp?.items?.find(
+          (svc: {
+            metadata: { name: string; namespace: string };
+            spec: { ports: Array<{ port: number }> };
+          }) => {
+            const name = svc.metadata?.name || '';
+            const ports = svc.spec?.ports || [];
+            // Look for a service that exposes port 9090 and has "prometheus" in the name
+            return (
+              name.includes('prometheus') && ports.some((p: { port: number }) => p.port === 9090)
+            );
+          }
+        );
 
         if (!promSvc) {
           setPrometheusAvailable(false);
@@ -78,7 +107,9 @@ export default function VirtualizationOverview() {
         const promBaseUrl = `/api/v1/namespaces/${promNamespace}/services/${promName}:9090/proxy`;
 
         // Verify Prometheus is actually reachable (not just that the service exists)
-        const healthCheck = await ApiProxy.request(`${promBaseUrl}/api/v1/query?query=up`).catch(() => null);
+        const healthCheck = await ApiProxy.request(`${promBaseUrl}/api/v1/query?query=up`).catch(
+          () => null
+        );
         if (!healthCheck?.data) {
           setPrometheusAvailable(false);
           return;
@@ -160,7 +191,7 @@ export default function VirtualizationOverview() {
         ).catch(() => null);
 
         // Merge swap in/out data
-        const swapMap = new Map<string, {inValue: number, outValue: number}>();
+        const swapMap = new Map<string, { inValue: number; outValue: number }>();
         swapInResp?.data?.result?.forEach((r: PromResult) => {
           const name = r.metric.name || r.metric.vmi || 'Unknown';
           swapMap.set(name, { inValue: parseFloat(r.value[1]) || 0, outValue: 0 });
@@ -170,7 +201,11 @@ export default function VirtualizationOverview() {
           const existing = swapMap.get(name) || { inValue: 0, outValue: 0 };
           swapMap.set(name, { ...existing, outValue: parseFloat(r.value[1]) || 0 });
         });
-        setTopMemorySwap(Array.from(swapMap.entries()).map(([name, values]) => ({ name, ...values })).slice(0, 5));
+        setTopMemorySwap(
+          Array.from(swapMap.entries())
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(0, 5)
+        );
 
         // Query Network Traffic (RX and TX bytes)
         // Aggregate by VM name to sum all network interfaces per VM
@@ -185,7 +220,7 @@ export default function VirtualizationOverview() {
         ).catch(() => null);
 
         // Merge network RX/TX data
-        const networkTrafficMap = new Map<string, {rxValue: number, txValue: number}>();
+        const networkTrafficMap = new Map<string, { rxValue: number; txValue: number }>();
         networkRxResp?.data?.result?.forEach((r: PromResult) => {
           const name = r.metric.name || r.metric.vmi || 'Unknown';
           networkTrafficMap.set(name, { rxValue: parseFloat(r.value[1]) || 0, txValue: 0 });
@@ -195,7 +230,11 @@ export default function VirtualizationOverview() {
           const existing = networkTrafficMap.get(name) || { rxValue: 0, txValue: 0 };
           networkTrafficMap.set(name, { ...existing, txValue: parseFloat(r.value[1]) || 0 });
         });
-        setTopNetworkTraffic(Array.from(networkTrafficMap.entries()).map(([name, values]) => ({ name, ...values })).slice(0, 5));
+        setTopNetworkTraffic(
+          Array.from(networkTrafficMap.entries())
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(0, 5)
+        );
 
         // Query Network Packets (RX and TX packets)
         const packetsRxQuery = `topk(5, sum by (name, namespace) (rate(kubevirt_vmi_network_receive_packets_total{${nsFilter}}[5m])))`;
@@ -209,7 +248,7 @@ export default function VirtualizationOverview() {
         ).catch(() => null);
 
         // Merge network packets RX/TX data
-        const networkPacketsMap = new Map<string, {rxValue: number, txValue: number}>();
+        const networkPacketsMap = new Map<string, { rxValue: number; txValue: number }>();
         packetsRxResp?.data?.result?.forEach((r: PromResult) => {
           const name = r.metric.name || r.metric.vmi || 'Unknown';
           networkPacketsMap.set(name, { rxValue: parseFloat(r.value[1]) || 0, txValue: 0 });
@@ -219,7 +258,11 @@ export default function VirtualizationOverview() {
           const existing = networkPacketsMap.get(name) || { rxValue: 0, txValue: 0 };
           networkPacketsMap.set(name, { ...existing, txValue: parseFloat(r.value[1]) || 0 });
         });
-        setTopNetworkPackets(Array.from(networkPacketsMap.entries()).map(([name, values]) => ({ name, ...values })).slice(0, 5));
+        setTopNetworkPackets(
+          Array.from(networkPacketsMap.entries())
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(0, 5)
+        );
 
         // Query Network Errors and Drops
         const networkErrorsQuery = `topk(5, sum by (name, namespace) (rate(kubevirt_vmi_network_receive_errors_total{${nsFilter}}[5m]) + rate(kubevirt_vmi_network_transmit_errors_total{${nsFilter}}[5m])))`;
@@ -233,7 +276,7 @@ export default function VirtualizationOverview() {
         ).catch(() => null);
 
         // Merge network errors and drops data
-        const networkErrorsMap = new Map<string, {errorsValue: number, dropsValue: number}>();
+        const networkErrorsMap = new Map<string, { errorsValue: number; dropsValue: number }>();
         networkErrorsResp?.data?.result?.forEach((r: PromResult) => {
           const name = r.metric.name || r.metric.vmi || 'Unknown';
           networkErrorsMap.set(name, { errorsValue: parseFloat(r.value[1]) || 0, dropsValue: 0 });
@@ -243,7 +286,11 @@ export default function VirtualizationOverview() {
           const existing = networkErrorsMap.get(name) || { errorsValue: 0, dropsValue: 0 };
           networkErrorsMap.set(name, { ...existing, dropsValue: parseFloat(r.value[1]) || 0 });
         });
-        setTopNetworkErrors(Array.from(networkErrorsMap.entries()).map(([name, values]) => ({ name, ...values })).slice(0, 5));
+        setTopNetworkErrors(
+          Array.from(networkErrorsMap.entries())
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(0, 5)
+        );
 
         // Query Storage Throughput (read and write traffic)
         // Aggregate by VM name to sum all drives per VM
@@ -258,7 +305,7 @@ export default function VirtualizationOverview() {
         ).catch(() => null);
 
         // Merge throughput read/write data
-        const throughputMap = new Map<string, {readValue: number, writeValue: number}>();
+        const throughputMap = new Map<string, { readValue: number; writeValue: number }>();
         throughputReadResp?.data?.result?.forEach((r: PromResult) => {
           const name = r.metric.name || r.metric.vmi || 'Unknown';
           throughputMap.set(name, { readValue: parseFloat(r.value[1]) || 0, writeValue: 0 });
@@ -268,7 +315,11 @@ export default function VirtualizationOverview() {
           const existing = throughputMap.get(name) || { readValue: 0, writeValue: 0 };
           throughputMap.set(name, { ...existing, writeValue: parseFloat(r.value[1]) || 0 });
         });
-        setTopStorageThroughput(Array.from(throughputMap.entries()).map(([name, values]) => ({ name, ...values })).slice(0, 5));
+        setTopStorageThroughput(
+          Array.from(throughputMap.entries())
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(0, 5)
+        );
 
         // Query Storage IOPS (read and write)
         // Aggregate by VM name to sum all drives per VM
@@ -283,7 +334,7 @@ export default function VirtualizationOverview() {
         ).catch(() => null);
 
         // Merge IOPS read/write data
-        const iopsMap = new Map<string, {readValue: number, writeValue: number}>();
+        const iopsMap = new Map<string, { readValue: number; writeValue: number }>();
         iopsReadResp?.data?.result?.forEach((r: PromResult) => {
           const name = r.metric.name || r.metric.vmi || 'Unknown';
           iopsMap.set(name, { readValue: parseFloat(r.value[1]) || 0, writeValue: 0 });
@@ -293,7 +344,11 @@ export default function VirtualizationOverview() {
           const existing = iopsMap.get(name) || { readValue: 0, writeValue: 0 };
           iopsMap.set(name, { ...existing, writeValue: parseFloat(r.value[1]) || 0 });
         });
-        setTopStorageIOPS(Array.from(iopsMap.entries()).map(([name, values]) => ({ name, ...values })).slice(0, 5));
+        setTopStorageIOPS(
+          Array.from(iopsMap.entries())
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(0, 5)
+        );
       } catch (err) {
         setPrometheusAvailable(false);
       }
@@ -395,12 +450,17 @@ export default function VirtualizationOverview() {
 
         // Storage from volumes
         if (spec?.volumes) {
-          spec.volumes.forEach((vol: { dataVolume?: { name: string }; persistentVolumeClaim?: { claimName: string } }) => {
-            if (vol.dataVolume?.name || vol.persistentVolumeClaim?.claimName) {
-              // Note: We'd need to fetch PVC/DV to get actual size
-              // For now, we'll skip storage calculation as it requires additional API calls
+          spec.volumes.forEach(
+            (vol: {
+              dataVolume?: { name: string };
+              persistentVolumeClaim?: { claimName: string };
+            }) => {
+              if (vol.dataVolume?.name || vol.persistentVolumeClaim?.claimName) {
+                // Note: We'd need to fetch PVC/DV to get actual size
+                // For now, we'll skip storage calculation as it requires additional API calls
+              }
             }
-          });
+          );
         }
       } catch (e) {
         console.warn('Failed to parse VM resources:', e);
@@ -418,29 +478,28 @@ export default function VirtualizationOverview() {
     <Box sx={{ p: 2 }}>
       {/* Header with namespace filter */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">
-          Virtualization
-        </Typography>
+        <Typography variant="h5">Virtualization</Typography>
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <Select
               value={selectedNamespace}
-              onChange={(e) => setSelectedNamespace(e.target.value)}
+              onChange={e => setSelectedNamespace(e.target.value)}
               displayEmpty
             >
               <MenuItem value="all">All Namespaces</MenuItem>
-              {namespaces.filter(ns => ns !== 'all').map(ns => (
-                <MenuItem key={ns} value={ns}>{ns}</MenuItem>
-              ))}
+              {namespaces
+                .filter(ns => ns !== 'all')
+                .map(ns => (
+                  <MenuItem key={ns} value={ns}>
+                    {ns}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: 150 }}>
-            <Select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
+            <Select value={timeRange} onChange={e => setTimeRange(e.target.value)}>
               <MenuItem value="30m">Last 30 minutes</MenuItem>
               <MenuItem value="1h">Last hour</MenuItem>
               <MenuItem value="6h">Last 6 hours</MenuItem>
@@ -467,26 +526,46 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:cpu-64-bit" width={24} color="#3e8635" />
-                      <Typography variant="subtitle2" sx={{ color: '#3e8635', fontWeight: 600 }}>CPU</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#3e8635', fontWeight: 600 }}>
+                        CPU
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topCpuConsumers.length > 0 ? (
                         topCpuConsumers.map((consumer, idx) => (
                           <Box key={idx} sx={{ mb: 1 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.5,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                               <Typography variant="caption" fontWeight="bold" sx={{ ml: 1 }}>
-                                {(consumer.value * 100).toFixed(1)}%{consumer.vcpus ? ` / ${consumer.vcpus} vCPU` : ''}
+                                {(consumer.value * 100).toFixed(1)}%
+                                {consumer.vcpus ? ` / ${consumer.vcpus} vCPU` : ''}
                               </Typography>
                             </Box>
                             <LinearProgress
@@ -504,7 +583,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No metrics available' : 'Requires Prometheus'}
                           </Typography>
@@ -521,22 +607,41 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:network" width={24} color="#00acc1" />
-                      <Typography variant="subtitle2" sx={{ color: '#00acc1', fontWeight: 600 }}>Network traffic</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#00acc1', fontWeight: 600 }}>
+                        Network traffic
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topNetworkTraffic.length > 0 ? (
                         topNetworkTraffic.map((consumer, idx) => (
                           <Box key={idx}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.25,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                             </Box>
@@ -551,7 +656,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No network activity' : 'Requires Prometheus'}
                           </Typography>
@@ -568,22 +680,41 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:package-variant" width={24} color="#00acc1" />
-                      <Typography variant="subtitle2" sx={{ color: '#00acc1', fontWeight: 600 }}>Network packets</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#00acc1', fontWeight: 600 }}>
+                        Network packets
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topNetworkPackets.length > 0 ? (
                         topNetworkPackets.map((consumer, idx) => (
                           <Box key={idx}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.25,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                             </Box>
@@ -598,7 +729,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No network activity' : 'Requires Prometheus'}
                           </Typography>
@@ -615,22 +753,41 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:alert-circle" width={24} color="#00acc1" />
-                      <Typography variant="subtitle2" sx={{ color: '#00acc1', fontWeight: 600 }}>Network errors</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#00acc1', fontWeight: 600 }}>
+                        Network errors
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topNetworkErrors.length > 0 ? (
                         topNetworkErrors.map((consumer, idx) => (
                           <Box key={idx}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.25,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                             </Box>
@@ -645,7 +802,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No network errors' : 'Requires Prometheus'}
                           </Typography>
@@ -662,30 +826,52 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:memory" width={24} color="#2196f3" />
-                      <Typography variant="subtitle2" sx={{ color: '#2196f3', fontWeight: 600 }}>Memory</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#2196f3', fontWeight: 600 }}>
+                        Memory
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topMemoryConsumers.length > 0 ? (
                         topMemoryConsumers.map((consumer, idx) => {
                           const memGiB = consumer.value / (1024 * 1024 * 1024);
-                          const totalGiB = consumer.total ? consumer.total / (1024 * 1024 * 1024) : undefined;
+                          const totalGiB = consumer.total
+                            ? consumer.total / (1024 * 1024 * 1024)
+                            : undefined;
                           const percentage = totalGiB ? (memGiB / totalGiB) * 100 : 0;
                           return (
                             <Box key={idx} sx={{ mb: 1 }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  mb: 0.5,
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    flex: 1,
+                                  }}
+                                >
                                   {consumer.name}
                                 </Typography>
                                 <Typography variant="caption" fontWeight="bold" sx={{ ml: 1 }}>
-                                  {memGiB.toFixed(1)} GiB{totalGiB ? ` / ${totalGiB.toFixed(1)} GiB` : ''}
+                                  {memGiB.toFixed(1)} GiB
+                                  {totalGiB ? ` / ${totalGiB.toFixed(1)} GiB` : ''}
                                 </Typography>
                               </Box>
                               <LinearProgress
@@ -704,7 +890,14 @@ export default function VirtualizationOverview() {
                           );
                         })
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No metrics available' : 'Requires Prometheus'}
                           </Typography>
@@ -721,22 +914,41 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:swap-horizontal" width={24} color="#9c27b0" />
-                      <Typography variant="subtitle2" sx={{ color: '#9c27b0', fontWeight: 600 }}>Memory swap traffic</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#9c27b0', fontWeight: 600 }}>
+                        Memory swap traffic
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topMemorySwap.length > 0 ? (
                         topMemorySwap.map((consumer, idx) => (
                           <Box key={idx}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.25,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                             </Box>
@@ -751,7 +963,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No swap activity' : 'Requires Prometheus'}
                           </Typography>
@@ -768,22 +987,41 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:chart-line" width={24} color="#f0ab00" />
-                      <Typography variant="subtitle2" sx={{ color: '#f0ab00', fontWeight: 600 }}>Storage throughput</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#f0ab00', fontWeight: 600 }}>
+                        Storage throughput
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topStorageThroughput.length > 0 ? (
                         topStorageThroughput.map((consumer, idx) => (
                           <Box key={idx}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.25,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                             </Box>
@@ -798,7 +1036,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No storage activity' : 'Requires Prometheus'}
                           </Typography>
@@ -815,22 +1060,41 @@ export default function VirtualizationOverview() {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <Icon icon="mdi:database-arrow-up-outline" width={24} color="#f0ab00" />
-                      <Typography variant="subtitle2" sx={{ color: '#f0ab00', fontWeight: 600 }}>Storage IOPS</Typography>
+                      <Typography variant="subtitle2" sx={{ color: '#f0ab00', fontWeight: 600 }}>
+                        Storage IOPS
+                      </Typography>
                     </Box>
-                    <Box sx={{
-                      minHeight: 150,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      p: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        minHeight: 150,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        p: 1.5,
+                      }}
+                    >
                       {topStorageIOPS.length > 0 ? (
                         topStorageIOPS.map((consumer, idx) => (
                           <Box key={idx}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-                              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 0.25,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                              >
                                 {consumer.name}
                               </Typography>
                             </Box>
@@ -845,7 +1109,14 @@ export default function VirtualizationOverview() {
                           </Box>
                         ))
                       ) : (
-                        <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             {prometheusAvailable ? 'No storage activity' : 'Requires Prometheus'}
                           </Typography>
@@ -868,12 +1139,14 @@ export default function VirtualizationOverview() {
             </Typography>
 
             {/* Status Donut Chart using conic-gradient for proper proportions */}
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              mb: 3
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                mb: 3,
+              }}
+            >
               {(() => {
                 const total = stats.total || 1; // Avoid division by zero
                 const errorPct = (stats.error / total) * 100;
@@ -888,53 +1161,70 @@ export default function VirtualizationOverview() {
 
                 // Use same color order as legend: Error, Running, Stopped, Migrating, Paused
                 if (stats.error > 0) {
-                  segments.push(`${VM_STATUS_COLORS.error} ${angle}deg ${angle + (errorPct * 3.6)}deg`);
+                  segments.push(
+                    `${VM_STATUS_COLORS.error} ${angle}deg ${angle + errorPct * 3.6}deg`
+                  );
                   angle += errorPct * 3.6;
                 }
                 if (stats.running > 0) {
-                  segments.push(`${VM_STATUS_COLORS.running} ${angle}deg ${angle + (runningPct * 3.6)}deg`);
+                  segments.push(
+                    `${VM_STATUS_COLORS.running} ${angle}deg ${angle + runningPct * 3.6}deg`
+                  );
                   angle += runningPct * 3.6;
                 }
                 if (stats.stopped > 0) {
-                  segments.push(`${VM_STATUS_COLORS.stopped} ${angle}deg ${angle + (stoppedPct * 3.6)}deg`);
+                  segments.push(
+                    `${VM_STATUS_COLORS.stopped} ${angle}deg ${angle + stoppedPct * 3.6}deg`
+                  );
                   angle += stoppedPct * 3.6;
                 }
                 if (stats.migrating > 0) {
-                  segments.push(`${VM_STATUS_COLORS.migrating} ${angle}deg ${angle + (migratingPct * 3.6)}deg`);
+                  segments.push(
+                    `${VM_STATUS_COLORS.migrating} ${angle}deg ${angle + migratingPct * 3.6}deg`
+                  );
                   angle += migratingPct * 3.6;
                 }
                 if (stats.paused > 0) {
-                  segments.push(`${VM_STATUS_COLORS.paused} ${angle}deg ${angle + (pausedPct * 3.6)}deg`);
+                  segments.push(
+                    `${VM_STATUS_COLORS.paused} ${angle}deg ${angle + pausedPct * 3.6}deg`
+                  );
                   angle += pausedPct * 3.6;
                 }
 
-                const gradient = segments.length > 0
-                  ? `conic-gradient(${segments.join(', ')})`
-                  : 'conic-gradient(#e0e0e0 0deg 360deg)';
+                const gradient =
+                  segments.length > 0
+                    ? `conic-gradient(${segments.join(', ')})`
+                    : 'conic-gradient(#e0e0e0 0deg 360deg)';
 
                 return (
-                  <Box sx={{
-                    width: 200,
-                    height: 200,
-                    borderRadius: '50%',
-                    background: gradient,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                  }}>
-                    <Box sx={{
-                      width: 140,
-                      height: 140,
+                  <Box
+                    sx={{
+                      width: 200,
+                      height: 200,
                       borderRadius: '50%',
-                      bgcolor: 'background.paper',
+                      background: gradient,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                    }}>
+                      position: 'relative',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 140,
+                        height: 140,
+                        borderRadius: '50%',
+                        bgcolor: 'background.paper',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
                       <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="h3">{stats.total}</Typography>
-                        <Typography variant="caption" color="text.secondary">VMs</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          VMs
+                        </Typography>
                       </Box>
                     </Box>
                   </Box>
@@ -946,42 +1236,87 @@ export default function VirtualizationOverview() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: VM_STATUS_COLORS.error }} />
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: VM_STATUS_COLORS.error,
+                    }}
+                  />
                   <Typography variant="body2">Error</Typography>
                 </Box>
-                <Typography variant="body2" fontWeight="bold">{stats.error}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {stats.error}
+                </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: VM_STATUS_COLORS.running }} />
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: VM_STATUS_COLORS.running,
+                    }}
+                  />
                   <Typography variant="body2">Running</Typography>
                 </Box>
-                <Typography variant="body2" fontWeight="bold">{stats.running}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {stats.running}
+                </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: VM_STATUS_COLORS.stopped }} />
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: VM_STATUS_COLORS.stopped,
+                    }}
+                  />
                   <Typography variant="body2">Stopped</Typography>
                 </Box>
-                <Typography variant="body2" fontWeight="bold">{stats.stopped}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {stats.stopped}
+                </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: VM_STATUS_COLORS.migrating }} />
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: VM_STATUS_COLORS.migrating,
+                    }}
+                  />
                   <Typography variant="body2">Migrating</Typography>
                 </Box>
-                <Typography variant="body2" fontWeight="bold">{stats.migrating}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {stats.migrating}
+                </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: VM_STATUS_COLORS.paused }} />
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: VM_STATUS_COLORS.paused,
+                    }}
+                  />
                   <Typography variant="body2">Paused</Typography>
                 </Box>
-                <Typography variant="body2" fontWeight="bold">{stats.paused}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {stats.paused}
+                </Typography>
               </Box>
             </Box>
 
@@ -1009,16 +1344,18 @@ export default function VirtualizationOverview() {
                   <Icon icon="mdi:cpu-64-bit" width={24} color="#3e8635" />
                   <Typography variant="subtitle2">CPU Cores</Typography>
                 </Box>
-                <Box sx={{
-                  p: 2,
-                  bgcolor: 'action.hover',
-                  borderRadius: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: 60,
-                }}>
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 60,
+                  }}
+                >
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#3e8635' }}>
                     {totalResources.cpu}
                   </Typography>
@@ -1036,16 +1373,18 @@ export default function VirtualizationOverview() {
                   <Icon icon="mdi:memory" width={24} color="#2196f3" />
                   <Typography variant="subtitle2">Memory</Typography>
                 </Box>
-                <Box sx={{
-                  p: 2,
-                  bgcolor: 'action.hover',
-                  borderRadius: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: 60,
-                }}>
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 60,
+                  }}
+                >
                   {totalResources.memory > 0 ? (
                     <>
                       <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2196f3' }}>
@@ -1071,16 +1410,18 @@ export default function VirtualizationOverview() {
                   <Icon icon="mdi:harddisk" width={24} color="#f0ab00" />
                   <Typography variant="subtitle2">Storage</Typography>
                 </Box>
-                <Box sx={{
-                  p: 2,
-                  bgcolor: 'action.hover',
-                  borderRadius: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: 60,
-                }}>
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 60,
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     Calculation requires PVC data
                   </Typography>
@@ -1098,7 +1439,8 @@ export default function VirtualizationOverview() {
       {stats.total > 0 && !prometheusAvailable && (
         <Alert severity="info" sx={{ mt: 3 }} icon={<Icon icon="mdi:chart-line" />}>
           <Typography variant="body2">
-            <strong>Enable metrics:</strong> Install Prometheus to view CPU, Memory, and Storage usage charts for your VirtualMachines.
+            <strong>Enable metrics:</strong> Install Prometheus to view CPU, Memory, and Storage
+            usage charts for your VirtualMachines.
           </Typography>
         </Alert>
       )}

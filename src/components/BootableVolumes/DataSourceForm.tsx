@@ -39,7 +39,11 @@ interface DataSourceFormProps {
   editMode?: boolean;
 }
 
-export default function DataSourceForm({ resource, onChange, editMode = false }: DataSourceFormProps) {
+export default function DataSourceForm({
+  resource,
+  onChange,
+  editMode = false,
+}: DataSourceFormProps) {
   // Parse current values from resource
   const name = resource.metadata?.name || '';
   const namespace = resource.metadata?.namespace || 'default';
@@ -67,7 +71,7 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
   React.useEffect(() => {
     ApiProxy.request('/api/v1/namespaces')
       .then((response: KubeListResponse<KubeNamedItem>) => {
-        const nsList = response?.items?.map((ns) => ns.metadata.name) || ['default'];
+        const nsList = response?.items?.map(ns => ns.metadata.name) || ['default'];
         setNamespaces(nsList);
       })
       .catch(err => console.error('Failed to fetch namespaces:', err));
@@ -79,7 +83,7 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
 
     ApiProxy.request(`/api/v1/namespaces/${sourceNamespace}/persistentvolumeclaims`)
       .then((response: KubeListResponse<KubeNamedItem>) => {
-        const pvcList = response?.items?.map((pvc) => pvc.metadata.name) || [];
+        const pvcList = response?.items?.map(pvc => pvc.metadata.name) || [];
         setPvcs(pvcList);
       })
       .catch(err => console.error('Failed to fetch PVCs:', err));
@@ -89,9 +93,11 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
   React.useEffect(() => {
     if (!sourceNamespace) return;
 
-    ApiProxy.request(`/apis/snapshot.storage.k8s.io/v1/namespaces/${sourceNamespace}/volumesnapshots`)
+    ApiProxy.request(
+      `/apis/snapshot.storage.k8s.io/v1/namespaces/${sourceNamespace}/volumesnapshots`
+    )
       .then((response: KubeListResponse<KubeNamedItem>) => {
-        const snapshotList = response?.items?.map((snap) => snap.metadata.name) || [];
+        const snapshotList = response?.items?.map(snap => snap.metadata.name) || [];
         setSnapshots(snapshotList);
       })
       .catch(err => console.error('Failed to fetch snapshots:', err));
@@ -100,7 +106,11 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
   // Helper functions to update resource
   const { updateMetadata } = useResourceEditor(resource, onChange);
 
-  const updateSource = (type: 'dataSource' | 'pvc' | 'snapshot', name: string, namespace: string) => {
+  const updateSource = (
+    type: 'dataSource' | 'pvc' | 'snapshot',
+    name: string,
+    namespace: string
+  ) => {
     onChange({
       ...resource,
       spec: {
@@ -142,7 +152,12 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
           onChange={(_, newValue) => updateMetadata('namespace', newValue || 'default')}
           disabled={editMode}
           renderInput={params => (
-            <TextField {...params} label="Namespace" required helperText={editMode ? 'Namespace cannot be changed' : 'Namespace for the DataSource'} />
+            <TextField
+              {...params}
+              label="Namespace"
+              required
+              helperText={editMode ? 'Namespace cannot be changed' : 'Namespace for the DataSource'}
+            />
           )}
         />
       </FormSection>
@@ -155,18 +170,12 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
           <FormLabel component="legend">Source Type</FormLabel>
           <RadioGroup
             value={sourceType}
-            onChange={e => handleSourceTypeChange(e.target.value as 'dataSource' | 'pvc' | 'snapshot')}
+            onChange={e =>
+              handleSourceTypeChange(e.target.value as 'dataSource' | 'pvc' | 'snapshot')
+            }
           >
-            <FormControlLabel
-              value="pvc"
-              control={<Radio />}
-              label="PVC (PersistentVolumeClaim)"
-            />
-            <FormControlLabel
-              value="snapshot"
-              control={<Radio />}
-              label="VolumeSnapshot"
-            />
+            <FormControlLabel value="pvc" control={<Radio />} label="PVC (PersistentVolumeClaim)" />
+            <FormControlLabel value="snapshot" control={<Radio />} label="VolumeSnapshot" />
             <FormControlLabel
               value="dataSource"
               control={<Radio />}
@@ -186,9 +195,7 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
               options={namespaces}
               value={sourceNamespace}
               onChange={(_, newValue) => updateSource('pvc', sourceName, newValue || namespace)}
-              renderInput={params => (
-                <TextField {...params} label="Source Namespace" required />
-              )}
+              renderInput={params => <TextField {...params} label="Source Namespace" required />}
               sx={{ mb: 2 }}
             />
 
@@ -214,10 +221,10 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
               fullWidth
               options={namespaces}
               value={sourceNamespace}
-              onChange={(_, newValue) => updateSource('snapshot', sourceName, newValue || namespace)}
-              renderInput={params => (
-                <TextField {...params} label="Source Namespace" required />
-              )}
+              onChange={(_, newValue) =>
+                updateSource('snapshot', sourceName, newValue || namespace)
+              }
+              renderInput={params => <TextField {...params} label="Source Namespace" required />}
               sx={{ mb: 2 }}
             />
 
@@ -227,7 +234,12 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
               value={sourceName}
               onChange={(_, newValue) => updateSource('snapshot', newValue || '', sourceNamespace)}
               renderInput={params => (
-                <TextField {...params} label="Snapshot Name" required placeholder="Select snapshot..." />
+                <TextField
+                  {...params}
+                  label="Snapshot Name"
+                  required
+                  placeholder="Select snapshot..."
+                />
               )}
             />
           </Box>
@@ -242,8 +254,12 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
             <Autocomplete
               fullWidth
               options={dataSources || []}
-              getOptionLabel={(option) => `${option.getName()} (${option.getNamespace()})`}
-              value={dataSources?.find(ds => ds.getName() === sourceName && ds.getNamespace() === sourceNamespace) || null}
+              getOptionLabel={option => `${option.getName()} (${option.getNamespace()})`}
+              value={
+                dataSources?.find(
+                  ds => ds.getName() === sourceName && ds.getNamespace() === sourceNamespace
+                ) || null
+              }
               onChange={(_, newValue) => {
                 if (newValue) {
                   updateSource('dataSource', newValue.getName(), newValue.getNamespace());
@@ -252,7 +268,12 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
                 }
               }}
               renderInput={params => (
-                <TextField {...params} label="DataSource" required placeholder="Select DataSource..." />
+                <TextField
+                  {...params}
+                  label="DataSource"
+                  required
+                  placeholder="Select DataSource..."
+                />
               )}
               renderOption={(props, option) => (
                 <li {...props} key={option.metadata.uid}>
@@ -275,7 +296,8 @@ export default function DataSourceForm({ resource, onChange, editMode = false }:
       <Box sx={{ p: 2, bgcolor: 'info.main', color: 'info.contrastText', borderRadius: 1 }}>
         <Typography variant="body2">
           <strong>Note:</strong> DataSources are typically managed automatically by DataImportCrons.
-          Manual creation is for advanced use cases where you need to reference existing PVCs or snapshots.
+          Manual creation is for advanced use cases where you need to reference existing PVCs or
+          snapshots.
         </Typography>
       </Box>
     </Box>

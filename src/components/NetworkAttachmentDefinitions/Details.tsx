@@ -3,12 +3,15 @@ import { Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Card, CardContent, Chip, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { NADAddress,NADConfig, NADRange, NADRoute } from '../../types';
+import { NADAddress, NADConfig, NADRange, NADRoute } from '../../types';
 import CreateResourceDialog from '../common/CreateResourceDialog';
 import NADForm from './NADForm';
 import NetworkAttachmentDefinition from './NetworkAttachmentDefinition';
 
-const TYPE_COLORS: Record<string, 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error'> = {
+const TYPE_COLORS: Record<
+  string,
+  'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error'
+> = {
   bridge: 'primary',
   macvlan: 'secondary',
   ipvlan: 'info',
@@ -19,10 +22,20 @@ const TYPE_COLORS: Record<string, 'primary' | 'secondary' | 'success' | 'warning
   tap: 'secondary',
 };
 
-function InfoRow({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
+function InfoRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) {
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="caption" color="text.secondary">{label}</Typography>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
       {typeof value === 'string' ? (
         <Typography variant="body1" sx={mono ? { fontFamily: 'monospace' } : undefined}>
           {value || '-'}
@@ -48,7 +61,7 @@ export default function NADDetails() {
 
   const cniType = config.type || 'unknown';
   const ipam = config.ipam || {};
-  const ipamType = !ipam || Object.keys(ipam).length === 0 ? 'none' : (ipam.type || 'none');
+  const ipamType = !ipam || Object.keys(ipam).length === 0 ? 'none' : ipam.type || 'none';
 
   return (
     <>
@@ -59,11 +72,7 @@ export default function NADDetails() {
         withEvents
         actions={[
           <Tooltip title="Edit with Wizard">
-            <IconButton
-              key="edit-wizard"
-              onClick={() => setEditOpen(true)}
-              size="small"
-            >
+            <IconButton key="edit-wizard" onClick={() => setEditOpen(true)} size="small">
               <Icon icon="mdi:auto-fix" />
             </IconButton>
           </Tooltip>,
@@ -82,7 +91,9 @@ export default function NADDetails() {
               <InfoRow label="Namespace" value={nad.getNamespace()} />
               <InfoRow
                 label="CNI Type"
-                value={<Chip label={cniType} size="small" color={TYPE_COLORS[cniType] || 'default'} />}
+                value={
+                  <Chip label={cniType} size="small" color={TYPE_COLORS[cniType] || 'default'} />
+                }
               />
               <InfoRow label="CNI Version" value={config.cniVersion || '-'} mono />
               <InfoRow
@@ -107,24 +118,38 @@ export default function NADDetails() {
               {cniType === 'bridge' && (
                 <>
                   <InfoRow label="Bridge Name" value={config.bridge} mono />
-                  <InfoRow label="MTU" value={config.mtu !== null ? String(config.mtu) : 'Default'} />
+                  <InfoRow
+                    label="MTU"
+                    value={config.mtu !== null ? String(config.mtu) : 'Default'}
+                  />
                   {config.vlan !== null && <InfoRow label="VLAN Tag" value={String(config.vlan)} />}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                     {config.isGateway && <Chip label="Gateway" size="small" color="info" />}
-                    {config.isDefaultGateway && <Chip label="Default Gateway" size="small" color="info" />}
+                    {config.isDefaultGateway && (
+                      <Chip label="Default Gateway" size="small" color="info" />
+                    )}
                     {config.ipMasq && <Chip label="IP Masquerade" size="small" color="info" />}
                     {config.hairpinMode && <Chip label="Hairpin" size="small" />}
                     {config.promiscMode && <Chip label="Promiscuous" size="small" />}
-                    {config.macspoofchk && <Chip label="MAC Spoof Check" size="small" color="warning" />}
+                    {config.macspoofchk && (
+                      <Chip label="MAC Spoof Check" size="small" color="warning" />
+                    )}
                   </Box>
                 </>
               )}
 
               {(cniType === 'macvlan' || cniType === 'ipvlan') && (
                 <>
-                  <InfoRow label="Master Interface" value={config.master || 'Default route interface'} mono />
+                  <InfoRow
+                    label="Master Interface"
+                    value={config.master || 'Default route interface'}
+                    mono
+                  />
                   <InfoRow label="Mode" value={config.mode} />
-                  <InfoRow label="MTU" value={config.mtu !== null ? String(config.mtu) : 'Default'} />
+                  <InfoRow
+                    label="MTU"
+                    value={config.mtu !== null ? String(config.mtu) : 'Default'}
+                  />
                 </>
               )}
 
@@ -132,7 +157,10 @@ export default function NADDetails() {
                 <>
                   <InfoRow label="Master Interface" value={config.master} mono />
                   <InfoRow label="VLAN ID" value={String(config.vlanId)} />
-                  <InfoRow label="MTU" value={config.mtu !== null ? String(config.mtu) : 'Default'} />
+                  <InfoRow
+                    label="MTU"
+                    value={config.mtu !== null ? String(config.mtu) : 'Default'}
+                  />
                 </>
               )}
 
@@ -140,7 +168,9 @@ export default function NADDetails() {
                 <>
                   {config.device && <InfoRow label="Device" value={config.device} mono />}
                   {config.hwaddr && <InfoRow label="MAC Address" value={config.hwaddr} mono />}
-                  {config.kernelpath && <InfoRow label="Kernel Path" value={config.kernelpath} mono />}
+                  {config.kernelpath && (
+                    <InfoRow label="Kernel Path" value={config.kernelpath} mono />
+                  )}
                   {config.pciBusID && <InfoRow label="PCI Bus ID" value={config.pciBusID} mono />}
                 </>
               )}
@@ -148,39 +178,72 @@ export default function NADDetails() {
               {cniType === 'sriov' && (
                 <>
                   {config.vlan !== null && <InfoRow label="VLAN" value={String(config.vlan)} />}
-                  {config.vlanQoS !== null && <InfoRow label="VLAN QoS" value={String(config.vlanQoS)} />}
+                  {config.vlanQoS !== null && (
+                    <InfoRow label="VLAN QoS" value={String(config.vlanQoS)} />
+                  )}
                   {config.vlanProto && <InfoRow label="VLAN Protocol" value={config.vlanProto} />}
                   {config.mac && <InfoRow label="MAC Address" value={config.mac} mono />}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                    {config.spoofchk && <Chip label={`Spoof Check: ${config.spoofchk}`} size="small" />}
+                    {config.spoofchk && (
+                      <Chip label={`Spoof Check: ${config.spoofchk}`} size="small" />
+                    )}
                     {config.trust && <Chip label={`Trust: ${config.trust}`} size="small" />}
                     {config.linkState && <Chip label={`Link: ${config.linkState}`} size="small" />}
                   </Box>
-                  {config.minTxRate !== null && <InfoRow label="Min TX Rate" value={`${config.minTxRate} Mbps`} />}
-                  {config.maxTxRate !== null && <InfoRow label="Max TX Rate" value={`${config.maxTxRate} Mbps`} />}
+                  {config.minTxRate !== null && (
+                    <InfoRow label="Min TX Rate" value={`${config.minTxRate} Mbps`} />
+                  )}
+                  {config.maxTxRate !== null && (
+                    <InfoRow label="Max TX Rate" value={`${config.maxTxRate} Mbps`} />
+                  )}
                 </>
               )}
 
               {cniType === 'ptp' && (
                 <>
-                  <InfoRow label="MTU" value={config.mtu !== null ? String(config.mtu) : 'Default'} />
-                  {config.ipMasq && <Chip label="IP Masquerade" size="small" color="info" sx={{ mt: 1 }} />}
+                  <InfoRow
+                    label="MTU"
+                    value={config.mtu !== null ? String(config.mtu) : 'Default'}
+                  />
+                  {config.ipMasq && (
+                    <Chip label="IP Masquerade" size="small" color="info" sx={{ mt: 1 }} />
+                  )}
                 </>
               )}
 
               {cniType === 'tap' && (
                 <>
                   {config.mac && <InfoRow label="MAC Address" value={config.mac} mono />}
-                  <InfoRow label="MTU" value={config.mtu !== null ? String(config.mtu) : 'Default'} />
+                  <InfoRow
+                    label="MTU"
+                    value={config.mtu !== null ? String(config.mtu) : 'Default'}
+                  />
                   {config.bridge && <InfoRow label="Bridge" value={config.bridge} mono />}
-                  {config.selinuxcontext && <InfoRow label="SELinux Context" value={config.selinuxcontext} />}
-                  {config.owner !== null && <InfoRow label="Owner (UID)" value={String(config.owner)} />}
-                  {config.group !== null && <InfoRow label="Group (GID)" value={String(config.group)} />}
-                  {config.multiQueue && <Chip label="Multi-Queue" size="small" color="info" sx={{ mt: 1 }} />}
+                  {config.selinuxcontext && (
+                    <InfoRow label="SELinux Context" value={config.selinuxcontext} />
+                  )}
+                  {config.owner !== null && (
+                    <InfoRow label="Owner (UID)" value={String(config.owner)} />
+                  )}
+                  {config.group !== null && (
+                    <InfoRow label="Group (GID)" value={String(config.group)} />
+                  )}
+                  {config.multiQueue && (
+                    <Chip label="Multi-Queue" size="small" color="info" sx={{ mt: 1 }} />
+                  )}
                 </>
               )}
 
-              {!['bridge', 'macvlan', 'ipvlan', 'vlan', 'host-device', 'sriov', 'ptp', 'tap'].includes(cniType) && (
+              {![
+                'bridge',
+                'macvlan',
+                'ipvlan',
+                'vlan',
+                'host-device',
+                'sriov',
+                'ptp',
+                'tap',
+              ].includes(cniType) && (
                 <Typography variant="body2" color="text.secondary">
                   Unknown CNI type: {cniType}
                 </Typography>
@@ -215,7 +278,14 @@ export default function NADDetails() {
                       {rangeSet.map((range: NADRange, idx: number) => (
                         <Box
                           key={idx}
-                          sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, mb: 1, fontFamily: 'monospace', fontSize: '0.85rem' }}
+                          sx={{
+                            p: 1.5,
+                            bgcolor: 'action.hover',
+                            borderRadius: 1,
+                            mb: 1,
+                            fontFamily: 'monospace',
+                            fontSize: '0.85rem',
+                          }}
                         >
                           {range.subnet && <div>Subnet: {range.subnet}</div>}
                           {range.rangeStart && <div>Start: {range.rangeStart}</div>}
@@ -227,10 +297,23 @@ export default function NADDetails() {
                   ))}
                   {ipam.routes && ipam.routes.length > 0 && (
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Routes</Typography>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Routes
+                      </Typography>
                       {ipam.routes.map((route: NADRoute, idx: number) => (
-                        <Box key={idx} sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 1, mb: 1, fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                          {route.dst}{route.gw ? ` → ${route.gw}` : ''}
+                        <Box
+                          key={idx}
+                          sx={{
+                            p: 1,
+                            bgcolor: 'action.hover',
+                            borderRadius: 1,
+                            mb: 1,
+                            fontFamily: 'monospace',
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          {route.dst}
+                          {route.gw ? ` → ${route.gw}` : ''}
                         </Box>
                       ))}
                     </Box>
@@ -246,16 +329,40 @@ export default function NADDetails() {
                 <>
                   <InfoRow label="Type" value="Static" />
                   {ipam.addresses?.map((addr: NADAddress, idx: number) => (
-                    <Box key={idx} sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 1, mb: 1, fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                      {addr.address}{addr.gateway ? ` (gw: ${addr.gateway})` : ''}
+                    <Box
+                      key={idx}
+                      sx={{
+                        p: 1.5,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        mb: 1,
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      {addr.address}
+                      {addr.gateway ? ` (gw: ${addr.gateway})` : ''}
                     </Box>
                   ))}
                   {ipam.routes && ipam.routes.length > 0 && (
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Routes</Typography>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Routes
+                      </Typography>
                       {ipam.routes.map((route: NADRoute, idx: number) => (
-                        <Box key={idx} sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 1, mb: 1, fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                          {route.dst}{route.gw ? ` → ${route.gw}` : ''}
+                        <Box
+                          key={idx}
+                          sx={{
+                            p: 1,
+                            bgcolor: 'action.hover',
+                            borderRadius: 1,
+                            mb: 1,
+                            fontFamily: 'monospace',
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          {route.dst}
+                          {route.gw ? ` → ${route.gw}` : ''}
                         </Box>
                       ))}
                     </Box>

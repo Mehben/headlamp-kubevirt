@@ -83,7 +83,11 @@ export default function FormDialog({
               <Icon icon="mdi:window-minimize" />
             </IconButton>
           )}
-          <IconButton onClick={handleMaximize} size="small" title={isFullScreen ? 'Restore' : 'Maximize'}>
+          <IconButton
+            onClick={handleMaximize}
+            size="small"
+            title={isFullScreen ? 'Restore' : 'Maximize'}
+          >
             <Icon icon={isFullScreen ? 'mdi:window-restore' : 'mdi:window-maximize'} />
           </IconButton>
           <IconButton onClick={onClose} size="small" title="Close">
@@ -92,9 +96,7 @@ export default function FormDialog({
         </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ flex: 1, overflow: 'auto', p: 0 }}>
-        {children}
-      </DialogContent>
+      <DialogContent sx={{ flex: 1, overflow: 'auto', p: 0 }}>{children}</DialogContent>
 
       <Divider />
 

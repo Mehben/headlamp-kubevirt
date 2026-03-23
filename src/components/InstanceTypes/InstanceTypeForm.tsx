@@ -20,7 +20,11 @@ interface InstanceTypeFormProps {
   editMode?: boolean;
 }
 
-export default function InstanceTypeForm({ resource, onChange, editMode = false }: InstanceTypeFormProps) {
+export default function InstanceTypeForm({
+  resource,
+  onChange,
+  editMode = false,
+}: InstanceTypeFormProps) {
   const { updateMetadata } = useResourceEditor(resource, onChange);
 
   const updateAnnotation = (key: string, value: string) => {
@@ -101,123 +105,126 @@ export default function InstanceTypeForm({ resource, onChange, editMode = false 
 
   // Check if fields are empty for validation styling
   const isCPUEmpty = !resource.spec?.cpu?.guest || resource.spec?.cpu?.guest === '';
-  const isMemoryEmpty = !resource.spec?.memory?.guest || resource.spec?.memory?.guest === '' || memoryValue === '';
+  const isMemoryEmpty =
+    !resource.spec?.memory?.guest || resource.spec?.memory?.guest === '' || memoryValue === '';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Basic Information */}
       <FormSection icon="mdi:information-outline" title="Basic Information" color="other">
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              required
-              label="Name"
-              value={resource.metadata?.name || ''}
-              onChange={(e) => updateMetadata('name', e.target.value)}
-              helperText={editMode ? 'Name cannot be changed' : 'Unique identifier for this instance type'}
-              placeholder="custom.large"
-              disabled={editMode}
-            />
-          </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            required
+            label="Name"
+            value={resource.metadata?.name || ''}
+            onChange={e => updateMetadata('name', e.target.value)}
+            helperText={
+              editMode ? 'Name cannot be changed' : 'Unique identifier for this instance type'
+            }
+            placeholder="custom.large"
+            disabled={editMode}
+          />
+        </Grid>
 
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Display Name"
-              value={resource.metadata?.annotations?.['instancetype.kubevirt.io/displayName'] || ''}
-              onChange={(e) => updateAnnotation('instancetype.kubevirt.io/displayName', e.target.value)}
-              helperText="Human-readable name"
-              placeholder="Custom Large"
-            />
-          </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Display Name"
+            value={resource.metadata?.annotations?.['instancetype.kubevirt.io/displayName'] || ''}
+            onChange={e => updateAnnotation('instancetype.kubevirt.io/displayName', e.target.value)}
+            helperText="Human-readable name"
+            placeholder="Custom Large"
+          />
+        </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Description"
-              value={resource.metadata?.annotations?.['instancetype.kubevirt.io/description'] || ''}
-              onChange={(e) => updateAnnotation('instancetype.kubevirt.io/description', e.target.value)}
-              helperText="Detailed description of this instance type"
-            />
-          </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Description"
+            value={resource.metadata?.annotations?.['instancetype.kubevirt.io/description'] || ''}
+            onChange={e => updateAnnotation('instancetype.kubevirt.io/description', e.target.value)}
+            helperText="Detailed description of this instance type"
+          />
+        </Grid>
       </FormSection>
 
       {/* CPU & Memory */}
       <FormSection icon="mdi:chip" title="CPU & Memory" color="compute">
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              required
-              label="CPU Cores"
-              value={resource.spec?.cpu?.guest ?? ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === '') {
-                  updateCPU({ guest: undefined });
-                } else {
-                  const num = parseInt(val);
-                  if (!isNaN(num)) {
-                    updateCPU({ guest: num });
-                  }
+        <Grid item xs={12} sm={4}>
+          <TextField
+            fullWidth
+            required
+            label="CPU Cores"
+            value={resource.spec?.cpu?.guest ?? ''}
+            onChange={e => {
+              const val = e.target.value;
+              if (val === '') {
+                updateCPU({ guest: undefined });
+              } else {
+                const num = parseInt(val);
+                if (!isNaN(num)) {
+                  updateCPU({ guest: num });
                 }
-              }}
-              inputProps={{ min: 1, type: 'number' }}
-              helperText="Number of virtual CPU cores"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderColor: isCPUEmpty ? 'warning.main' : undefined,
-                  },
-                  '&:hover fieldset': {
-                    borderColor: isCPUEmpty ? 'warning.dark' : undefined,
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: isCPUEmpty ? 'warning.main' : undefined,
-                  },
+              }
+            }}
+            inputProps={{ min: 1, type: 'number' }}
+            helperText="Number of virtual CPU cores"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: isCPUEmpty ? 'warning.main' : undefined,
                 },
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              required
-              label="Memory"
-              value={memoryValue}
-              onChange={(e) => handleMemoryChange(e.target.value, memoryUnit)}
-              inputProps={{ min: 1, type: 'number' }}
-              helperText="Amount of memory"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderColor: isMemoryEmpty ? 'warning.main' : undefined,
-                  },
-                  '&:hover fieldset': {
-                    borderColor: isMemoryEmpty ? 'warning.dark' : undefined,
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: isMemoryEmpty ? 'warning.main' : undefined,
-                  },
+                '&:hover fieldset': {
+                  borderColor: isCPUEmpty ? 'warning.dark' : undefined,
                 },
-              }}
-            />
-          </Grid>
+                '&.Mui-focused fieldset': {
+                  borderColor: isCPUEmpty ? 'warning.main' : undefined,
+                },
+              },
+            }}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={2}>
-            <TextField
-              fullWidth
-              select
-              label="Unit"
-              value={memoryUnit}
-              onChange={(e) => handleMemoryChange(memoryValue, e.target.value)}
-            >
-              <MenuItem value="Mi">Mi</MenuItem>
-              <MenuItem value="Gi">Gi</MenuItem>
-            </TextField>
-          </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            required
+            label="Memory"
+            value={memoryValue}
+            onChange={e => handleMemoryChange(e.target.value, memoryUnit)}
+            inputProps={{ min: 1, type: 'number' }}
+            helperText="Amount of memory"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: isMemoryEmpty ? 'warning.main' : undefined,
+                },
+                '&:hover fieldset': {
+                  borderColor: isMemoryEmpty ? 'warning.dark' : undefined,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: isMemoryEmpty ? 'warning.main' : undefined,
+                },
+              },
+            }}
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={2}>
+          <TextField
+            fullWidth
+            select
+            label="Unit"
+            value={memoryUnit}
+            onChange={e => handleMemoryChange(memoryValue, e.target.value)}
+          >
+            <MenuItem value="Mi">Mi</MenuItem>
+            <MenuItem value="Gi">Gi</MenuItem>
+          </TextField>
+        </Grid>
       </FormSection>
 
       {/* Advanced CPU Options */}
@@ -227,7 +234,7 @@ export default function InstanceTypeForm({ resource, onChange, editMode = false 
             control={
               <Switch
                 checked={resource.spec?.cpu?.dedicatedCPUPlacement || false}
-                onChange={(e) => updateCPU({ dedicatedCPUPlacement: e.target.checked || undefined })}
+                onChange={e => updateCPU({ dedicatedCPUPlacement: e.target.checked || undefined })}
               />
             }
             label={
@@ -244,7 +251,7 @@ export default function InstanceTypeForm({ resource, onChange, editMode = false 
             control={
               <Switch
                 checked={resource.spec?.cpu?.isolateEmulatorThread || false}
-                onChange={(e) => updateCPU({ isolateEmulatorThread: e.target.checked || undefined })}
+                onChange={e => updateCPU({ isolateEmulatorThread: e.target.checked || undefined })}
               />
             }
             label={
@@ -262,7 +269,7 @@ export default function InstanceTypeForm({ resource, onChange, editMode = false 
             select
             label="IO Threads Policy"
             value={resource.spec?.ioThreadsPolicy || ''}
-            onChange={(e) => updateSpec('ioThreadsPolicy', e.target.value || undefined)}
+            onChange={e => updateSpec('ioThreadsPolicy', e.target.value || undefined)}
             helperText="Controls how IO threads are allocated"
           >
             <MenuItem value="">None</MenuItem>
@@ -279,7 +286,7 @@ export default function InstanceTypeForm({ resource, onChange, editMode = false 
             control={
               <Switch
                 checked={!!resource.spec?.memory?.hugepages}
-                onChange={(e) => {
+                onChange={e => {
                   if (e.target.checked) {
                     updateMemory({ hugepages: { pageSize: '2Mi' } });
                   } else {
@@ -306,7 +313,7 @@ export default function InstanceTypeForm({ resource, onChange, editMode = false 
               select
               label="Hugepages Size"
               value={resource.spec.memory.hugepages.pageSize || '2Mi'}
-              onChange={(e) => updateMemory({ hugepages: { pageSize: e.target.value } })}
+              onChange={e => updateMemory({ hugepages: { pageSize: e.target.value } })}
             >
               <MenuItem value="2Mi">2 MiB</MenuItem>
               <MenuItem value="1Gi">1 GiB</MenuItem>

@@ -28,10 +28,14 @@ export async function loadFeatureGates() {
   } catch (error) {
     if (retryCount < MAX_RETRIES) {
       retryCount++;
-      console.debug(`Failed to load KubeVirt feature gates (attempt ${retryCount}/${MAX_RETRIES}), retrying in 5s`);
+      console.debug(
+        `Failed to load KubeVirt feature gates (attempt ${retryCount}/${MAX_RETRIES}), retrying in 5s`
+      );
       retryTimeoutId = setTimeout(loadFeatureGates, 5000);
     } else {
-      console.warn('Failed to load KubeVirt feature gates after max retries, showing all sidebar entries');
+      console.warn(
+        'Failed to load KubeVirt feature gates after max retries, showing all sidebar entries'
+      );
       featureGatesLoaded = true;
       listeners.forEach(listener => listener());
     }

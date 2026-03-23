@@ -34,7 +34,7 @@ export default function DataSourceList() {
     errors &&
     errors.length > 0 &&
     errors.some(
-      (error) =>
+      error =>
         error?.status === 404 ||
         error?.message?.includes('not found') ||
         error?.message?.includes('the server could not find the requested resource')
@@ -83,110 +83,119 @@ export default function DataSourceList() {
             <CreateButtonWithMode
               key="create"
               label="Create DataSource"
-              onCreateForm={() => { setCreateInitialTab(0); setCreateDialogOpen(true); }}
-              onCreateYAML={() => { setCreateInitialTab(1); setCreateDialogOpen(true); }}
+              onCreateForm={() => {
+                setCreateInitialTab(0);
+                setCreateDialogOpen(true);
+              }}
+              onCreateYAML={() => {
+                setCreateInitialTab(1);
+                setCreateDialogOpen(true);
+              }}
             />,
           ],
         }}
         columns={[
-        {
-          id: 'name',
-          label: 'Name',
-          getValue: (ds) => ds.getName(),
-          render: (ds) => (
-            <Link
-              routeName="datasource"
-              params={{ name: ds.getName(), namespace: ds.getNamespace() }}
-            >
-              {ds.getName()}
-            </Link>
-          ),
-        },
-        'namespace',
-        {
-          id: 'os',
-          label: 'Operating System',
-          getValue: (ds) => ds.getOperatingSystem(),
-        },
-        {
-          id: 'instancetype',
-          label: 'Instance Type',
-          getValue: (ds) => ds.getInstanceType(),
-          render: (ds) =>
-            ds.getInstanceType() !== '-' ? (
-              <Link routeName="instancetype" params={{ name: ds.getInstanceType() }}>
-                {ds.getInstanceType()}
-              </Link>
-            ) : (
-              '-'
-            ),
-        },
-        {
-          id: 'preference',
-          label: 'Preference',
-          getValue: (ds) => ds.getPreference(),
-          render: (ds) =>
-            ds.getPreference() !== '-' ? (
-              <Link routeName="preference" params={{ name: ds.getPreference() }}>
-                {ds.getPreference()}
-              </Link>
-            ) : (
-              '-'
-            ),
-        },
-        {
-          id: 'source-pvc',
-          label: 'Source PVC',
-          getValue: (ds) => ds.getSourcePVCName(),
-        },
-        {
-          id: 'dataimportcron',
-          label: 'DataImportCron',
-          getValue: (ds) => ds.getDataImportCron(),
-          render: (ds) =>
-            ds.getDataImportCron() !== '-' ? (
+          {
+            id: 'name',
+            label: 'Name',
+            getValue: ds => ds.getName(),
+            render: ds => (
               <Link
-                routeName="dataimportcron"
-                params={{ name: ds.getDataImportCron(), namespace: ds.getNamespace() }}
+                routeName="datasource"
+                params={{ name: ds.getName(), namespace: ds.getNamespace() }}
               >
-                {ds.getDataImportCron()}
+                {ds.getName()}
               </Link>
-            ) : (
-              '-'
             ),
-        },
-        {
-          id: 'status',
-          label: 'Status',
-          getValue: (ds) => {
-            const conditions = ds.status?.conditions || [];
-            const readyCondition = conditions.find((c: KubeCondition) => c.type === 'Ready');
-            const runningCondition = conditions.find((c: KubeCondition) => c.type === 'Running');
-
-            if (readyCondition?.status === 'True') return 'Ready';
-            if (runningCondition?.status === 'True') return 'Running';
-            if (readyCondition?.reason) return readyCondition.reason;
-            return 'Unknown';
           },
-          render: (ds) => {
-            const conditions = ds.status?.conditions || [];
-            const readyCondition = conditions.find((c: KubeCondition) => c.type === 'Ready');
-            const runningCondition = conditions.find((c: KubeCondition) => c.type === 'Running');
-
-            if (readyCondition?.status === 'True') {
-              return <Chip label="Ready" size="small" color="success" />;
-            } else if (runningCondition?.status === 'True') {
-              return <Chip label="Running" size="small" color="info" />;
-            } else if (readyCondition?.reason === 'Pending' || readyCondition?.reason === 'Progressing') {
-              return <Chip label={readyCondition.reason} size="small" color="warning" />;
-            } else if (readyCondition?.status === 'False') {
-              return <Chip label="Error" size="small" color="error" />;
-            }
-            return <Chip label="Unknown" size="small" color="default" />;
+          'namespace',
+          {
+            id: 'os',
+            label: 'Operating System',
+            getValue: ds => ds.getOperatingSystem(),
           },
-        },
-        'age',
-      ]}
+          {
+            id: 'instancetype',
+            label: 'Instance Type',
+            getValue: ds => ds.getInstanceType(),
+            render: ds =>
+              ds.getInstanceType() !== '-' ? (
+                <Link routeName="instancetype" params={{ name: ds.getInstanceType() }}>
+                  {ds.getInstanceType()}
+                </Link>
+              ) : (
+                '-'
+              ),
+          },
+          {
+            id: 'preference',
+            label: 'Preference',
+            getValue: ds => ds.getPreference(),
+            render: ds =>
+              ds.getPreference() !== '-' ? (
+                <Link routeName="preference" params={{ name: ds.getPreference() }}>
+                  {ds.getPreference()}
+                </Link>
+              ) : (
+                '-'
+              ),
+          },
+          {
+            id: 'source-pvc',
+            label: 'Source PVC',
+            getValue: ds => ds.getSourcePVCName(),
+          },
+          {
+            id: 'dataimportcron',
+            label: 'DataImportCron',
+            getValue: ds => ds.getDataImportCron(),
+            render: ds =>
+              ds.getDataImportCron() !== '-' ? (
+                <Link
+                  routeName="dataimportcron"
+                  params={{ name: ds.getDataImportCron(), namespace: ds.getNamespace() }}
+                >
+                  {ds.getDataImportCron()}
+                </Link>
+              ) : (
+                '-'
+              ),
+          },
+          {
+            id: 'status',
+            label: 'Status',
+            getValue: ds => {
+              const conditions = ds.status?.conditions || [];
+              const readyCondition = conditions.find((c: KubeCondition) => c.type === 'Ready');
+              const runningCondition = conditions.find((c: KubeCondition) => c.type === 'Running');
+
+              if (readyCondition?.status === 'True') return 'Ready';
+              if (runningCondition?.status === 'True') return 'Running';
+              if (readyCondition?.reason) return readyCondition.reason;
+              return 'Unknown';
+            },
+            render: ds => {
+              const conditions = ds.status?.conditions || [];
+              const readyCondition = conditions.find((c: KubeCondition) => c.type === 'Ready');
+              const runningCondition = conditions.find((c: KubeCondition) => c.type === 'Running');
+
+              if (readyCondition?.status === 'True') {
+                return <Chip label="Ready" size="small" color="success" />;
+              } else if (runningCondition?.status === 'True') {
+                return <Chip label="Running" size="small" color="info" />;
+              } else if (
+                readyCondition?.reason === 'Pending' ||
+                readyCondition?.reason === 'Progressing'
+              ) {
+                return <Chip label={readyCondition.reason} size="small" color="warning" />;
+              } else if (readyCondition?.status === 'False') {
+                return <Chip label="Error" size="small" color="error" />;
+              }
+              return <Chip label="Unknown" size="small" color="default" />;
+            },
+          },
+          'age',
+        ]}
       />
 
       <CreateResourceDialog

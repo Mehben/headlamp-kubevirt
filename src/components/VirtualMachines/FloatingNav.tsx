@@ -13,7 +13,6 @@ interface FloatingNavProps {
 
 export default function FloatingNav({ sections, onTerminalClick, onVNCClick }: FloatingNavProps) {
   const scrollToSection = (sectionId: string) => {
-
     // Special handling for different section types
     if (sectionId === 'info') {
       // Try multiple methods to scroll to top
@@ -37,7 +36,7 @@ export default function FloatingNav({ sections, onTerminalClick, onVNCClick }: F
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Force scroll all elements with scrollTop
-      document.querySelectorAll('*').forEach((el) => {
+      document.querySelectorAll('*').forEach(el => {
         if ((el as HTMLElement).scrollTop > 0) {
           (el as HTMLElement).scrollTop = 0;
         }
@@ -79,7 +78,7 @@ export default function FloatingNav({ sections, onTerminalClick, onVNCClick }: F
         gap: 0.5,
       }}
     >
-      {sections.map((section) => (
+      {sections.map(section => (
         <Tooltip key={section.id} title={section.label} placement="left">
           <IconButton
             size="small"

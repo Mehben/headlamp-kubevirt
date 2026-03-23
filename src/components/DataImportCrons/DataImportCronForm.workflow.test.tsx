@@ -2,7 +2,7 @@
  * Workflow tests — simulate a user creating a DataImportCron end-to-end.
  */
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import DataImportCronForm from './DataImportCronForm';
@@ -114,7 +114,9 @@ describe('DataImportCronForm Workflows', () => {
 
     // Fill HTTP URL
     fireEvent.change(screen.getByLabelText('HTTP URL *'), {
-      target: { value: 'https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img' },
+      target: {
+        value: 'https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img',
+      },
     });
 
     // Storage

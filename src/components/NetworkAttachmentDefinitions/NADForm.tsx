@@ -30,14 +30,49 @@ interface NADFormProps {
 }
 
 const CNI_TYPES = [
-  { value: 'bridge', label: 'Bridge', description: 'Linux bridge — L2 connectivity between VMs on the same host', icon: 'mdi:bridge' },
-  { value: 'macvlan', label: 'Macvlan', description: 'Sub-interface with its own MAC off a host interface', icon: 'mdi:lan' },
-  { value: 'ipvlan', label: 'IPvlan', description: 'Sub-interface sharing host MAC, separate IP', icon: 'mdi:ip-network' },
-  { value: 'vlan', label: 'VLAN', description: '802.1q VLAN sub-interface', icon: 'mdi:tag-outline' },
-  { value: 'host-device', label: 'Host Device', description: 'Move a host network device into the container', icon: 'mdi:expansion-card' },
-  { value: 'sriov', label: 'SR-IOV', description: 'SR-IOV Virtual Function passthrough', icon: 'mdi:lightning-bolt' },
+  {
+    value: 'bridge',
+    label: 'Bridge',
+    description: 'Linux bridge — L2 connectivity between VMs on the same host',
+    icon: 'mdi:bridge',
+  },
+  {
+    value: 'macvlan',
+    label: 'Macvlan',
+    description: 'Sub-interface with its own MAC off a host interface',
+    icon: 'mdi:lan',
+  },
+  {
+    value: 'ipvlan',
+    label: 'IPvlan',
+    description: 'Sub-interface sharing host MAC, separate IP',
+    icon: 'mdi:ip-network',
+  },
+  {
+    value: 'vlan',
+    label: 'VLAN',
+    description: '802.1q VLAN sub-interface',
+    icon: 'mdi:tag-outline',
+  },
+  {
+    value: 'host-device',
+    label: 'Host Device',
+    description: 'Move a host network device into the container',
+    icon: 'mdi:expansion-card',
+  },
+  {
+    value: 'sriov',
+    label: 'SR-IOV',
+    description: 'SR-IOV Virtual Function passthrough',
+    icon: 'mdi:lightning-bolt',
+  },
   { value: 'ptp', label: 'PTP', description: 'Point-to-point veth pair', icon: 'mdi:connection' },
-  { value: 'tap', label: 'TAP', description: 'TAP device for VM/userspace networking', icon: 'mdi:ethernet' },
+  {
+    value: 'tap',
+    label: 'TAP',
+    description: 'TAP device for VM/userspace networking',
+    icon: 'mdi:ethernet',
+  },
 ];
 
 const IPAM_TYPES = [
@@ -119,7 +154,8 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
     }
   };
 
-  const ipamType = !config.ipam || Object.keys(config.ipam).length === 0 ? 'none' : (config.ipam.type || 'none');
+  const ipamType =
+    !config.ipam || Object.keys(config.ipam).length === 0 ? 'none' : config.ipam.type || 'none';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -131,7 +167,7 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
             required
             label="Name"
             value={resource.metadata?.name || ''}
-            onChange={(e) => updateMetadata('name', e.target.value)}
+            onChange={e => updateMetadata('name', e.target.value)}
             helperText={editMode ? 'Name cannot be changed' : 'Network attachment definition name'}
             placeholder="my-network"
             disabled={editMode}
@@ -143,7 +179,7 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
             required
             label="Namespace"
             value={resource.metadata?.namespace || 'default'}
-            onChange={(e) => updateMetadata('namespace', e.target.value)}
+            onChange={e => updateMetadata('namespace', e.target.value)}
             helperText={editMode ? 'Namespace cannot be changed' : 'Kubernetes namespace'}
             disabled={editMode}
           />
@@ -154,7 +190,7 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
             select
             label="CNI Version"
             value={config.cniVersion || '0.3.1'}
-            onChange={(e) => updateConfig({ cniVersion: e.target.value })}
+            onChange={e => updateConfig({ cniVersion: e.target.value })}
             helperText="CNI specification version"
           >
             <MenuItem value="0.3.0">0.3.0</MenuItem>
@@ -169,7 +205,7 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
       {/* CNI Plugin Type Selection */}
       <FormSection icon="mdi:network-outline" title="Network Type" color="network" noGrid>
         <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
-          {CNI_TYPES.map((cni) => (
+          {CNI_TYPES.map(cni => (
             <Grid item xs={6} sm={4} md={3} key={cni.value} sx={{ display: 'flex' }}>
               <Paper
                 variant="outlined"
@@ -195,7 +231,9 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
                 }}
               >
                 <Icon icon={cni.icon} width={28} />
-                <Typography variant="subtitle2" sx={{ mt: 0.5 }}>{cni.label}</Typography>
+                <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
+                  {cni.label}
+                </Typography>
                 <Typography
                   variant="caption"
                   sx={{
@@ -214,7 +252,12 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
       </FormSection>
 
       {/* Plugin Configuration — dynamic based on CNI type */}
-      <FormSection icon="mdi:tune" title={`${CNI_TYPES.find(c => c.value === config.type)?.label || 'Plugin'} Configuration`} color="network" noGrid>
+      <FormSection
+        icon="mdi:tune"
+        title={`${CNI_TYPES.find(c => c.value === config.type)?.label || 'Plugin'} Configuration`}
+        color="network"
+        noGrid
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, mt: -1 }}>
           <Chip label={config.type || 'bridge'} size="small" color="primary" />
         </Box>
@@ -223,27 +266,36 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
         {config.type === 'macvlan' && <MacvlanFields config={config} updateConfig={updateConfig} />}
         {config.type === 'ipvlan' && <IpvlanFields config={config} updateConfig={updateConfig} />}
         {config.type === 'vlan' && <VlanFields config={config} updateConfig={updateConfig} />}
-        {config.type === 'host-device' && <HostDeviceFields config={config} updateConfig={updateConfig} />}
+        {config.type === 'host-device' && (
+          <HostDeviceFields config={config} updateConfig={updateConfig} />
+        )}
         {config.type === 'sriov' && <SriovFields config={config} updateConfig={updateConfig} />}
         {config.type === 'ptp' && <PtpFields config={config} updateConfig={updateConfig} />}
         {config.type === 'tap' && <TapFields config={config} updateConfig={updateConfig} />}
       </FormSection>
 
       {/* IPAM Configuration */}
-      <FormSection icon="mdi:ip-network" title="IP Address Management (IPAM)" color="network" noGrid>
+      <FormSection
+        icon="mdi:ip-network"
+        title="IP Address Management (IPAM)"
+        color="network"
+        noGrid
+      >
         <TextField
           fullWidth
           select
           label="IPAM Type"
           value={ipamType}
-          onChange={(e) => handleIPAMTypeChange(e.target.value)}
+          onChange={e => handleIPAMTypeChange(e.target.value)}
           sx={{ mb: 3 }}
         >
-          {IPAM_TYPES.map((ipam) => (
+          {IPAM_TYPES.map(ipam => (
             <MenuItem key={ipam.value} value={ipam.value}>
               <Box>
                 <Typography variant="body2">{ipam.label}</Typography>
-                <Typography variant="caption" color="text.secondary">{ipam.description}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {ipam.description}
+                </Typography>
               </Box>
             </MenuItem>
           ))}
@@ -251,23 +303,21 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
 
         {ipamType === 'none' && (
           <Alert severity="info" icon={<Icon icon="mdi:information-outline" />}>
-            L2 only networking — no IP address management. Suitable for bridge networks where the guest handles its own IP configuration.
+            L2 only networking — no IP address management. Suitable for bridge networks where the
+            guest handles its own IP configuration.
           </Alert>
         )}
 
-        {ipamType === 'host-local' && (
-          <HostLocalIPAM config={config} updateConfig={updateConfig} />
-        )}
+        {ipamType === 'host-local' && <HostLocalIPAM config={config} updateConfig={updateConfig} />}
 
         {ipamType === 'dhcp' && (
           <Alert severity="info" icon={<Icon icon="mdi:information-outline" />}>
-            IP addresses will be acquired from a DHCP server on the network. The DHCP daemon must be running on the host.
+            IP addresses will be acquired from a DHCP server on the network. The DHCP daemon must be
+            running on the host.
           </Alert>
         )}
 
-        {ipamType === 'static' && (
-          <StaticIPAM config={config} updateConfig={updateConfig} />
-        )}
+        {ipamType === 'static' && <StaticIPAM config={config} updateConfig={updateConfig} />}
       </FormSection>
     </Box>
   );
@@ -275,7 +325,13 @@ export default function NADForm({ resource, onChange, editMode = false }: NADFor
 
 // ─── CNI Type-Specific Field Components ────────────────────────────────────────
 
-function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function BridgeFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={6}>
@@ -283,7 +339,7 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           fullWidth
           label="Bridge Name"
           value={config.bridge || ''}
-          onChange={(e) => updateConfig({ bridge: e.target.value })}
+          onChange={e => updateConfig({ bridge: e.target.value })}
           helperText="Name of the Linux bridge on the host"
           placeholder="br0"
         />
@@ -293,7 +349,7 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           fullWidth
           label="MTU"
           value={config.mtu ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ mtu: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -306,7 +362,7 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           fullWidth
           label="VLAN Tag"
           value={config.vlan ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ vlan: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -317,7 +373,9 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
 
       <Grid item xs={12}>
         <Divider sx={{ my: 1 }} />
-        <Typography variant="subtitle2" sx={{ mb: 2, mt: 1 }}>Options</Typography>
+        <Typography variant="subtitle2" sx={{ mb: 2, mt: 1 }}>
+          Options
+        </Typography>
       </Grid>
 
       <Grid item xs={12} sm={6} md={4}>
@@ -325,13 +383,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.isGateway || false}
-              onChange={(e) => updateConfig({ isGateway: e.target.checked || undefined })}
+              onChange={e => updateConfig({ isGateway: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Gateway</Typography>
-              <Typography variant="caption" color="text.secondary">Assign IP to bridge, making it a gateway</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Assign IP to bridge, making it a gateway
+              </Typography>
             </Box>
           }
         />
@@ -341,13 +401,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.isDefaultGateway || false}
-              onChange={(e) => updateConfig({ isDefaultGateway: e.target.checked || undefined })}
+              onChange={e => updateConfig({ isDefaultGateway: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Default Gateway</Typography>
-              <Typography variant="caption" color="text.secondary">Make bridge IP the default route</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Make bridge IP the default route
+              </Typography>
             </Box>
           }
         />
@@ -357,13 +419,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.ipMasq || false}
-              onChange={(e) => updateConfig({ ipMasq: e.target.checked || undefined })}
+              onChange={e => updateConfig({ ipMasq: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">IP Masquerade</Typography>
-              <Typography variant="caption" color="text.secondary">SNAT for outbound traffic</Typography>
+              <Typography variant="caption" color="text.secondary">
+                SNAT for outbound traffic
+              </Typography>
             </Box>
           }
         />
@@ -373,13 +437,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.hairpinMode || false}
-              onChange={(e) => updateConfig({ hairpinMode: e.target.checked || undefined })}
+              onChange={e => updateConfig({ hairpinMode: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Hairpin Mode</Typography>
-              <Typography variant="caption" color="text.secondary">Allow container to reach its own IP via bridge</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Allow container to reach its own IP via bridge
+              </Typography>
             </Box>
           }
         />
@@ -389,13 +455,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.promiscMode || false}
-              onChange={(e) => updateConfig({ promiscMode: e.target.checked || undefined })}
+              onChange={e => updateConfig({ promiscMode: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Promiscuous Mode</Typography>
-              <Typography variant="caption" color="text.secondary">Set promiscuous mode on bridge</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Set promiscuous mode on bridge
+              </Typography>
             </Box>
           }
         />
@@ -405,13 +473,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.macspoofchk || false}
-              onChange={(e) => updateConfig({ macspoofchk: e.target.checked || undefined })}
+              onChange={e => updateConfig({ macspoofchk: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">MAC Spoof Check</Typography>
-              <Typography variant="caption" color="text.secondary">Restrict traffic to assigned MAC/IP</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Restrict traffic to assigned MAC/IP
+              </Typography>
             </Box>
           }
         />
@@ -421,13 +491,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.forceAddress || false}
-              onChange={(e) => updateConfig({ forceAddress: e.target.checked || undefined })}
+              onChange={e => updateConfig({ forceAddress: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Force Address</Typography>
-              <Typography variant="caption" color="text.secondary">Reconfigure bridge IP if changed</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Reconfigure bridge IP if changed
+              </Typography>
             </Box>
           }
         />
@@ -437,13 +509,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.preserveDefaultVlan !== false}
-              onChange={(e) => updateConfig({ preserveDefaultVlan: e.target.checked })}
+              onChange={e => updateConfig({ preserveDefaultVlan: e.target.checked })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Preserve Default VLAN</Typography>
-              <Typography variant="caption" color="text.secondary">Keep bridge default PVID 1</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Keep bridge default PVID 1
+              </Typography>
             </Box>
           }
         />
@@ -453,13 +527,15 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           control={
             <Switch
               checked={config.enabledad || false}
-              onChange={(e) => updateConfig({ enabledad: e.target.checked || undefined })}
+              onChange={e => updateConfig({ enabledad: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">DAD</Typography>
-              <Typography variant="caption" color="text.secondary">Duplicate Address Detection for IPv6</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Duplicate Address Detection for IPv6
+              </Typography>
             </Box>
           }
         />
@@ -468,7 +544,13 @@ function BridgeFields({ config, updateConfig }: { config: KubeResourceBuilder; u
   );
 }
 
-function MacvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function MacvlanFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={4}>
@@ -476,7 +558,7 @@ function MacvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; 
           fullWidth
           label="Master Interface"
           value={config.master || ''}
-          onChange={(e) => updateConfig({ master: e.target.value || undefined })}
+          onChange={e => updateConfig({ master: e.target.value || undefined })}
           helperText="Host interface (blank = default route interface)"
           placeholder="eth0"
         />
@@ -487,11 +569,13 @@ function MacvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; 
           select
           label="Mode"
           value={config.mode || 'bridge'}
-          onChange={(e) => updateConfig({ mode: e.target.value })}
+          onChange={e => updateConfig({ mode: e.target.value })}
           helperText="Macvlan operating mode"
         >
-          {MACVLAN_MODES.map((m) => (
-            <MenuItem key={m} value={m}>{m}</MenuItem>
+          {MACVLAN_MODES.map(m => (
+            <MenuItem key={m} value={m}>
+              {m}
+            </MenuItem>
           ))}
         </TextField>
       </Grid>
@@ -500,7 +584,7 @@ function MacvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; 
           fullWidth
           label="MTU"
           value={config.mtu ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ mtu: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -520,7 +604,13 @@ function MacvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; 
   );
 }
 
-function IpvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function IpvlanFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={4}>
@@ -528,7 +618,7 @@ function IpvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           fullWidth
           label="Master Interface"
           value={config.master || ''}
-          onChange={(e) => updateConfig({ master: e.target.value || undefined })}
+          onChange={e => updateConfig({ master: e.target.value || undefined })}
           helperText="Host interface (blank = default route interface)"
           placeholder="eth0"
         />
@@ -539,11 +629,13 @@ function IpvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           select
           label="Mode"
           value={config.mode || 'l2'}
-          onChange={(e) => updateConfig({ mode: e.target.value })}
+          onChange={e => updateConfig({ mode: e.target.value })}
           helperText="IPvlan operating mode"
         >
-          {IPVLAN_MODES.map((m) => (
-            <MenuItem key={m} value={m}>{m}</MenuItem>
+          {IPVLAN_MODES.map(m => (
+            <MenuItem key={m} value={m}>
+              {m}
+            </MenuItem>
           ))}
         </TextField>
       </Grid>
@@ -552,7 +644,7 @@ function IpvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; u
           fullWidth
           label="MTU"
           value={config.mtu ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ mtu: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -571,7 +663,13 @@ function IpvlanFields({ config, updateConfig }: { config: KubeResourceBuilder; u
   );
 }
 
-function VlanFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function VlanFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={4}>
@@ -580,7 +678,7 @@ function VlanFields({ config, updateConfig }: { config: KubeResourceBuilder; upd
           required
           label="Master Interface"
           value={config.master || ''}
-          onChange={(e) => updateConfig({ master: e.target.value })}
+          onChange={e => updateConfig({ master: e.target.value })}
           helperText="Host interface that supports 802.1q"
           placeholder="eth0"
           sx={{
@@ -596,7 +694,7 @@ function VlanFields({ config, updateConfig }: { config: KubeResourceBuilder; upd
           required
           label="VLAN ID"
           value={config.vlanId ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ vlanId: val === '' ? undefined : parseInt(val) });
           }}
@@ -614,7 +712,7 @@ function VlanFields({ config, updateConfig }: { config: KubeResourceBuilder; upd
           fullWidth
           label="MTU"
           value={config.mtu ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ mtu: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -626,7 +724,13 @@ function VlanFields({ config, updateConfig }: { config: KubeResourceBuilder; upd
   );
 }
 
-function HostDeviceFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function HostDeviceFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   const hasAny = config.device || config.hwaddr || config.kernelpath || config.pciBusID;
   return (
     <Grid container spacing={3}>
@@ -642,7 +746,7 @@ function HostDeviceFields({ config, updateConfig }: { config: KubeResourceBuilde
           fullWidth
           label="Device Name"
           value={config.device || ''}
-          onChange={(e) => updateConfig({ device: e.target.value || undefined })}
+          onChange={e => updateConfig({ device: e.target.value || undefined })}
           helperText='Network device name (e.g. "eth1")'
           placeholder="eth1"
         />
@@ -652,7 +756,7 @@ function HostDeviceFields({ config, updateConfig }: { config: KubeResourceBuilde
           fullWidth
           label="MAC Address"
           value={config.hwaddr || ''}
-          onChange={(e) => updateConfig({ hwaddr: e.target.value || undefined })}
+          onChange={e => updateConfig({ hwaddr: e.target.value || undefined })}
           helperText='Hardware address (e.g. "02:42:ac:11:00:02")'
           placeholder="02:42:ac:11:00:02"
         />
@@ -662,7 +766,7 @@ function HostDeviceFields({ config, updateConfig }: { config: KubeResourceBuilde
           fullWidth
           label="Kernel Path"
           value={config.kernelpath || ''}
-          onChange={(e) => updateConfig({ kernelpath: e.target.value || undefined })}
+          onChange={e => updateConfig({ kernelpath: e.target.value || undefined })}
           helperText="Kernel device kobj path"
           placeholder="/sys/devices/pci0000:00/0000:00:1f.6"
         />
@@ -672,7 +776,7 @@ function HostDeviceFields({ config, updateConfig }: { config: KubeResourceBuilde
           fullWidth
           label="PCI Bus ID"
           value={config.pciBusID || ''}
-          onChange={(e) => updateConfig({ pciBusID: e.target.value || undefined })}
+          onChange={e => updateConfig({ pciBusID: e.target.value || undefined })}
           helperText='PCI address (e.g. "0000:00:1f.6")'
           placeholder="0000:00:1f.6"
         />
@@ -681,12 +785,19 @@ function HostDeviceFields({ config, updateConfig }: { config: KubeResourceBuilde
   );
 }
 
-function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function SriovFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
         <Alert severity="info" variant="outlined">
-          SR-IOV requires the SR-IOV device plugin and operator to be installed. The VF PCI address is typically injected automatically at runtime.
+          SR-IOV requires the SR-IOV device plugin and operator to be installed. The VF PCI address
+          is typically injected automatically at runtime.
         </Alert>
       </Grid>
       <Grid item xs={12} md={4}>
@@ -694,7 +805,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           fullWidth
           label="VLAN"
           value={config.vlan ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ vlan: val === '' ? undefined : parseInt(val) });
           }}
@@ -707,7 +818,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           fullWidth
           label="VLAN QoS"
           value={config.vlanQoS ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ vlanQoS: val === '' ? undefined : parseInt(val) });
           }}
@@ -721,7 +832,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           select
           label="VLAN Protocol"
           value={config.vlanProto || '802.1q'}
-          onChange={(e) => updateConfig({ vlanProto: e.target.value })}
+          onChange={e => updateConfig({ vlanProto: e.target.value })}
           helperText="802.1q or 802.1ad (QinQ)"
         >
           <MenuItem value="802.1q">802.1q</MenuItem>
@@ -733,7 +844,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           fullWidth
           label="MAC Address"
           value={config.mac || ''}
-          onChange={(e) => updateConfig({ mac: e.target.value || undefined })}
+          onChange={e => updateConfig({ mac: e.target.value || undefined })}
           placeholder="02:00:00:00:00:01"
         />
       </Grid>
@@ -743,7 +854,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           select
           label="Spoof Check"
           value={config.spoofchk || ''}
-          onChange={(e) => updateConfig({ spoofchk: e.target.value || undefined })}
+          onChange={e => updateConfig({ spoofchk: e.target.value || undefined })}
         >
           <MenuItem value="">Default</MenuItem>
           <MenuItem value="on">On</MenuItem>
@@ -756,7 +867,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           select
           label="Trust"
           value={config.trust || ''}
-          onChange={(e) => updateConfig({ trust: e.target.value || undefined })}
+          onChange={e => updateConfig({ trust: e.target.value || undefined })}
         >
           <MenuItem value="">Default</MenuItem>
           <MenuItem value="on">On</MenuItem>
@@ -769,7 +880,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           select
           label="Link State"
           value={config.linkState || ''}
-          onChange={(e) => updateConfig({ linkState: e.target.value || undefined })}
+          onChange={e => updateConfig({ linkState: e.target.value || undefined })}
         >
           <MenuItem value="">Default</MenuItem>
           <MenuItem value="auto">Auto</MenuItem>
@@ -782,7 +893,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           fullWidth
           label="Min TX Rate (Mbps)"
           value={config.minTxRate ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ minTxRate: val === '' ? undefined : parseInt(val) });
           }}
@@ -795,7 +906,7 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
           fullWidth
           label="Max TX Rate (Mbps)"
           value={config.maxTxRate ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ maxTxRate: val === '' ? undefined : parseInt(val) });
           }}
@@ -807,7 +918,13 @@ function SriovFields({ config, updateConfig }: { config: KubeResourceBuilder; up
   );
 }
 
-function PtpFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function PtpFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={6}>
@@ -815,7 +932,7 @@ function PtpFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="MTU"
           value={config.mtu ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ mtu: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -828,13 +945,15 @@ function PtpFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           control={
             <Switch
               checked={config.ipMasq || false}
-              onChange={(e) => updateConfig({ ipMasq: e.target.checked || undefined })}
+              onChange={e => updateConfig({ ipMasq: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">IP Masquerade</Typography>
-              <Typography variant="caption" color="text.secondary">SNAT for outbound traffic</Typography>
+              <Typography variant="caption" color="text.secondary">
+                SNAT for outbound traffic
+              </Typography>
             </Box>
           }
         />
@@ -843,7 +962,13 @@ function PtpFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
   );
 }
 
-function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function TapFields({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={4}>
@@ -851,7 +976,7 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="MAC Address"
           value={config.mac || ''}
-          onChange={(e) => updateConfig({ mac: e.target.value || undefined })}
+          onChange={e => updateConfig({ mac: e.target.value || undefined })}
           placeholder="02:00:00:00:00:01"
         />
       </Grid>
@@ -860,7 +985,7 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="MTU"
           value={config.mtu ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ mtu: val === '' ? undefined : parseInt(val) || undefined });
           }}
@@ -873,7 +998,7 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="Bridge"
           value={config.bridge || ''}
-          onChange={(e) => updateConfig({ bridge: e.target.value || undefined })}
+          onChange={e => updateConfig({ bridge: e.target.value || undefined })}
           helperText="Attach TAP to existing bridge"
           placeholder="br0"
         />
@@ -883,7 +1008,7 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="SELinux Context"
           value={config.selinuxcontext || ''}
-          onChange={(e) => updateConfig({ selinuxcontext: e.target.value || undefined })}
+          onChange={e => updateConfig({ selinuxcontext: e.target.value || undefined })}
         />
       </Grid>
       <Grid item xs={12} md={4}>
@@ -891,7 +1016,7 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="Owner (UID)"
           value={config.owner ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ owner: val === '' ? undefined : parseInt(val) });
           }}
@@ -903,7 +1028,7 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           fullWidth
           label="Group (GID)"
           value={config.group ?? ''}
-          onChange={(e) => {
+          onChange={e => {
             const val = e.target.value;
             updateConfig({ group: val === '' ? undefined : parseInt(val) });
           }}
@@ -915,13 +1040,15 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
           control={
             <Switch
               checked={config.multiQueue || false}
-              onChange={(e) => updateConfig({ multiQueue: e.target.checked || undefined })}
+              onChange={e => updateConfig({ multiQueue: e.target.checked || undefined })}
             />
           }
           label={
             <Box>
               <Typography variant="body2">Multi-Queue</Typography>
-              <Typography variant="caption" color="text.secondary">Enable multi-queue TAP for multi-vCPU VMs</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Enable multi-queue TAP for multi-vCPU VMs
+              </Typography>
             </Box>
           }
         />
@@ -932,7 +1059,13 @@ function TapFields({ config, updateConfig }: { config: KubeResourceBuilder; upda
 
 // ─── IPAM Field Components ─────────────────────────────────────────────────────
 
-function HostLocalIPAM({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function HostLocalIPAM({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   const ranges = config.ipam?.ranges?.[0] || [{ subnet: '' }];
   const routes = config.ipam?.routes || [];
 
@@ -983,7 +1116,7 @@ function HostLocalIPAM({ config, updateConfig }: { config: KubeResourceBuilder; 
                   required
                   label="Subnet"
                   value={range.subnet || ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     const updated = [...ranges];
                     updated[idx] = { ...updated[idx], subnet: e.target.value };
                     updateRanges(updated);
@@ -1002,7 +1135,7 @@ function HostLocalIPAM({ config, updateConfig }: { config: KubeResourceBuilder; 
                   fullWidth
                   label="Range Start"
                   value={range.rangeStart || ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     const updated = [...ranges];
                     updated[idx] = { ...updated[idx], rangeStart: e.target.value || undefined };
                     updateRanges(updated);
@@ -1016,7 +1149,7 @@ function HostLocalIPAM({ config, updateConfig }: { config: KubeResourceBuilder; 
                   fullWidth
                   label="Range End"
                   value={range.rangeEnd || ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     const updated = [...ranges];
                     updated[idx] = { ...updated[idx], rangeEnd: e.target.value || undefined };
                     updateRanges(updated);
@@ -1030,7 +1163,7 @@ function HostLocalIPAM({ config, updateConfig }: { config: KubeResourceBuilder; 
                   fullWidth
                   label="Gateway"
                   value={range.gateway || ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     const updated = [...ranges];
                     updated[idx] = { ...updated[idx], gateway: e.target.value || undefined };
                     updateRanges(updated);
@@ -1050,7 +1183,13 @@ function HostLocalIPAM({ config, updateConfig }: { config: KubeResourceBuilder; 
   );
 }
 
-function StaticIPAM({ config, updateConfig }: { config: KubeResourceBuilder; updateConfig: (u: KubeResourceBuilder) => void }) {
+function StaticIPAM({
+  config,
+  updateConfig,
+}: {
+  config: KubeResourceBuilder;
+  updateConfig: (u: KubeResourceBuilder) => void;
+}) {
   const addresses = config.ipam?.addresses || [{ address: '' }];
   const routes = config.ipam?.routes || [];
 
@@ -1088,7 +1227,9 @@ function StaticIPAM({ config, updateConfig }: { config: KubeResourceBuilder; upd
             {addresses.length > 1 && (
               <IconButton
                 size="small"
-                onClick={() => updateAddresses(addresses.filter((_: unknown, i: number) => i !== idx))}
+                onClick={() =>
+                  updateAddresses(addresses.filter((_: unknown, i: number) => i !== idx))
+                }
                 sx={{ position: 'absolute', top: 4, right: 4 }}
               >
                 <Icon icon="mdi:close" width={18} />
@@ -1101,7 +1242,7 @@ function StaticIPAM({ config, updateConfig }: { config: KubeResourceBuilder; upd
                   required
                   label="Address (CIDR)"
                   value={addr.address || ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     const updated = [...addresses];
                     updated[idx] = { ...updated[idx], address: e.target.value };
                     updateAddresses(updated);
@@ -1115,7 +1256,7 @@ function StaticIPAM({ config, updateConfig }: { config: KubeResourceBuilder; upd
                   fullWidth
                   label="Gateway"
                   value={addr.gateway || ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     const updated = [...addresses];
                     updated[idx] = { ...updated[idx], gateway: e.target.value || undefined };
                     updateAddresses(updated);
@@ -1135,7 +1276,13 @@ function StaticIPAM({ config, updateConfig }: { config: KubeResourceBuilder; upd
   );
 }
 
-function RoutesEditor({ routes, onChange }: { routes: Record<string, unknown>[]; onChange: (routes: Record<string, unknown>[]) => void }) {
+function RoutesEditor({
+  routes,
+  onChange,
+}: {
+  routes: Record<string, unknown>[];
+  onChange: (routes: Record<string, unknown>[]) => void;
+}) {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -1172,7 +1319,7 @@ function RoutesEditor({ routes, onChange }: { routes: Record<string, unknown>[];
                 fullWidth
                 label="Destination (CIDR)"
                 value={route.dst || ''}
-                onChange={(e) => {
+                onChange={e => {
                   const updated = [...routes];
                   updated[idx] = { ...updated[idx], dst: e.target.value };
                   onChange(updated);
@@ -1186,7 +1333,7 @@ function RoutesEditor({ routes, onChange }: { routes: Record<string, unknown>[];
                 fullWidth
                 label="Gateway"
                 value={route.gw || ''}
-                onChange={(e) => {
+                onChange={e => {
                   const updated = [...routes];
                   updated[idx] = { ...updated[idx], gw: e.target.value || undefined };
                   onChange(updated);

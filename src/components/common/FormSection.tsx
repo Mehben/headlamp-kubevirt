@@ -6,14 +6,14 @@ import { Box, Grid, Paper, Typography } from '@mui/material';
  * Matches Settings page FEATURE_GATE_CATEGORIES colors exactly.
  */
 export const SECTION_COLORS = {
-  storage: '#ff9800',    // Orange  — Storage category
-  network: '#2196f3',    // Blue    — Network category
-  compute: '#9c27b0',    // Purple  — Compute category
-  device: '#4caf50',     // Green   — Devices category
-  security: '#f44336',   // Red     — Security category
-  migration: '#00bcd4',  // Cyan    — Migration category
-  display: '#607d8b',    // Slate   — Display category
-  other: '#795548',      // Brown   — Other / metadata category
+  storage: '#ff9800', // Orange  — Storage category
+  network: '#2196f3', // Blue    — Network category
+  compute: '#9c27b0', // Purple  — Compute category
+  device: '#4caf50', // Green   — Devices category
+  security: '#f44336', // Red     — Security category
+  migration: '#00bcd4', // Cyan    — Migration category
+  display: '#607d8b', // Slate   — Display category
+  other: '#795548', // Brown   — Other / metadata category
 } as const;
 
 export type SectionColor = keyof typeof SECTION_COLORS | string;
@@ -50,7 +50,7 @@ export default function FormSection({
         ...(resolvedColor && {
           borderLeft: `3px solid ${resolvedColor}`,
           backgroundColor: `${resolvedColor}0D`, // ~5% opacity hex suffix
-          borderColor: `${resolvedColor}33`,      // ~20% opacity for border
+          borderColor: `${resolvedColor}33`, // ~20% opacity for border
         }),
       }}
     >

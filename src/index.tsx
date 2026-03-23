@@ -15,10 +15,15 @@
  */
 
 import { Icon } from '@iconify/react';
-import { registerAppBarAction,registerRoute, registerSidebarEntry, registerSidebarEntryFilter } from '@kinvolk/headlamp-plugin/lib';
+import {
+  registerAppBarAction,
+  registerRoute,
+  registerSidebarEntry,
+  registerSidebarEntryFilter,
+} from '@kinvolk/headlamp-plugin/lib';
 import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
 import { Alert, Box, Button, IconButton, Snackbar } from '@mui/material';
-import React, { useEffect, useRef,useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DataVolumeDetails from './components/BootableVolumes/DataVolumeDetails';
 import DataVolumeList from './components/BootableVolumes/DataVolumeList';
 import DataSourceDetails from './components/BootableVolumes/Details';
@@ -42,11 +47,7 @@ import VirtualMachineList from './components/VirtualMachines/List';
 import SnapshotDetails from './components/VirtualMachineSnapshot/Details';
 import SnapshotList from './components/VirtualMachineSnapshot/List';
 import KubeVirtSettings from './kubevirt/Settings';
-import {
-  areFeatureGatesLoaded,
-  getFeatureGates,
-  loadFeatureGates,
-} from './utils/featureGates';
+import { areFeatureGatesLoaded, getFeatureGates, loadFeatureGates } from './utils/featureGates';
 
 // Route registration helper - DRY pattern for KubeVirt resources
 interface ResourceRoute {
@@ -78,12 +79,11 @@ function registerKubeVirtResource(config: ResourceRoute) {
   });
 
   if (config.DetailsComponent) {
-    const detailPath = config.hasNamespace !== false
-      ? `/kubevirt/${config.path}/:namespace/:name`
-      : `/kubevirt/${config.path}/:name`;
-    const params = config.hasNamespace !== false
-      ? ['namespace', 'name']
-      : ['name'];
+    const detailPath =
+      config.hasNamespace !== false
+        ? `/kubevirt/${config.path}/:namespace/:name`
+        : `/kubevirt/${config.path}/:name`;
+    const params = config.hasNamespace !== false ? ['namespace', 'name'] : ['name'];
 
     registerRoute({
       path: detailPath,
@@ -113,13 +113,16 @@ function KubeVirtUpdateWatcher() {
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
-        const response = await ApiProxy.request('/apis/kubevirt.io/v1/namespaces/kubevirt/kubevirts');
+        const response = await ApiProxy.request(
+          '/apis/kubevirt.io/v1/namespaces/kubevirt/kubevirts'
+        );
         const items = response?.items || [];
         if (items.length > 0) {
           const kv = items[0];
           const currentVersion = kv?.status?.observedKubeVirtVersion || '';
           const targetVersion = kv?.status?.targetKubeVirtVersion || '';
-          const currentFeatureGates: string[] = kv?.spec?.configuration?.developerConfiguration?.featureGates || [];
+          const currentFeatureGates: string[] =
+            kv?.spec?.configuration?.developerConfiguration?.featureGates || [];
 
           // Store initial values on first check
           if (initialVersionRef.current === null) {
@@ -173,33 +176,22 @@ function KubeVirtUpdateWatcher() {
   }
 
   return (
-    <Snackbar
-      open={showReloadBanner}
-      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-    >
+    <Snackbar open={showReloadBanner} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
       <Alert
         severity="info"
         action={
           <Box display="flex" gap={1}>
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => window.location.reload()}
-            >
+            <Button color="inherit" size="small" onClick={() => window.location.reload()}>
               Reload
             </Button>
-            <IconButton
-              size="small"
-              color="inherit"
-              onClick={() => setShowReloadBanner(false)}
-            >
+            <IconButton size="small" color="inherit" onClick={() => setShowReloadBanner(false)}>
               <Icon icon="mdi:close" width={18} />
             </IconButton>
           </Box>
         }
         sx={{
           alignItems: 'center',
-          '& .MuiAlert-message': { display: 'flex', alignItems: 'center' }
+          '& .MuiAlert-message': { display: 'flex', alignItems: 'center' },
         }}
       >
         {updateMessage}
@@ -212,7 +204,7 @@ function KubeVirtUpdateWatcher() {
 registerAppBarAction(() => <KubeVirtUpdateWatcher />);
 
 // Filter sidebar entries based on feature gates
-registerSidebarEntryFilter((entry) => {
+registerSidebarEntryFilter(entry => {
   const loaded = areFeatureGatesLoaded();
   const gates = getFeatureGates();
 

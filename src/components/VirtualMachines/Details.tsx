@@ -1,6 +1,11 @@
 import { Icon } from '@iconify/react';
 import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
-import { Link, Resource, SectionBox, SimpleTable } from '@kinvolk/headlamp-plugin/lib/components/common';
+import {
+  Link,
+  Resource,
+  SectionBox,
+  SimpleTable,
+} from '@kinvolk/headlamp-plugin/lib/components/common';
 import { ActionButton } from '@kinvolk/headlamp-plugin/lib/components/common';
 import {
   Box,
@@ -131,562 +136,610 @@ export default function VirtualMachineDetails(props: VirtualMachineDetailsProps)
     <>
       <FloatingNav
         sections={navSections}
-        onTerminalClick={() => { setConsoleTab('terminal'); setShowConsole(true); }}
-        onVNCClick={() => { setConsoleTab('vnc'); setShowConsole(true); }}
+        onTerminalClick={() => {
+          setConsoleTab('terminal');
+          setShowConsole(true);
+        }}
+        onVNCClick={() => {
+          setConsoleTab('vnc');
+          setShowConsole(true);
+        }}
       />
       <Resource.DetailsGrid
-      name={name}
-      namespace={namespace}
-      resourceType={VirtualMachine}
-      extraInfo={item =>
-        item && [
-          {
-            name: t('Status'),
-            value: (
-              <Box display="flex" alignItems="center" gap={1}>
-                {item?.jsonData.status.printableStatus}
-                {liveMigrationEnabled && item?.jsonData.status.conditions?.map(condition => {
-                  if (condition.type === 'LiveMigratable' && condition.status === 'False') {
-                    return (
-                      <Chip
-                        key="notmigratable"
-                        label="Not Migratable"
-                        size="small"
-                        color="warning"
-                        variant="outlined"
-                        icon={<Icon icon="mdi:alert" width={14} />}
-                        title={condition.message || 'Cannot be live migrated'}
-                      />
-                    );
-                  }
-                  return null;
-                })}
-                {item.isDeleteProtected() && (
-                  <Tooltip
-                    title={
-                      <div style={{ fontSize: '0.875rem' }}>
-                        Delete protection enabled - cannot be deleted until protection is removed
-                      </div>
-                    }
-                  >
-                    <Chip
-                      key="protected"
-                      label="Protected"
-                      size="small"
-                      color="info"
-                      icon={<Icon icon="mdi:lock" width={14} />}
-                    />
-                  </Tooltip>
-                )}
-              </Box>
-            ),
-          },
-          ...(vmiData
-            ? [
-                {
-                  name: 'CPU',
-                  value: vmiData.status?.currentCPUTopology
-                    ? (() => {
-                        const topo = vmiData.status.currentCPUTopology;
-                        const total = topo.sockets * topo.cores * topo.threads;
+        name={name}
+        namespace={namespace}
+        resourceType={VirtualMachine}
+        extraInfo={item =>
+          item && [
+            {
+              name: t('Status'),
+              value: (
+                <Box display="flex" alignItems="center" gap={1}>
+                  {item?.jsonData.status.printableStatus}
+                  {liveMigrationEnabled &&
+                    item?.jsonData.status.conditions?.map(condition => {
+                      if (condition.type === 'LiveMigratable' && condition.status === 'False') {
                         return (
-                          <Tooltip
-                            title={
-                              <div style={{ fontSize: '0.875rem' }}>
-                                <div>{topo.sockets} Socket(s)</div>
-                                <div>{topo.cores} Core(s)</div>
-                                <div>{topo.threads} Thread(s)</div>
-                              </div>
-                            }
-                          >
-                            <span style={{ cursor: 'help' }}>{total} cores</span>
-                          </Tooltip>
+                          <Chip
+                            key="notmigratable"
+                            label="Not Migratable"
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                            icon={<Icon icon="mdi:alert" width={14} />}
+                            title={condition.message || 'Cannot be live migrated'}
+                          />
                         );
-                      })()
-                    : item?.spec?.template?.spec?.domain?.cpu
+                      }
+                      return null;
+                    })}
+                  {item.isDeleteProtected() && (
+                    <Tooltip
+                      title={
+                        <div style={{ fontSize: '0.875rem' }}>
+                          Delete protection enabled - cannot be deleted until protection is removed
+                        </div>
+                      }
+                    >
+                      <Chip
+                        key="protected"
+                        label="Protected"
+                        size="small"
+                        color="info"
+                        icon={<Icon icon="mdi:lock" width={14} />}
+                      />
+                    </Tooltip>
+                  )}
+                </Box>
+              ),
+            },
+            ...(vmiData
+              ? [
+                  {
+                    name: 'CPU',
+                    value: vmiData.status?.currentCPUTopology
+                      ? (() => {
+                          const topo = vmiData.status.currentCPUTopology;
+                          const total = topo.sockets * topo.cores * topo.threads;
+                          return (
+                            <Tooltip
+                              title={
+                                <div style={{ fontSize: '0.875rem' }}>
+                                  <div>{topo.sockets} Socket(s)</div>
+                                  <div>{topo.cores} Core(s)</div>
+                                  <div>{topo.threads} Thread(s)</div>
+                                </div>
+                              }
+                            >
+                              <span style={{ cursor: 'help' }}>{total} cores</span>
+                            </Tooltip>
+                          );
+                        })()
+                      : item?.spec?.template?.spec?.domain?.cpu
                       ? (() => {
                           const cpu = item.spec.template.spec.domain.cpu;
-                          const total =
-                            (cpu.sockets || 1) * (cpu.cores || 1) * (cpu.threads || 1);
+                          const total = (cpu.sockets || 1) * (cpu.cores || 1) * (cpu.threads || 1);
                           return `${total} cores`;
                         })()
                       : 'N/A',
-                },
-                {
-                  name: 'Memory',
-                  value: vmiData.status?.memory
-                    ? `${vmiData.status.memory.guestCurrent || vmiData.status.memory.guestRequested || 'N/A'}`
-                    : item?.spec?.template?.spec?.domain?.memory?.guest || 'N/A',
-                },
-                {
-                  name: 'Node',
-                  value: vmiData.status?.nodeName ? (
-                    <Link routeName="node" params={{ name: vmiData.status.nodeName }} tooltip>
-                      {vmiData.status.nodeName}
-                    </Link>
+                  },
+                  {
+                    name: 'Memory',
+                    value: vmiData.status?.memory
+                      ? `${
+                          vmiData.status.memory.guestCurrent ||
+                          vmiData.status.memory.guestRequested ||
+                          'N/A'
+                        }`
+                      : item?.spec?.template?.spec?.domain?.memory?.guest || 'N/A',
+                  },
+                  {
+                    name: 'Node',
+                    value: vmiData.status?.nodeName ? (
+                      <Link routeName="node" params={{ name: vmiData.status.nodeName }} tooltip>
+                        {vmiData.status.nodeName}
+                      </Link>
+                    ) : (
+                      'N/A'
+                    ),
+                  },
+                  {
+                    name: 'Guest OS',
+                    value: vmiData.status?.guestOSInfo?.prettyName || 'Unknown',
+                  },
+                  {
+                    name: 'Kernel',
+                    value: vmiData.status?.guestOSInfo?.kernelRelease || 'Unknown',
+                  },
+                ]
+              : []),
+            {
+              name: 'VirtualMachineInstance',
+              value: (
+                <Link
+                  routeName="virtualmachineinstance"
+                  params={{
+                    name: item.getName(),
+                    namespace: item.getNamespace(),
+                  }}
+                >
+                  {item.getName()}
+                </Link>
+              ),
+            },
+            {
+              name: 'Pod',
+              value: podName ? (
+                <Link
+                  routeName="pod"
+                  params={{
+                    name: podName,
+                    namespace: item.getNamespace(),
+                  }}
+                >
+                  {podName}
+                </Link>
+              ) : (
+                'N/A'
+              ),
+            },
+          ]
+        }
+        extraSections={item =>
+          item && [
+            {
+              id: 'conditions',
+              section: (
+                <Box id="section-conditions">
+                  <Resource.ConditionsSection resource={item?.jsonData} />
+                </Box>
+              ),
+            },
+            {
+              id: 'networks',
+              section: (
+                <Box id="section-networks">
+                  {vmiData?.status?.interfaces && vmiData.status.interfaces.length > 0 ? (
+                    <SectionBox title="Network Interfaces">
+                      <SimpleTable
+                        data={vmiData.status.interfaces}
+                        columns={[
+                          {
+                            label: 'Name',
+                            getter: (iface: VMIStatusInterface) => {
+                              const displayName = iface.name || iface.interfaceName || 'N/A';
+                              const tooltipParts = [
+                                iface.interfaceName ? `Interface: ${iface.interfaceName}` : null,
+                                `State: ${iface.linkState || 'N/A'}`,
+                                iface.queueCount ? `Queues: ${iface.queueCount}` : null,
+                              ].filter(Boolean);
+
+                              return (
+                                <Tooltip
+                                  title={
+                                    <div style={{ fontSize: '0.875rem' }}>
+                                      {tooltipParts.map((part, idx) => (
+                                        <div key={idx}>{part}</div>
+                                      ))}
+                                    </div>
+                                  }
+                                >
+                                  <span style={{ cursor: 'help' }}>{displayName}</span>
+                                </Tooltip>
+                              );
+                            },
+                          },
+                          {
+                            label: 'MAC',
+                            getter: (iface: VMIStatusInterface) => iface.mac || 'N/A',
+                          },
+                          {
+                            label: 'IPs',
+                            getter: (iface: VMIStatusInterface) => {
+                              const ips =
+                                iface.ipAddresses && iface.ipAddresses.length > 0
+                                  ? iface.ipAddresses.join(', ')
+                                  : iface.ipAddress || 'N/A';
+                              return (
+                                <Tooltip
+                                  title={
+                                    <div style={{ fontSize: '0.875rem' }}>
+                                      {ips.split(', ').map((ip: string, idx: number) => (
+                                        <div key={idx}>{ip}</div>
+                                      ))}
+                                    </div>
+                                  }
+                                >
+                                  <span style={{ cursor: 'help' }}>{ips}</span>
+                                </Tooltip>
+                              );
+                            },
+                          },
+                        ]}
+                      />
+                    </SectionBox>
                   ) : (
-                    'N/A'
-                  ),
-                },
-                {
-                  name: 'Guest OS',
-                  value: vmiData.status?.guestOSInfo?.prettyName || 'Unknown',
-                },
-                {
-                  name: 'Kernel',
-                  value: vmiData.status?.guestOSInfo?.kernelRelease || 'Unknown',
-                },
-              ]
-            : []),
-          {
-            name: 'VirtualMachineInstance',
-            value: (
-              <Link
-                routeName="virtualmachineinstance"
-                params={{
-                  name: item.getName(),
-                  namespace: item.getNamespace(),
-                }}
-              >
-                {item.getName()}
-              </Link>
-            ),
-          },
-          {
-            name: 'Pod',
-            value: podName ? (
-              <Link
-                routeName="pod"
-                params={{
-                  name: podName,
-                  namespace: item.getNamespace(),
-                }}
-              >
-                {podName}
-              </Link>
-            ) : (
-              'N/A'
-            ),
-          },
-        ]
-      }
-      extraSections={item =>
-        item && [
-          {
-            id: 'conditions',
-            section: (
-              <Box id="section-conditions">
-                <Resource.ConditionsSection resource={item?.jsonData} />
-              </Box>
-            ),
-          },
-          {
-            id: 'networks',
-            section: (
-              <Box id="section-networks">
-                {vmiData?.status?.interfaces && vmiData.status.interfaces.length > 0 ? (
-                  <SectionBox title="Network Interfaces">
-                        <SimpleTable
-                          data={vmiData.status.interfaces}
-                          columns={[
-                            {
-                              label: 'Name',
-                              getter: (iface: VMIStatusInterface) => {
-                                const displayName = iface.name || iface.interfaceName || 'N/A';
-                                const tooltipParts = [
-                                  iface.interfaceName ? `Interface: ${iface.interfaceName}` : null,
-                                  `State: ${iface.linkState || 'N/A'}`,
-                                  iface.queueCount ? `Queues: ${iface.queueCount}` : null,
-                                ].filter(Boolean);
+                    <SectionBox title="Network Interfaces">
+                      <Typography variant="body2" color="text.secondary">
+                        No network interfaces available (VM may be stopped)
+                      </Typography>
+                    </SectionBox>
+                  )}
+                </Box>
+              ),
+            },
+            {
+              id: 'disks',
+              section: (
+                <Box id="section-disks">
+                  {vmiData?.status?.volumeStatus && vmiData.status.volumeStatus.length > 0 ? (
+                    <SectionBox title="Disks & Volumes">
+                      <SimpleTable
+                        data={vmiData.status.volumeStatus}
+                        columns={[
+                          {
+                            label: 'Name',
+                            getter: (volume: VMIVolumeStatus) => volume.name,
+                          },
+                          {
+                            label: 'Target',
+                            getter: (volume: VMIVolumeStatus) => volume.target || 'N/A',
+                          },
+                          {
+                            label: 'Capacity',
+                            getter: (volume: VMIVolumeStatus) => {
+                              const pvcInfo = volume.persistentVolumeClaimInfo;
+                              return volume.size
+                                ? `${(volume.size / 1024 / 1024 / 1024).toFixed(2)} GB`
+                                : pvcInfo?.capacity?.storage || 'N/A';
+                            },
+                          },
+                          {
+                            label: 'PVC (Access Mode)',
+                            getter: (volume: VMIVolumeStatus) => {
+                              const pvcInfo = volume.persistentVolumeClaimInfo;
+                              if (!pvcInfo) return 'N/A';
 
-                                return (
-                                  <Tooltip
-                                    title={
-                                      <div style={{ fontSize: '0.875rem' }}>
-                                        {tooltipParts.map((part, idx) => (
-                                          <div key={idx}>{part}</div>
-                                        ))}
-                                      </div>
-                                    }
-                                  >
-                                    <span style={{ cursor: 'help' }}>{displayName}</span>
-                                  </Tooltip>
-                                );
-                              },
+                              const accessMode = pvcInfo.accessModes
+                                ? pvcInfo.accessModes.includes('ReadWriteMany')
+                                  ? 'RWX'
+                                  : pvcInfo.accessModes.includes('ReadWriteOnce')
+                                  ? 'RWO'
+                                  : pvcInfo.accessModes.includes('ReadOnlyMany')
+                                  ? 'ROX'
+                                  : pvcInfo.accessModes.join(',')
+                                : 'N/A';
+
+                              return (
+                                <Tooltip
+                                  title={
+                                    <div style={{ fontSize: '0.875rem' }}>{pvcInfo.claimName}</div>
+                                  }
+                                >
+                                  <span style={{ cursor: 'help' }}>
+                                    {pvcInfo.claimName} ({accessMode})
+                                  </span>
+                                </Tooltip>
+                              );
                             },
-                            {
-                              label: 'MAC',
-                              getter: (iface: VMIStatusInterface) => iface.mac || 'N/A',
-                            },
-                            {
-                              label: 'IPs',
-                              getter: (iface: VMIStatusInterface) => {
-                                const ips =
-                                  iface.ipAddresses && iface.ipAddresses.length > 0
-                                    ? iface.ipAddresses.join(', ')
-                                    : iface.ipAddress || 'N/A';
-                                return (
-                                  <Tooltip
-                                    title={
-                                      <div style={{ fontSize: '0.875rem' }}>
-                                        {ips.split(', ').map((ip: string, idx: number) => (
-                                          <div key={idx}>{ip}</div>
-                                        ))}
-                                      </div>
-                                    }
-                                  >
-                                    <span style={{ cursor: 'help' }}>{ips}</span>
-                                  </Tooltip>
-                                );
-                              },
-                            },
-                          ]}
-                        />
-                      </SectionBox>
-                ) : (
-                  <SectionBox title="Network Interfaces">
-                    <Typography variant="body2" color="text.secondary">
-                      No network interfaces available (VM may be stopped)
-                    </Typography>
+                          },
+                        ]}
+                      />
+                    </SectionBox>
+                  ) : (
+                    <SectionBox title="Disks & Volumes">
+                      <Typography variant="body2" color="text.secondary">
+                        No disks available (VM may be stopped)
+                      </Typography>
+                    </SectionBox>
+                  )}
+                </Box>
+              ),
+            },
+            ...(snapshotEnabled
+              ? [
+                  {
+                    id: 'snapshots',
+                    section: (
+                      <Box id="section-snapshots">
+                        <SectionBox title="Snapshots">
+                          <SnapshotsList
+                            vmName={name || ''}
+                            namespace={namespace || ''}
+                            vmExportEnabled={vmExportEnabled}
+                          />
+                        </SectionBox>
+                      </Box>
+                    ),
+                  },
+                ]
+              : []),
+            {
+              id: 'metrics',
+              section: (
+                <Box id="section-metrics">
+                  <SectionBox title="Metrics">
+                    <VMMetrics
+                      vmName={name || ''}
+                      namespace={namespace || ''}
+                      vmiData={vmiData}
+                      vmItem={item}
+                    />
                   </SectionBox>
-                )}
-              </Box>
-            ),
-          },
-          {
-            id: 'disks',
-            section: (
-              <Box id="section-disks">
-                {vmiData?.status?.volumeStatus && vmiData.status.volumeStatus.length > 0 ? (
-                  <SectionBox title="Disks & Volumes">
-                        <SimpleTable
-                          data={vmiData.status.volumeStatus}
-                          columns={[
-                            {
-                              label: 'Name',
-                              getter: (volume: VMIVolumeStatus) => volume.name,
-                            },
-                            {
-                              label: 'Target',
-                              getter: (volume: VMIVolumeStatus) => volume.target || 'N/A',
-                            },
-                            {
-                              label: 'Capacity',
-                              getter: (volume: VMIVolumeStatus) => {
-                                const pvcInfo = volume.persistentVolumeClaimInfo;
-                                return volume.size
-                                  ? `${(volume.size / 1024 / 1024 / 1024).toFixed(2)} GB`
-                                  : pvcInfo?.capacity?.storage || 'N/A';
-                              },
-                            },
-                            {
-                              label: 'PVC (Access Mode)',
-                              getter: (volume: VMIVolumeStatus) => {
-                                const pvcInfo = volume.persistentVolumeClaimInfo;
-                                if (!pvcInfo) return 'N/A';
-
-                                const accessMode = pvcInfo.accessModes
-                                  ? pvcInfo.accessModes.includes('ReadWriteMany')
-                                    ? 'RWX'
-                                    : pvcInfo.accessModes.includes('ReadWriteOnce')
-                                      ? 'RWO'
-                                      : pvcInfo.accessModes.includes('ReadOnlyMany')
-                                        ? 'ROX'
-                                        : pvcInfo.accessModes.join(',')
-                                  : 'N/A';
-
-                                return (
-                                  <Tooltip
-                                    title={
-                                      <div style={{ fontSize: '0.875rem' }}>
-                                        {pvcInfo.claimName}
-                                      </div>
-                                    }
-                                  >
-                                    <span style={{ cursor: 'help' }}>
-                                      {pvcInfo.claimName} ({accessMode})
-                                    </span>
-                                  </Tooltip>
-                                );
-                              },
-                            },
-                          ]}
-                        />
-                      </SectionBox>
-                ) : (
-                  <SectionBox title="Disks & Volumes">
-                    <Typography variant="body2" color="text.secondary">
-                      No disks available (VM may be stopped)
-                    </Typography>
-                  </SectionBox>
-                )}
-              </Box>
-            ),
-          },
-          ...(snapshotEnabled ? [{
-            id: 'snapshots',
-            section: (
-              <Box id="section-snapshots">
-                <SectionBox title="Snapshots">
-                  <SnapshotsList vmName={name || ''} namespace={namespace || ''} vmExportEnabled={vmExportEnabled} />
-                </SectionBox>
-              </Box>
-            ),
-          }] : []),
-          {
-            id: 'metrics',
-            section: (
-              <Box id="section-metrics">
-                <SectionBox title="Metrics">
-                  <VMMetrics vmName={name || ''} namespace={namespace || ''} vmiData={vmiData} vmItem={item} />
-                </SectionBox>
-              </Box>
-            ),
-          },
-          {
-            id: 'headlamp.vm-console',
-            section: (
-              <VMConsole
-                open={showConsole}
-                key="console"
-                item={item}
-                vm={vmItem}
-                initialTab={consoleTab}
-                onClose={() => {
-                  setShowConsole(false);
-                }}
-              />
-            ),
-          },
-        ]
-      }
-      actions={item => {
-        const status = item?.status?.printableStatus || 'Unknown';
-        return item && [
-          {
-            id: 'start',
-            action: (
-              <ActionButton
-                description={t('Start')}
-                icon="mdi:play"
-                onClick={async () => {
-
-                  try {
-                    await item.start();
-                    enqueueSnackbar('Virtual Machine started', { variant: 'success' });
-                  } catch (e) {
-                    console.error('start failed', e);
-                    enqueueSnackbar('Failed to start Virtual Machine: ' + e, { variant: 'error' });
-                  }
-                }}
-                iconButtonProps={{ disabled: status !== 'Stopped' }}
-              ></ActionButton>
-            ),
-          },
-          {
-            id: 'stop',
-            action: (
-              <ActionButton
-                description={t('Stop')}
-                icon="mdi:stop"
-                onClick={async () => {
-
-                  try {
-                    await item.stop();
-                    enqueueSnackbar('Virtual Machine stopped', { variant: 'success' });
-                  } catch (e) {
-                    console.error('stop failed', e);
-                    enqueueSnackbar('Failed to stop Virtual Machine: ' + e, { variant: 'error' });
-                  }
-                }}
-                iconButtonProps={{ disabled: status === 'Stopped' || status === 'Stopping' }}
-              ></ActionButton>
-            ),
-          },
-          {
-            id: 'restart',
-            action: (
-              <ActionButton
-                description={t('Restart')}
-                icon="mdi:restart"
-                onClick={async () => {
-
-                  try {
-                    await item.restart();
-                    enqueueSnackbar('Virtual Machine restarting', { variant: 'success' });
-                  } catch (e) {
-                    console.error('restart failed', e);
-                    enqueueSnackbar('Failed to restart Virtual Machine: ' + e, { variant: 'error' });
-                  }
-                }}
-                iconButtonProps={{ disabled: status !== 'Running' }}
-              ></ActionButton>
-            ),
-          },
-          {
-            id: 'pause',
-            action: (
-              <ActionButton
-                description={item.isPaused() ? t('Unpause') : t('Pause')}
-                icon={item.isPaused() ? 'mdi:play-pause' : 'mdi:pause'}
-                onClick={async () => {
-
-                  try {
-                    if (item.isPaused()) {
-                      await item.unpause();
-                      enqueueSnackbar('Virtual Machine unpaused', { variant: 'success' });
-                    } else {
-                      await item.pause();
-                      enqueueSnackbar('Virtual Machine paused', { variant: 'success' });
-                    }
-                  } catch (e) {
-                    console.error('pause/unpause failed', e);
-                    enqueueSnackbar(`Failed to ${item.isPaused() ? 'unpause' : 'pause'} Virtual Machine: ${e}`, { variant: 'error' });
-                  }
-                }}
-                iconButtonProps={{ disabled: status !== 'Running' }}
-              ></ActionButton>
-            ),
-          },
-          {
-            id: 'force-stop',
-            action: (
-              <ActionButton
-                description={t('Force Stop')}
-                icon="mdi:stop-circle"
-                onClick={async () => {
-
-                  try {
-                    await item.forceStop();
-                    enqueueSnackbar('Virtual Machine force stopped', { variant: 'success' });
-                  } catch (e) {
-                    console.error('force stop failed', e);
-                    enqueueSnackbar('Failed to force stop Virtual Machine: ' + e, { variant: 'error' });
-                  }
-                }}
-                iconButtonProps={{ disabled: status === 'Stopped' }}
-              ></ActionButton>
-            ),
-          },
-          ...(liveMigrationEnabled ? [{
-            id: 'migrate',
-            action: (
-              <ActionButton
-                description={t('Migrate')}
-                icon="mdi:arrow-decision"
-                onClick={async () => {
-
-                  try {
-                    await item.migrate();
-                    enqueueSnackbar('Virtual Machine migration initiated', { variant: 'success' });
-                  } catch (e) {
-                    console.error('migration failed', e);
-                    enqueueSnackbar(`Failed to migrate Virtual Machine: ${e}`, { variant: 'error' });
-                  }
-                }}
-                iconButtonProps={{ disabled: status !== 'Running' || !item.isLiveMigratable() }}
-              ></ActionButton>
-            ),
-          }] : []),
-          {
-            id: 'protect',
-            action: (
-              <ActionButton
-                description={item.isDeleteProtected() ? t('Unprotect') : t('Protect')}
-                icon={item.isDeleteProtected() ? 'mdi:lock-open' : 'mdi:lock'}
-                onClick={async () => {
-                  const isProtected = item.isDeleteProtected();
-
-                  try {
-                    await item.setDeleteProtection(!isProtected);
-                    enqueueSnackbar(
-                      `Virtual Machine ${isProtected ? 'unprotected' : 'protected'} from deletion`,
-                      { variant: 'success' }
-                    );
-                  } catch (e) {
-                    console.error('protection toggle failed', e);
-                    enqueueSnackbar(
-                      `Failed to ${isProtected ? 'unprotect' : 'protect'} Virtual Machine: ${e}`,
-                      { variant: 'error' }
-                    );
-                  }
-                }}
-              ></ActionButton>
-            ),
-          },
-          {
-            id: 'edit-wizard',
-            action: (
-              <ActionButton
-                description={t('Edit with Wizard')}
-                icon="mdi:auto-fix"
-                onClick={() => setShowEditDialog(true)}
-              ></ActionButton>
-            ),
-          },
-          ...(snapshotEnabled ? [{
-            id: 'snapshot',
-            action: (
-              <ActionButton
-                description={t('Take Snapshot')}
-                icon="mdi:camera"
-                onClick={() => setShowSnapshotDialog(true)}
-              ></ActionButton>
-            ),
-          }] : []),
-          '-', // Separator
-          {
-            id: 'console',
-            action: (
-              <Resource.AuthVisible item={item} authVerb="get" subresource="exec">
-                <ActionButton
-                  description={t('Terminal / Exec')}
-                  aria-label={t('terminal')}
-                  icon="mdi:console"
-                  onClick={() => {
-                    setConsoleTab('terminal');
-                    setShowConsole(true);
+                </Box>
+              ),
+            },
+            {
+              id: 'headlamp.vm-console',
+              section: (
+                <VMConsole
+                  open={showConsole}
+                  key="console"
+                  item={item}
+                  vm={vmItem}
+                  initialTab={consoleTab}
+                  onClose={() => {
+                    setShowConsole(false);
                   }}
                 />
-              </Resource.AuthVisible>
-            ),
-          },
-          {
-            id: 'vnc',
-            action: (
-              <Resource.AuthVisible item={item} authVerb="get" subresource="vnc">
-                <ActionButton
-                  description={t('VNC Console')}
-                  aria-label={t('vnc')}
-                  icon="mdi:monitor"
-                  onClick={() => {
-                    setConsoleTab('vnc');
-                    setShowConsole(true);
-                  }}
-                />
-              </Resource.AuthVisible>
-            ),
-          },
-        ];
-      }}
-    />
-    <CreateSnapshotDialog
-      open={showSnapshotDialog}
-      onClose={() => setShowSnapshotDialog(false)}
-      vmName={name || ''}
-      namespace={namespace || ''}
-    />
-    {vmItem && (
-      <CreateResourceDialog
-        open={showEditDialog}
-        onClose={() => setShowEditDialog(false)}
-        title="Edit Virtual Machine"
-        resourceClass={VirtualMachine}
-        initialResource={vmItem.jsonData}
-        editMode
-        formComponent={VMFormWrapper}
+              ),
+            },
+          ]
+        }
+        actions={item => {
+          const status = item?.status?.printableStatus || 'Unknown';
+          return (
+            item && [
+              {
+                id: 'start',
+                action: (
+                  <ActionButton
+                    description={t('Start')}
+                    icon="mdi:play"
+                    onClick={async () => {
+                      try {
+                        await item.start();
+                        enqueueSnackbar('Virtual Machine started', { variant: 'success' });
+                      } catch (e) {
+                        console.error('start failed', e);
+                        enqueueSnackbar('Failed to start Virtual Machine: ' + e, {
+                          variant: 'error',
+                        });
+                      }
+                    }}
+                    iconButtonProps={{ disabled: status !== 'Stopped' }}
+                  ></ActionButton>
+                ),
+              },
+              {
+                id: 'stop',
+                action: (
+                  <ActionButton
+                    description={t('Stop')}
+                    icon="mdi:stop"
+                    onClick={async () => {
+                      try {
+                        await item.stop();
+                        enqueueSnackbar('Virtual Machine stopped', { variant: 'success' });
+                      } catch (e) {
+                        console.error('stop failed', e);
+                        enqueueSnackbar('Failed to stop Virtual Machine: ' + e, {
+                          variant: 'error',
+                        });
+                      }
+                    }}
+                    iconButtonProps={{ disabled: status === 'Stopped' || status === 'Stopping' }}
+                  ></ActionButton>
+                ),
+              },
+              {
+                id: 'restart',
+                action: (
+                  <ActionButton
+                    description={t('Restart')}
+                    icon="mdi:restart"
+                    onClick={async () => {
+                      try {
+                        await item.restart();
+                        enqueueSnackbar('Virtual Machine restarting', { variant: 'success' });
+                      } catch (e) {
+                        console.error('restart failed', e);
+                        enqueueSnackbar('Failed to restart Virtual Machine: ' + e, {
+                          variant: 'error',
+                        });
+                      }
+                    }}
+                    iconButtonProps={{ disabled: status !== 'Running' }}
+                  ></ActionButton>
+                ),
+              },
+              {
+                id: 'pause',
+                action: (
+                  <ActionButton
+                    description={item.isPaused() ? t('Unpause') : t('Pause')}
+                    icon={item.isPaused() ? 'mdi:play-pause' : 'mdi:pause'}
+                    onClick={async () => {
+                      try {
+                        if (item.isPaused()) {
+                          await item.unpause();
+                          enqueueSnackbar('Virtual Machine unpaused', { variant: 'success' });
+                        } else {
+                          await item.pause();
+                          enqueueSnackbar('Virtual Machine paused', { variant: 'success' });
+                        }
+                      } catch (e) {
+                        console.error('pause/unpause failed', e);
+                        enqueueSnackbar(
+                          `Failed to ${
+                            item.isPaused() ? 'unpause' : 'pause'
+                          } Virtual Machine: ${e}`,
+                          { variant: 'error' }
+                        );
+                      }
+                    }}
+                    iconButtonProps={{ disabled: status !== 'Running' }}
+                  ></ActionButton>
+                ),
+              },
+              {
+                id: 'force-stop',
+                action: (
+                  <ActionButton
+                    description={t('Force Stop')}
+                    icon="mdi:stop-circle"
+                    onClick={async () => {
+                      try {
+                        await item.forceStop();
+                        enqueueSnackbar('Virtual Machine force stopped', { variant: 'success' });
+                      } catch (e) {
+                        console.error('force stop failed', e);
+                        enqueueSnackbar('Failed to force stop Virtual Machine: ' + e, {
+                          variant: 'error',
+                        });
+                      }
+                    }}
+                    iconButtonProps={{ disabled: status === 'Stopped' }}
+                  ></ActionButton>
+                ),
+              },
+              ...(liveMigrationEnabled
+                ? [
+                    {
+                      id: 'migrate',
+                      action: (
+                        <ActionButton
+                          description={t('Migrate')}
+                          icon="mdi:arrow-decision"
+                          onClick={async () => {
+                            try {
+                              await item.migrate();
+                              enqueueSnackbar('Virtual Machine migration initiated', {
+                                variant: 'success',
+                              });
+                            } catch (e) {
+                              console.error('migration failed', e);
+                              enqueueSnackbar(`Failed to migrate Virtual Machine: ${e}`, {
+                                variant: 'error',
+                              });
+                            }
+                          }}
+                          iconButtonProps={{
+                            disabled: status !== 'Running' || !item.isLiveMigratable(),
+                          }}
+                        ></ActionButton>
+                      ),
+                    },
+                  ]
+                : []),
+              {
+                id: 'protect',
+                action: (
+                  <ActionButton
+                    description={item.isDeleteProtected() ? t('Unprotect') : t('Protect')}
+                    icon={item.isDeleteProtected() ? 'mdi:lock-open' : 'mdi:lock'}
+                    onClick={async () => {
+                      const isProtected = item.isDeleteProtected();
+
+                      try {
+                        await item.setDeleteProtection(!isProtected);
+                        enqueueSnackbar(
+                          `Virtual Machine ${
+                            isProtected ? 'unprotected' : 'protected'
+                          } from deletion`,
+                          { variant: 'success' }
+                        );
+                      } catch (e) {
+                        console.error('protection toggle failed', e);
+                        enqueueSnackbar(
+                          `Failed to ${
+                            isProtected ? 'unprotect' : 'protect'
+                          } Virtual Machine: ${e}`,
+                          { variant: 'error' }
+                        );
+                      }
+                    }}
+                  ></ActionButton>
+                ),
+              },
+              {
+                id: 'edit-wizard',
+                action: (
+                  <ActionButton
+                    description={t('Edit with Wizard')}
+                    icon="mdi:auto-fix"
+                    onClick={() => setShowEditDialog(true)}
+                  ></ActionButton>
+                ),
+              },
+              ...(snapshotEnabled
+                ? [
+                    {
+                      id: 'snapshot',
+                      action: (
+                        <ActionButton
+                          description={t('Take Snapshot')}
+                          icon="mdi:camera"
+                          onClick={() => setShowSnapshotDialog(true)}
+                        ></ActionButton>
+                      ),
+                    },
+                  ]
+                : []),
+              '-', // Separator
+              {
+                id: 'console',
+                action: (
+                  <Resource.AuthVisible item={item} authVerb="get" subresource="exec">
+                    <ActionButton
+                      description={t('Terminal / Exec')}
+                      aria-label={t('terminal')}
+                      icon="mdi:console"
+                      onClick={() => {
+                        setConsoleTab('terminal');
+                        setShowConsole(true);
+                      }}
+                    />
+                  </Resource.AuthVisible>
+                ),
+              },
+              {
+                id: 'vnc',
+                action: (
+                  <Resource.AuthVisible item={item} authVerb="get" subresource="vnc">
+                    <ActionButton
+                      description={t('VNC Console')}
+                      aria-label={t('vnc')}
+                      icon="mdi:monitor"
+                      onClick={() => {
+                        setConsoleTab('vnc');
+                        setShowConsole(true);
+                      }}
+                    />
+                  </Resource.AuthVisible>
+                ),
+              },
+            ]
+          );
+        }}
       />
-    )}
+      <CreateSnapshotDialog
+        open={showSnapshotDialog}
+        onClose={() => setShowSnapshotDialog(false)}
+        vmName={name || ''}
+        namespace={namespace || ''}
+      />
+      {vmItem && (
+        <CreateResourceDialog
+          open={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          title="Edit Virtual Machine"
+          resourceClass={VirtualMachine}
+          initialResource={vmItem.jsonData}
+          editMode
+          formComponent={VMFormWrapper}
+        />
+      )}
     </>
   );
 }
@@ -721,9 +774,10 @@ function SnapshotsList({ vmName, namespace, vmExportEnabled = false }: Snapshots
   const itemsPerPage = 10;
 
   // Filter snapshots for this VM and sort by creation time (newest first)
-  const vmSnapshots = (snapshots?.filter(
-    (snapshot: VirtualMachineSnapshot) => snapshot.getSourceName() === vmName
-  ) || []).sort((a, b) => {
+  const vmSnapshots = (
+    snapshots?.filter((snapshot: VirtualMachineSnapshot) => snapshot.getSourceName() === vmName) ||
+    []
+  ).sort((a, b) => {
     const timeA = new Date(a.getCreationTime() || 0).getTime();
     const timeB = new Date(b.getCreationTime() || 0).getTime();
     return timeB - timeA;
@@ -772,13 +826,7 @@ function SnapshotsList({ vmName, namespace, vmExportEnabled = false }: Snapshots
               if (phase === 'Succeeded' && isReady) color = 'success';
               else if (phase === 'InProgress') color = 'info';
               else if (phase === 'Failed') color = 'error';
-              return (
-                <Chip
-                  label={phase}
-                  size="small"
-                  color={color}
-                />
-              );
+              return <Chip label={phase} size="small" color={color} />;
             },
           },
           {
@@ -808,11 +856,7 @@ function SnapshotsList({ vmName, namespace, vmExportEnabled = false }: Snapshots
                   </Tooltip>
                 )}
                 <Tooltip title="Delete snapshot">
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => handleDelete(snapshot)}
-                  >
+                  <IconButton size="small" color="error" onClick={() => handleDelete(snapshot)}>
                     <Icon icon="mdi:delete" width={18} />
                   </IconButton>
                 </Tooltip>
@@ -825,7 +869,8 @@ function SnapshotsList({ vmName, namespace, vmExportEnabled = false }: Snapshots
       {totalPages > 1 && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
           <Typography variant="body2" color="text.secondary">
-            Showing {currentPage * itemsPerPage + 1}-{Math.min((currentPage + 1) * itemsPerPage, vmSnapshots.length)} of {vmSnapshots.length}
+            Showing {currentPage * itemsPerPage + 1}-
+            {Math.min((currentPage + 1) * itemsPerPage, vmSnapshots.length)} of {vmSnapshots.length}
           </Typography>
           <Box display="flex" gap={1}>
             <IconButton
@@ -892,7 +937,12 @@ function CreateExportDialog({ open, onClose, snapshotName, namespace }: CreateEx
     }
 
     setCreating(true);
-    const vmExport: { apiVersion: string; kind: string; metadata: { name: string; namespace: string }; spec: { source: { apiGroup: string; kind: string; name: string }; ttlDuration?: string } } = {
+    const vmExport: {
+      apiVersion: string;
+      kind: string;
+      metadata: { name: string; namespace: string };
+      spec: { source: { apiGroup: string; kind: string; name: string }; ttlDuration?: string };
+    } = {
       apiVersion: 'export.kubevirt.io/v1beta1',
       kind: 'VirtualMachineExport',
       metadata: {
@@ -1005,7 +1055,16 @@ function CreateSnapshotDialog({ open, onClose, vmName, namespace }: CreateSnapsh
     }
 
     setCreating(true);
-    const snapshot: { apiVersion: string; kind: string; metadata: { name: string; namespace: string }; spec: { source: { apiGroup: string; kind: string; name: string }; deletionPolicy?: string; failureDeadline?: string } } = {
+    const snapshot: {
+      apiVersion: string;
+      kind: string;
+      metadata: { name: string; namespace: string };
+      spec: {
+        source: { apiGroup: string; kind: string; name: string };
+        deletionPolicy?: string;
+        failureDeadline?: string;
+      };
+    } = {
       apiVersion: 'snapshot.kubevirt.io/v1beta1',
       kind: 'VirtualMachineSnapshot',
       metadata: {
@@ -1068,8 +1127,12 @@ function CreateSnapshotDialog({ open, onClose, vmName, namespace }: CreateSnapsh
               onChange={e => setDeletionPolicy(e.target.value)}
             >
               <MenuItem value="">Default</MenuItem>
-              <MenuItem value="Delete">Delete - Remove snapshot content when snapshot is deleted</MenuItem>
-              <MenuItem value="Retain">Retain - Keep snapshot content when snapshot is deleted</MenuItem>
+              <MenuItem value="Delete">
+                Delete - Remove snapshot content when snapshot is deleted
+              </MenuItem>
+              <MenuItem value="Retain">
+                Retain - Keep snapshot content when snapshot is deleted
+              </MenuItem>
             </Select>
           </FormControl>
           <TextField

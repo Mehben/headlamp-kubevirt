@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import DataImportCronForm from './DataImportCronForm';
 
@@ -72,7 +72,9 @@ describe('DataImportCronForm', () => {
       const onChange = vi.fn();
       render(<DataImportCronForm resource={makeDIC()} onChange={onChange} />);
 
-      fireEvent.change(screen.getByLabelText('Managed DataSource *'), { target: { value: 'ubuntu' } });
+      fireEvent.change(screen.getByLabelText('Managed DataSource *'), {
+        target: { value: 'ubuntu' },
+      });
 
       expect(onChange.mock.calls[0][0].spec.managedDataSource).toBe('ubuntu');
     });
@@ -150,9 +152,13 @@ describe('DataImportCronForm', () => {
       const onChange = vi.fn();
       render(<DataImportCronForm resource={makeDIC()} onChange={onChange} />);
 
-      fireEvent.change(screen.getByLabelText('Registry URL *'), { target: { value: 'docker://new-registry/image:v1' } });
+      fireEvent.change(screen.getByLabelText('Registry URL *'), {
+        target: { value: 'docker://new-registry/image:v1' },
+      });
 
-      expect(onChange.mock.calls[0][0].spec.source.registry.url).toBe('docker://new-registry/image:v1');
+      expect(onChange.mock.calls[0][0].spec.source.registry.url).toBe(
+        'docker://new-registry/image:v1'
+      );
     });
 
     it('switches to HTTP source', () => {

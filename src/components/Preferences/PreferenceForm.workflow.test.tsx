@@ -2,9 +2,9 @@
  * Workflow tests — simulate a user creating a full preference end-to-end.
  */
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import PreferenceForm from './PreferenceForm';
 
 function FormWrapper({ initial }: { initial: any }) {

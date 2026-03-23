@@ -23,11 +23,7 @@ export default function InstanceTypeDetails() {
         name={name}
         actions={[
           <Tooltip title="Edit with Wizard">
-            <IconButton
-              key="edit-wizard"
-              onClick={() => setEditOpen(true)}
-              size="small"
-            >
+            <IconButton key="edit-wizard" onClick={() => setEditOpen(true)} size="small">
               <Icon icon="mdi:auto-fix" />
             </IconButton>
           </Tooltip>,
@@ -165,11 +161,7 @@ export default function InstanceTypeDetails() {
                   <Typography variant="h6">Description</Typography>
                 </Box>
 
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ whiteSpace: 'pre-wrap' }}
-                >
+                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
                   {instanceType.getDescription()}
                 </Typography>
               </CardContent>

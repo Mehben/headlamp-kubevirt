@@ -30,12 +30,7 @@ function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      {...other}
-    >
+    <div role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} {...other}>
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
@@ -140,10 +135,14 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
 
     try {
       await VirtualMachineClusterInstanceType.apiEndpoint.post(resource);
-      enqueueSnackbar(`Instance Type ${resource.metadata.name} created successfully`, { variant: 'success' });
+      enqueueSnackbar(`Instance Type ${resource.metadata.name} created successfully`, {
+        variant: 'success',
+      });
       onClose();
     } catch (error: unknown) {
-      enqueueSnackbar(`Failed to create Instance Type: ${(error as Error).message}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to create Instance Type: ${(error as Error).message}`, {
+        variant: 'error',
+      });
     }
   };
 
@@ -160,7 +159,11 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
       <Box sx={{ flexGrow: 1 }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
-            <Tab label="Basic Configuration" icon={<Icon icon="mdi:form-textbox" />} iconPosition="start" />
+            <Tab
+              label="Basic Configuration"
+              icon={<Icon icon="mdi:form-textbox" />}
+              iconPosition="start"
+            />
             <Tab label="Advanced Options" icon={<Icon icon="mdi:tune" />} iconPosition="start" />
             <Tab label="YAML" icon={<Icon icon="mdi:code-braces" />} iconPosition="start" />
           </Tabs>
@@ -183,7 +186,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       required
                       label="Name"
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={e => setName(e.target.value)}
                       helperText="Unique identifier for this instance type"
                       placeholder="custom.large"
                     />
@@ -194,7 +197,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       fullWidth
                       label="Display Name"
                       value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
+                      onChange={e => setDisplayName(e.target.value)}
                       helperText="Human-readable name"
                       placeholder="Custom Large"
                     />
@@ -207,7 +210,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       rows={3}
                       label="Description"
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={e => setDescription(e.target.value)}
                       helperText="Detailed description of this instance type"
                     />
                   </Grid>
@@ -231,7 +234,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       type="number"
                       label="CPU Cores"
                       value={cpuCores}
-                      onChange={(e) => setCpuCores(e.target.value)}
+                      onChange={e => setCpuCores(e.target.value)}
                       inputProps={{ min: 1 }}
                       helperText="Number of virtual CPU cores"
                     />
@@ -244,7 +247,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       type="number"
                       label="Memory"
                       value={memory}
-                      onChange={(e) => setMemory(e.target.value)}
+                      onChange={e => setMemory(e.target.value)}
                       inputProps={{ min: 1 }}
                       helperText="Amount of memory"
                     />
@@ -256,7 +259,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       select
                       label="Unit"
                       value={memoryUnit}
-                      onChange={(e) => setMemoryUnit(e.target.value)}
+                      onChange={e => setMemoryUnit(e.target.value)}
                     >
                       <MenuItem value="Mi">Mi</MenuItem>
                       <MenuItem value="Gi">Gi</MenuItem>
@@ -283,7 +286,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                     control={
                       <Switch
                         checked={dedicatedCPU}
-                        onChange={(e) => setDedicatedCPU(e.target.checked)}
+                        onChange={e => setDedicatedCPU(e.target.checked)}
                       />
                     }
                     label={
@@ -300,7 +303,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                     control={
                       <Switch
                         checked={isolateEmulator}
-                        onChange={(e) => setIsolateEmulator(e.target.checked)}
+                        onChange={e => setIsolateEmulator(e.target.checked)}
                       />
                     }
                     label={
@@ -318,7 +321,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                     select
                     label="IO Threads Policy"
                     value={ioThreadsPolicy}
-                    onChange={(e) => setIoThreadsPolicy(e.target.value)}
+                    onChange={e => setIoThreadsPolicy(e.target.value)}
                     helperText="Controls how IO threads are allocated"
                   >
                     <MenuItem value="">None</MenuItem>
@@ -342,7 +345,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                     control={
                       <Switch
                         checked={useHugepages}
-                        onChange={(e) => setUseHugepages(e.target.checked)}
+                        onChange={e => setUseHugepages(e.target.checked)}
                       />
                     }
                     label={
@@ -361,7 +364,7 @@ export default function CreateInstanceType({ open, onClose }: CreateInstanceType
                       select
                       label="Hugepages Size"
                       value={hugepagesSize}
-                      onChange={(e) => setHugepagesSize(e.target.value)}
+                      onChange={e => setHugepagesSize(e.target.value)}
                     >
                       <MenuItem value="2Mi">2 MiB</MenuItem>
                       <MenuItem value="1Gi">1 GiB</MenuItem>

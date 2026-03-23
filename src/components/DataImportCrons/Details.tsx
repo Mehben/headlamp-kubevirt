@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { Link,Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { Link, Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Card, CardContent, Chip, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -29,11 +29,7 @@ export default function DataImportCronDetails() {
         withEvents
         actions={[
           <Tooltip title="Edit with Wizard">
-            <IconButton
-              key="edit-wizard"
-              onClick={() => setEditOpen(true)}
-              size="small"
-            >
+            <IconButton key="edit-wizard" onClick={() => setEditOpen(true)} size="small">
               <Icon icon="mdi:auto-fix" />
             </IconButton>
           </Tooltip>,
@@ -64,7 +60,11 @@ export default function DataImportCronDetails() {
               </Box>
 
               <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 0.5 }}
+                >
                   Managed DataSource
                 </Typography>
                 <Box sx={{ display: 'block' }}>
@@ -136,7 +136,9 @@ export default function DataImportCronDetails() {
                   <Typography variant="caption" color="text.secondary">
                     Last Execution
                   </Typography>
-                  <Typography variant="body1">{dataimportcron.getLastExecutionTimestamp()}</Typography>
+                  <Typography variant="body1">
+                    {dataimportcron.getLastExecutionTimestamp()}
+                  </Typography>
                 </Box>
               )}
             </CardContent>
@@ -266,7 +268,11 @@ export default function DataImportCronDetails() {
 
               {dataimportcron.getLastImportedPVC() !== '-' && (
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 0.5 }}
+                  >
                     Last Imported PVC
                   </Typography>
                   <Box sx={{ display: 'block' }}>
@@ -285,37 +291,48 @@ export default function DataImportCronDetails() {
 
               {dataimportcron.getCurrentImports().length > 0 && (
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 1, display: 'block' }}
+                  >
                     Current Imports
                   </Typography>
-                  {dataimportcron.getCurrentImports().map((imp: DataImportCronImport, index: number) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 1.5,
-                        mb: 1,
-                        bgcolor: 'action.hover',
-                        borderRadius: 1,
-                      }}
-                    >
-                      <Typography variant="body2" fontWeight="medium">
-                        {imp.DataVolumeName}
-                      </Typography>
-                      {imp.Digest && (
-                        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                          {imp.Digest}
+                  {dataimportcron
+                    .getCurrentImports()
+                    .map((imp: DataImportCronImport, index: number) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1.5,
+                          mb: 1,
+                          bgcolor: 'action.hover',
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {imp.DataVolumeName}
                         </Typography>
-                      )}
-                    </Box>
-                  ))}
+                        {imp.Digest && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontFamily: 'monospace' }}
+                          >
+                            {imp.Digest}
+                          </Typography>
+                        )}
+                      </Box>
+                    ))}
                 </Box>
               )}
 
-              {dataimportcron.getLastImportedPVC() === '-' && dataimportcron.getCurrentImports().length === 0 && (
-                <Typography variant="body2" color="text.secondary">
-                  No imports yet
-                </Typography>
-              )}
+              {dataimportcron.getLastImportedPVC() === '-' &&
+                dataimportcron.getCurrentImports().length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    No imports yet
+                  </Typography>
+                )}
             </CardContent>
           </Card>
         </Grid>

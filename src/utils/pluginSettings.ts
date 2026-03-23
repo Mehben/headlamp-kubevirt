@@ -3,8 +3,8 @@
 const STORAGE_KEY = 'headlamp-kubevirt-settings';
 
 export interface LabelColumn {
-  label: string;      // Display name
-  labelKey: string;   // Kubernetes label key (e.g., 'app.kubernetes.io/name')
+  label: string; // Display name
+  labelKey: string; // Kubernetes label key (e.g., 'app.kubernetes.io/name')
 }
 
 export interface PluginSettings {

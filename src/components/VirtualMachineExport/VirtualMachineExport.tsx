@@ -1,5 +1,5 @@
 import { KubeObject } from '@kinvolk/headlamp-plugin/lib/K8s/cluster';
-import { ExportLinks,KubeCondition } from '../../types';
+import { ExportLinks, KubeCondition } from '../../types';
 
 class VirtualMachineExport extends KubeObject {
   get spec() {

@@ -70,7 +70,13 @@ export default function VirtualMachineInstanceDetails() {
               return ips.length > 0 ? (
                 <Box display="flex" gap={0.5} flexWrap="wrap">
                   {ips.map(ip => (
-                    <Chip key={ip} label={ip} size="small" variant="outlined" sx={{ fontFamily: 'monospace' }} />
+                    <Chip
+                      key={ip}
+                      label={ip}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontFamily: 'monospace' }}
+                    />
                   ))}
                 </Box>
               ) : (

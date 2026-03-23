@@ -3,7 +3,6 @@ import { StreamArgs, StreamResultsCb } from '@kinvolk/headlamp-plugin/lib/ApiPro
 import { KubeObject } from '@kinvolk/headlamp-plugin/lib/K8s/cluster';
 
 class VirtualMachineInstance extends KubeObject {
-
   get spec() {
     return this.jsonData.spec;
   }

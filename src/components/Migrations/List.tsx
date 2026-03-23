@@ -42,8 +42,8 @@ export default function MigrationList() {
         {
           id: 'name',
           label: 'Migration Name',
-          getValue: (migration) => migration.getName(),
-          render: (migration) => (
+          getValue: migration => migration.getName(),
+          render: migration => (
             <Link
               routeName="/kubevirt/migrations/:namespace/:name"
               params={{ name: migration.getName(), namespace: migration.getNamespace() }}
@@ -55,8 +55,8 @@ export default function MigrationList() {
         {
           id: 'vmi',
           label: 'Virtual Machine',
-          getValue: (migration) => migration.getVMIName(),
-          render: (migration) => (
+          getValue: migration => migration.getVMIName(),
+          render: migration => (
             <Link
               routeName="/kubevirt/virtualmachines/:namespace/:name"
               params={{
@@ -71,18 +71,18 @@ export default function MigrationList() {
         {
           id: 'source',
           label: 'Source Node',
-          getValue: (migration) => migration.getSourceNode(),
+          getValue: migration => migration.getSourceNode(),
         },
         {
           id: 'target',
           label: 'Target Node',
-          getValue: (migration) => migration.getTargetNode(),
+          getValue: migration => migration.getTargetNode(),
         },
         {
           id: 'phase',
           label: 'Status',
-          getValue: (migration) => migration.getPhase(),
-          render: (migration) => {
+          getValue: migration => migration.getPhase(),
+          render: migration => {
             const phase = migration.getPhase();
             let color: 'default' | 'primary' | 'success' | 'error' | 'warning' = 'default';
 
@@ -102,7 +102,7 @@ export default function MigrationList() {
         {
           id: 'started',
           label: 'Started',
-          getValue: (migration) => migration.getStartTime(),
+          getValue: migration => migration.getStartTime(),
         },
         'age',
       ]}

@@ -8,7 +8,7 @@
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import React, { useState } from 'react';
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import NADForm from './NADForm';
 
 /** Wrapper that holds state like CreateResourceDialog does */

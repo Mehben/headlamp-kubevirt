@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import NADForm from './NADForm';
 
@@ -49,7 +49,9 @@ describe('NADForm', () => {
       const onChange = vi.fn();
       render(<NADForm resource={makeNAD()} onChange={onChange} />);
 
-      fireEvent.change(screen.getByPlaceholderText('my-network'), { target: { value: 'new-name' } });
+      fireEvent.change(screen.getByPlaceholderText('my-network'), {
+        target: { value: 'new-name' },
+      });
 
       expect(onChange).toHaveBeenCalled();
       const updated = onChange.mock.calls[0][0];
@@ -126,7 +128,9 @@ describe('NADForm', () => {
 
     it('selecting bridge sets default bridge name', () => {
       const onChange = vi.fn();
-      render(<NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={onChange} />);
+      render(
+        <NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={onChange} />
+      );
 
       fireEvent.click(screen.getByText('Bridge'));
 
@@ -275,7 +279,9 @@ describe('NADForm', () => {
 
   describe('Macvlan Configuration', () => {
     it('renders macvlan-specific fields', () => {
-      render(<NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={vi.fn()} />);
+      render(
+        <NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={vi.fn()} />
+      );
 
       expect(screen.getByLabelText('Master Interface')).toBeInTheDocument();
       expect(screen.getByText('Macvlan operating mode')).toBeInTheDocument();
@@ -283,7 +289,9 @@ describe('NADForm', () => {
 
     it('updates master interface', () => {
       const onChange = vi.fn();
-      render(<NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={onChange} />);
+      render(
+        <NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={onChange} />
+      );
 
       fireEvent.change(screen.getByLabelText('Master Interface'), { target: { value: 'eno1' } });
 
@@ -292,7 +300,9 @@ describe('NADForm', () => {
     });
 
     it('shows mode descriptions', () => {
-      render(<NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={vi.fn()} />);
+      render(
+        <NADForm resource={makeNAD({ type: 'macvlan', mode: 'bridge' })} onChange={vi.fn()} />
+      );
 
       expect(screen.getByText(/containers can communicate directly/)).toBeInTheDocument();
     });
@@ -442,7 +452,9 @@ describe('NADForm', () => {
       const onChange = vi.fn();
       render(<NADForm resource={makeNAD({ type: 'tap' })} onChange={onChange} />);
 
-      fireEvent.change(screen.getByLabelText('MAC Address'), { target: { value: '02:00:00:00:00:01' } });
+      fireEvent.change(screen.getByLabelText('MAC Address'), {
+        target: { value: '02:00:00:00:00:01' },
+      });
 
       const config = getConfig(onChange.mock.calls[0][0]);
       expect(config.mac).toBe('02:00:00:00:00:01');
@@ -452,7 +464,9 @@ describe('NADForm', () => {
       const onChange = vi.fn();
       render(<NADForm resource={makeNAD({ type: 'tap' })} onChange={onChange} />);
 
-      fireEvent.change(screen.getByLabelText('SELinux Context'), { target: { value: 'system_u:system_r:container_t:s0' } });
+      fireEvent.change(screen.getByLabelText('SELinux Context'), {
+        target: { value: 'system_u:system_r:container_t:s0' },
+      });
 
       const config = getConfig(onChange.mock.calls[0][0]);
       expect(config.selinuxcontext).toBe('system_u:system_r:container_t:s0');
@@ -472,11 +486,15 @@ describe('NADForm', () => {
       const resource = makeNAD({ ipam: { type: 'dhcp' } });
       render(<NADForm resource={resource} onChange={vi.fn()} />);
 
-      expect(screen.getByText(/IP addresses will be acquired from a DHCP server/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/IP addresses will be acquired from a DHCP server/)
+      ).toBeInTheDocument();
     });
 
     it('shows subnet range fields for host-local', () => {
-      const resource = makeNAD({ ipam: { type: 'host-local', ranges: [[{ subnet: '10.0.0.0/24' }]] } });
+      const resource = makeNAD({
+        ipam: { type: 'host-local', ranges: [[{ subnet: '10.0.0.0/24' }]] },
+      });
       render(<NADForm resource={resource} onChange={vi.fn()} />);
 
       expect(screen.getByLabelText('Subnet *')).toBeInTheDocument();
@@ -497,7 +515,9 @@ describe('NADForm', () => {
     });
 
     it('shows address fields for static IPAM', () => {
-      const resource = makeNAD({ ipam: { type: 'static', addresses: [{ address: '10.0.0.5/24' }] } });
+      const resource = makeNAD({
+        ipam: { type: 'static', addresses: [{ address: '10.0.0.5/24' }] },
+      });
       render(<NADForm resource={resource} onChange={vi.fn()} />);
 
       expect(screen.getByLabelText('Address (CIDR) *')).toBeInTheDocument();
@@ -508,14 +528,18 @@ describe('NADForm', () => {
       const resource = makeNAD({ ipam: { type: 'static', addresses: [{ address: '' }] } });
       render(<NADForm resource={resource} onChange={onChange} />);
 
-      fireEvent.change(screen.getByLabelText('Address (CIDR) *'), { target: { value: '10.10.0.5/24' } });
+      fireEvent.change(screen.getByLabelText('Address (CIDR) *'), {
+        target: { value: '10.10.0.5/24' },
+      });
 
       const config = getConfig(onChange.mock.calls[0][0]);
       expect(config.ipam.addresses[0].address).toBe('10.10.0.5/24');
     });
 
     it('shows routes editor with empty message when no routes', () => {
-      const resource = makeNAD({ ipam: { type: 'host-local', ranges: [[{ subnet: '10.0.0.0/24' }]] } });
+      const resource = makeNAD({
+        ipam: { type: 'host-local', ranges: [[{ subnet: '10.0.0.0/24' }]] },
+      });
       render(<NADForm resource={resource} onChange={vi.fn()} />);
 
       expect(screen.getByText(/No routes configured/)).toBeInTheDocument();

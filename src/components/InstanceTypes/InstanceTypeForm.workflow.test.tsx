@@ -2,9 +2,9 @@
  * Workflow tests — simulate a user creating a full instance type end-to-end.
  */
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import InstanceTypeForm from './InstanceTypeForm';
 
 function FormWrapper({ initial }: { initial: any }) {
@@ -63,7 +63,9 @@ describe('InstanceTypeForm Workflows', () => {
     // ── Verify ──
     const resource = getResource();
     expect(resource.metadata.name).toBe('gpu.xlarge');
-    expect(resource.metadata.annotations['instancetype.kubevirt.io/displayName']).toBe('GPU X-Large');
+    expect(resource.metadata.annotations['instancetype.kubevirt.io/displayName']).toBe(
+      'GPU X-Large'
+    );
     expect(resource.spec.cpu.guest).toBe(16);
     expect(resource.spec.memory.guest).toBe('64Gi');
   });

@@ -59,24 +59,43 @@ export function parseCronExpression(cronExpr: string): string {
     const dayName = days[parseInt(weekday)] || weekday;
     const hourNum = parseInt(hour);
     const minNum = parseInt(minute);
-    return `Weekly on ${dayName} at ${hourNum.toString().padStart(2, '0')}:${minNum.toString().padStart(2, '0')}`;
+    return `Weekly on ${dayName} at ${hourNum.toString().padStart(2, '0')}:${minNum
+      .toString()
+      .padStart(2, '0')}`;
   }
 
   // Monthly on specific day
   if (!isAll(minute) && !isAll(hour) && !isAll(day) && isAll(month) && isAll(weekday)) {
     const hourNum = parseInt(hour);
     const minNum = parseInt(minute);
-    return `Monthly on day ${day} at ${hourNum.toString().padStart(2, '0')}:${minNum.toString().padStart(2, '0')}`;
+    return `Monthly on day ${day} at ${hourNum.toString().padStart(2, '0')}:${minNum
+      .toString()
+      .padStart(2, '0')}`;
   }
 
   // Specific day of month
   if (!isAll(minute) && !isAll(hour) && !isAll(day) && !isAll(month) && isAll(weekday)) {
-    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = [
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
     const monthName = months[parseInt(month)] || month;
     const hourNum = parseInt(hour);
     const minNum = parseInt(minute);
-    return `Yearly on ${monthName} ${day} at ${hourNum.toString().padStart(2, '0')}:${minNum.toString().padStart(2, '0')}`;
+    return `Yearly on ${monthName} ${day} at ${hourNum.toString().padStart(2, '0')}:${minNum
+      .toString()
+      .padStart(2, '0')}`;
   }
 
   // Midnight daily

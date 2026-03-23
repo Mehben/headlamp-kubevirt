@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent,render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import InstanceTypeForm from './InstanceTypeForm';
 
@@ -40,7 +40,9 @@ describe('InstanceTypeForm', () => {
       const onChange = vi.fn();
       render(<InstanceTypeForm resource={makeInstanceType()} onChange={onChange} />);
 
-      fireEvent.change(screen.getByPlaceholderText('custom.large'), { target: { value: 'new-it' } });
+      fireEvent.change(screen.getByPlaceholderText('custom.large'), {
+        target: { value: 'new-it' },
+      });
 
       expect(onChange).toHaveBeenCalled();
       expect(onChange.mock.calls[0][0].metadata.name).toBe('new-it');
@@ -56,7 +58,9 @@ describe('InstanceTypeForm', () => {
       const onChange = vi.fn();
       render(<InstanceTypeForm resource={makeInstanceType()} onChange={onChange} />);
 
-      fireEvent.change(screen.getByPlaceholderText('Custom Large'), { target: { value: 'My Type' } });
+      fireEvent.change(screen.getByPlaceholderText('Custom Large'), {
+        target: { value: 'My Type' },
+      });
 
       const updated = onChange.mock.calls[0][0];
       expect(updated.metadata.annotations['instancetype.kubevirt.io/displayName']).toBe('My Type');
