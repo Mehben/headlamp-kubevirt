@@ -20,7 +20,6 @@ import { useSnackbar } from 'notistack';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RFBPixelFormat } from '../../types';
-import VirtualMachineInstance from '../VirtualMachineInstance/VirtualMachineInstance';
 import VirtualMachine from '../VirtualMachines/VirtualMachine';
 
 // ── Terminal types ──────────────────────────────────────────────────────
@@ -28,6 +27,10 @@ import VirtualMachine from '../VirtualMachines/VirtualMachine';
 interface ConsoleObject extends KubeObject {
   exec(
     onExec: StreamResultsCb,
+    options: StreamArgs
+  ): { cancel: () => void; getSocket: () => WebSocket };
+  vnc(
+    onVnc: StreamResultsCb,
     options: StreamArgs
   ): { cancel: () => void; getSocket: () => WebSocket };
 }
@@ -90,7 +93,7 @@ function getKeysym(e: React.KeyboardEvent): number | null {
 // ── Props ───────────────────────────────────────────────────────────────
 
 interface VMConsoleProps extends DialogProps {
-  item: VirtualMachineInstance;
+  item: ConsoleObject;
   vm?: VirtualMachine;
   onClose?: () => void;
   open: boolean;
@@ -202,7 +205,7 @@ function TerminalPanel({
   active,
   onStatusChange,
 }: {
-  item: VirtualMachineInstance;
+  item: ConsoleObject;
   active: boolean;
   onStatusChange: (status: 'connecting' | 'connected') => void;
 }) {
@@ -386,7 +389,7 @@ function VNCPanel({
   active,
   onStatusChange,
 }: {
-  item: VirtualMachineInstance;
+  item: ConsoleObject;
   active: boolean;
   onStatusChange: (status: 'connecting' | 'connected' | 'disconnected') => void;
 }) {
