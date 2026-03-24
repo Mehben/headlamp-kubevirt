@@ -3,6 +3,7 @@ import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
 import { SectionBox } from '@kinvolk/headlamp-plugin/lib/components/common';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -636,6 +637,17 @@ export default function KubeVirtSettings() {
   const [localMemoryOvercommit, setLocalMemoryOvercommit] = useState(memoryOvercommit);
   const [localEvictionStrategy, setLocalEvictionStrategy] = useState(evictionStrategy);
 
+  // State for Prometheus monitoring configuration
+  const [localMonitorNamespace, setLocalMonitorNamespace] = useState(
+    kubeVirt?.getMonitorNamespace() || ''
+  );
+  const [localMonitorAccount, setLocalMonitorAccount] = useState(
+    kubeVirt?.getMonitorAccount() || ''
+  );
+  const [localHelmRelease, setLocalHelmRelease] = useState('');
+  const [monitoringNamespaces, setMonitoringNamespaces] = useState<string[]>([]);
+  const [monitoringServiceAccounts, setMonitoringServiceAccounts] = useState<string[]>([]);
+
   // State for live update configuration
   const [localLiveUpdateConfig, setLocalLiveUpdateConfig] = useState({
     maxCpuSockets: liveUpdateConfig.maxCpuSockets || '',
@@ -700,8 +712,52 @@ export default function KubeVirtSettings() {
 
       setLocalPciDevices(kubeVirt.getPciHostDevices());
       setLocalMediatedDevices(kubeVirt.getMediatedDevices());
+
+      setLocalMonitorNamespace(kubeVirt.getMonitorNamespace());
+      setLocalMonitorAccount(kubeVirt.getMonitorAccount());
+
+      // Try to read the existing release label from the auto-created ServiceMonitor
+      if (kubeVirt.getMonitorNamespace()) {
+        ApiProxy.request(
+          `/apis/monitoring.coreos.com/v1/namespaces/${kubeVirt.getMonitorNamespace()}/servicemonitors`
+        )
+          .then(
+            (resp: {
+              items?: Array<{ metadata: { name: string; labels?: Record<string, string> } }>;
+            }) => {
+              const sm = resp?.items?.find(s => s.metadata.name.includes('kubevirt'));
+              if (sm?.metadata?.labels?.release) {
+                setLocalHelmRelease(sm.metadata.labels.release);
+              }
+            }
+          )
+          .catch(() => {});
+      }
     }
   }, [kubeVirt]);
+
+  // Fetch namespaces and service accounts for monitoring config
+  useEffect(() => {
+    ApiProxy.request('/api/v1/namespaces')
+      .then((resp: { items?: Array<{ metadata: { name: string } }> }) => {
+        setMonitoringNamespaces(resp?.items?.map(ns => ns.metadata.name) || []);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!localMonitorNamespace) {
+      setMonitoringServiceAccounts([]);
+      return;
+    }
+    ApiProxy.request(`/api/v1/namespaces/${localMonitorNamespace}/serviceaccounts`)
+      .then((resp: { items?: Array<{ metadata: { name: string } }> }) => {
+        setMonitoringServiceAccounts(
+          resp?.items?.map(sa => sa.metadata.name).filter(n => n.includes('prometheus')) || []
+        );
+      })
+      .catch(() => setMonitoringServiceAccounts([]));
+  }, [localMonitorNamespace]);
 
   // Now we can safely return early if there are errors
   if (kvError) {
@@ -837,6 +893,62 @@ export default function KubeVirtSettings() {
     } catch (error: unknown) {
       console.error('Failed to update eviction strategy', error);
       enqueueSnackbar(`Failed to update eviction strategy: ${(error as Error).message}`, {
+        variant: 'error',
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleMonitoringConfigUpdate = async () => {
+    setUpdating(true);
+    try {
+      await kubeVirt.updateMonitoringConfig(localMonitorNamespace, localMonitorAccount);
+
+      // If a Helm release name is provided, patch the ServiceMonitor with the release label
+      // after a short delay to let the KubeVirt operator create it
+      if (localHelmRelease && localMonitorNamespace) {
+        setTimeout(async () => {
+          try {
+            const smResp = (await ApiProxy.request(
+              `/apis/monitoring.coreos.com/v1/namespaces/${localMonitorNamespace}/servicemonitors`
+            )) as { items?: Array<{ metadata: { name: string; namespace: string } }> };
+            const sm = smResp?.items?.find(s => s.metadata.name.includes('kubevirt'));
+            if (sm) {
+              await ApiProxy.request(
+                `/apis/monitoring.coreos.com/v1/namespaces/${sm.metadata.namespace}/servicemonitors/${sm.metadata.name}`,
+                {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/merge-patch+json' },
+                  body: JSON.stringify({
+                    metadata: { labels: { release: localHelmRelease } },
+                  }),
+                }
+              );
+              enqueueSnackbar(
+                `ServiceMonitor labeled with release="${localHelmRelease}" for Prometheus discovery.`,
+                { variant: 'info' }
+              );
+            }
+          } catch (labelError) {
+            console.warn('Could not label ServiceMonitor:', labelError);
+            enqueueSnackbar(
+              'Monitoring configured, but could not label the ServiceMonitor. You may need to add the release label manually.',
+              { variant: 'warning' }
+            );
+          }
+        }, 3000);
+      }
+
+      enqueueSnackbar(
+        'Prometheus monitoring configuration updated. KubeVirt will create the ServiceMonitor automatically.',
+        {
+          variant: 'success',
+        }
+      );
+    } catch (error: unknown) {
+      console.error('Failed to update monitoring config', error);
+      enqueueSnackbar(`Failed to update monitoring config: ${(error as Error).message}`, {
         variant: 'error',
       });
     } finally {
@@ -1329,6 +1441,124 @@ export default function KubeVirtSettings() {
 
         <Collapse in={generalConfigExpanded}>
           <Box p={2} pt={0}>
+            {/* Prometheus Monitoring */}
+            <Card variant="outlined" sx={{ mb: 2 }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <Icon icon="mdi:chart-line" width={22} height={22} style={{ color: '#ff9800' }} />
+                  <Typography variant="body1" fontWeight={500}>
+                    Prometheus Monitoring
+                  </Typography>
+                  {kubeVirt?.getMonitorNamespace() ? (
+                    <Chip
+                      icon={<Icon icon="mdi:check-circle" width={16} height={16} />}
+                      label="Configured"
+                      size="small"
+                      color="success"
+                    />
+                  ) : (
+                    <Chip label="Not Configured" size="small" color="warning" variant="outlined" />
+                  )}
+                </Box>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Configure KubeVirt to automatically create a ServiceMonitor for Prometheus. This
+                  enables VM metrics (CPU, Memory, Network, Storage) in the Overview and VM Details
+                  pages.
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Autocomplete
+                      fullWidth
+                      size="small"
+                      options={monitoringNamespaces}
+                      value={localMonitorNamespace || null}
+                      onChange={(_, newValue) => {
+                        setLocalMonitorNamespace(newValue || '');
+                        setLocalMonitorAccount('');
+                      }}
+                      renderInput={params => (
+                        <TextField
+                          {...params}
+                          label="Monitor Namespace"
+                          helperText="Namespace where Prometheus is deployed"
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Autocomplete
+                      fullWidth
+                      size="small"
+                      options={monitoringServiceAccounts}
+                      value={localMonitorAccount || null}
+                      freeSolo
+                      onChange={(_, newValue) => setLocalMonitorAccount(newValue || '')}
+                      onInputChange={(_, newValue) => setLocalMonitorAccount(newValue || '')}
+                      renderInput={params => (
+                        <TextField
+                          {...params}
+                          label="Monitor Service Account"
+                          helperText="Prometheus service account name"
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Prometheus Helm Release Name (optional)"
+                      value={localHelmRelease}
+                      onChange={e => setLocalHelmRelease(e.target.value)}
+                      helperText="If using kube-prometheus-stack via Helm, the ServiceMonitor needs a 'release' label matching your Helm release name for Prometheus to discover it."
+                    />
+                  </Grid>
+                </Grid>
+                <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>
+                  {kubeVirt?.getMonitorNamespace() && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="error"
+                      onClick={async () => {
+                        setUpdating(true);
+                        try {
+                          await kubeVirt.updateMonitoringConfig('', '');
+                          setLocalMonitorNamespace('');
+                          setLocalMonitorAccount('');
+                          enqueueSnackbar('Prometheus monitoring configuration removed.', {
+                            variant: 'success',
+                          });
+                        } catch (error: unknown) {
+                          enqueueSnackbar(
+                            `Failed to remove monitoring config: ${(error as Error).message}`,
+                            { variant: 'error' }
+                          );
+                        } finally {
+                          setUpdating(false);
+                        }
+                      }}
+                      disabled={updating}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleMonitoringConfigUpdate}
+                    disabled={updating || (!localMonitorNamespace && !localMonitorAccount)}
+                    sx={{
+                      backgroundColor: '#4caf50',
+                      '&:hover': { backgroundColor: '#45a049' },
+                    }}
+                  >
+                    Apply
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
             {/* Common Instance Types */}
             <Card variant="outlined" sx={{ mb: 2 }}>
               <CardContent>
