@@ -1,10 +1,10 @@
 initContainers:
-  - name: headlamp-kubevirt
-    image: registry.naval-group.fr:5000/headlamp-kubevirt:v2
+  - name: kubevirt
+    image: registry.naval-group.fr:5000/kubevirt:v2
     imagePullPolicy: Always
     command: ["/bin/sh", "-c"]
     args:
-      - "cp -r /plugins/headlamp-kubevirt /headlamp-plugins/"
+      - "cp -r /plugins/kubevirt /headlamp-plugins/"
     volumeMounts:
       - name: headlamp-plugins
         mountPath: /headlamp-plugins

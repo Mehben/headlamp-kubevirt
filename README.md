@@ -2,7 +2,12 @@
 
 A comprehensive [Headlamp](https://headlamp.dev) plugin for managing [KubeVirt](https://kubevirt.io) virtual machines in Kubernetes.
 
-Based on the excellent work from [buttahtoast](https://github.com/buttahtoast/headlamp-plugins/tree/main/kubevirt).
+Originally based on the excellent work from [buttahtoast](https://github.com/buttahtoast/headlamp-plugins/tree/main/kubevirt).
+
+> **Disclaimer:** This is an independent community plugin. It is not maintained by, affiliated with,
+> or endorsed by the [KubeVirt](https://kubevirt.io) project. For KubeVirt issues, please use the
+> [KubeVirt issue tracker](https://github.com/kubevirt/kubevirt/issues). For issues with this plugin,
+> please use [our issue tracker](https://github.com/naval-group/headlamp-kubevirt/issues).
 
 ## Features
 
@@ -105,36 +110,36 @@ For users running the Headlamp desktop application (Linux, macOS, Windows).
 
 #### From Release Artifact
 
-1. Download the latest `headlamp-kubevirt.tar.gz` from the [Releases](https://github.com/naval-group/headlamp-kubevirt/releases) page
+1. Download the latest `headlamp-kubevirt-*.tar.gz` from the [Releases](https://github.com/naval-group/headlamp-kubevirt/releases) page
 
 2. Extract to your Headlamp plugins directory:
 
    **Linux (native)**
 
    ```bash
-   mkdir -p ~/.config/Headlamp/plugins/headlamp-kubevirt
-   tar -xzf headlamp-kubevirt.tar.gz -C ~/.config/Headlamp/plugins/headlamp-kubevirt
+   mkdir -p ~/.config/Headlamp/plugins/kubevirt
+   tar -xzf headlamp-kubevirt-*.tar.gz -C ~/.config/Headlamp/plugins/kubevirt
    ```
 
    **Linux (Flatpak)**
 
    ```bash
-   mkdir -p ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/headlamp-kubevirt
-   tar -xzf headlamp-kubevirt.tar.gz -C ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/headlamp-kubevirt
+   mkdir -p ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/kubevirt
+   tar -xzf headlamp-kubevirt-*.tar.gz -C ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/kubevirt
    ```
 
    **macOS**
 
    ```bash
-   mkdir -p ~/Library/Application\ Support/Headlamp/plugins/headlamp-kubevirt
-   tar -xzf headlamp-kubevirt.tar.gz -C ~/Library/Application\ Support/Headlamp/plugins/headlamp-kubevirt
+   mkdir -p ~/Library/Application\ Support/Headlamp/plugins/kubevirt
+   tar -xzf headlamp-kubevirt-*.tar.gz -C ~/Library/Application\ Support/Headlamp/plugins/kubevirt
    ```
 
    **Windows (PowerShell)**
 
    ```powershell
-   mkdir -Force "$env:APPDATA\Headlamp\Config\plugins\headlamp-kubevirt"
-   tar -xzf headlamp-kubevirt.tar.gz -C "$env:APPDATA\Headlamp\Config\plugins\headlamp-kubevirt"
+   mkdir -Force "$env:APPDATA\Headlamp\Config\plugins\kubevirt"
+   tar -xzf headlamp-kubevirt-*.tar.gz -C "$env:APPDATA\Headlamp\Config\plugins\kubevirt"
    ```
 
 3. Restart (or reload) Headlamp
@@ -148,11 +153,12 @@ npm install
 npm run build
 ```
 
-Then copy the `dist/` contents to the appropriate plugins directory (see paths above):
+Then copy `dist/main.js` and `package.json` to the appropriate plugins directory (see paths above):
 
 ```bash
 # Example for Linux Flatpak
-cp -r dist/* ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/headlamp-kubevirt/
+mkdir -p ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/kubevirt
+cp dist/main.js package.json ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/kubevirt/
 ```
 
 ### Option 2: In-Cluster (Container Mode)
@@ -170,7 +176,7 @@ initContainers:
     image: ghcr.io/naval-group/headlamp-kubevirt:latest
     command: ['/bin/sh', '-c']
     args:
-      - 'cp -r /plugins/headlamp-kubevirt /headlamp-plugins/'
+      - 'cp -r /plugins/kubevirt /headlamp-plugins/'
     volumeMounts:
       - name: headlamp-plugins
         mountPath: /headlamp-plugins
@@ -206,7 +212,7 @@ spec:
           image: ghcr.io/naval-group/headlamp-kubevirt:latest
           command: ['/bin/sh', '-c']
           args:
-            - 'cp -r /plugins/headlamp-kubevirt /headlamp-plugins/'
+            - 'cp -r /plugins/kubevirt /headlamp-plugins/'
           volumeMounts:
             - name: headlamp-plugins
               mountPath: /headlamp-plugins

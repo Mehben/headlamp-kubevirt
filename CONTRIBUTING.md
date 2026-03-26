@@ -42,7 +42,7 @@ npm run format       # Format code
 
 ```bash
 npm run build
-cp -r dist/* ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/headlamp-kubevirt/
+cp dist/main.js package.json ~/.var/app/io.kinvolk.Headlamp/config/Headlamp/plugins/kubevirt/
 ```
 
 ## Commit Messages
