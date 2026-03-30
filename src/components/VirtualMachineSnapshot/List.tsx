@@ -62,7 +62,9 @@ function CreateExportDialog({
       };
 
       await ApiProxy.request(
-        `/apis/export.kubevirt.io/v1beta1/namespaces/${encodeURIComponent(snapshotNamespace)}/virtualmachineexports`,
+        `/apis/export.kubevirt.io/v1beta1/namespaces/${encodeURIComponent(
+          snapshotNamespace
+        )}/virtualmachineexports`,
         {
           method: 'POST',
           body: JSON.stringify(exportResource),

@@ -420,7 +420,11 @@ export default function VirtualMachineList() {
 
     try {
       const [vmiResult, podResult] = await Promise.allSettled([
-        ApiProxy.request(`/apis/kubevirt.io/v1/namespaces/${encodeURIComponent(ns)}/virtualmachineinstances/${encodeURIComponent(vmName)}`),
+        ApiProxy.request(
+          `/apis/kubevirt.io/v1/namespaces/${encodeURIComponent(
+            ns
+          )}/virtualmachineinstances/${encodeURIComponent(vmName)}`
+        ),
         ApiProxy.request(
           `/api/v1/namespaces/${encodeURIComponent(ns)}/pods?labelSelector=${encodeURIComponent(
             `vm.kubevirt.io/name=${vmName}`
