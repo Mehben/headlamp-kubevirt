@@ -7,11 +7,19 @@ import {
 } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Chip, Typography } from '@mui/material';
 import useFilteredList from '../../hooks/useFilteredList';
+import useResourceActions from '../../hooks/useResourceActions';
+import BulkDeleteToolbar from '../common/BulkDeleteToolbar';
+import StandardRowActions from '../common/StandardRowActions';
 import VirtualMachineInstanceMigration from './VirtualMachineInstanceMigration';
 
 export default function MigrationList() {
   const { items: rawItems } = VirtualMachineInstanceMigration.useList();
   const items = useFilteredList(rawItems);
+  const { setEditItem, setViewYamlItem, setDeleteItem, ActionDialogs } =
+    useResourceActions<InstanceType<typeof VirtualMachineInstanceMigration>>({
+      apiVersion: 'kubevirt.io/v1',
+      kind: 'VirtualMachineInstanceMigration',
+    });
 
   // Show empty state only when there are truly no migrations cluster-wide
   if (rawItems && rawItems.length === 0) {
@@ -41,10 +49,35 @@ export default function MigrationList() {
   }
 
   return (
+    <>
     <SectionBox title={<SectionFilterHeader title="VM Migrations" />}>
       <Table
         data={items ?? []}
         loading={items === null}
+        enableRowActions
+        enableRowSelection
+        getRowId={(m: InstanceType<typeof VirtualMachineInstanceMigration>) =>
+          m.metadata?.uid ?? `${m.getNamespace()}/${m.getName()}`
+        }
+        renderRowSelectionToolbar={({ table }) => (
+          <BulkDeleteToolbar table={table} kind="Migration" />
+        )}
+        renderRowActionMenuItems={({
+          row,
+          closeMenu,
+        }: {
+          row: { original: InstanceType<typeof VirtualMachineInstanceMigration> };
+          closeMenu: () => void;
+        }) => [
+          <StandardRowActions
+            key="std"
+            resource={row.original}
+            closeMenu={closeMenu}
+            onEdit={setEditItem}
+            onViewYaml={setViewYamlItem}
+            onDelete={setDeleteItem}
+          />,
+        ]}
         columns={[
           {
             id: 'name',
@@ -140,5 +173,7 @@ export default function MigrationList() {
         ]}
       />
     </SectionBox>
+    {ActionDialogs}
+    </>
   );
 }
