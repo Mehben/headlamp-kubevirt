@@ -222,7 +222,9 @@ export default function ConditionsTab({
       let activePodName = currentPodName;
       try {
         const podList = await ApiProxy.request(
-          `/api/v1/namespaces/${namespace}/pods?labelSelector=vm.kubevirt.io%2Fname%3D${encodeURIComponent(vmName)}`
+          `/api/v1/namespaces/${namespace}/pods?labelSelector=vm.kubevirt.io%2Fname%3D${encodeURIComponent(
+            vmName
+          )}`
         );
         const activePod = (podList?.items || []).find(
           (p: any) => !p.metadata.deletionTimestamp && p.status?.phase !== 'Succeeded'
