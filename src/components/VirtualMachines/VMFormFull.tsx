@@ -40,6 +40,7 @@ import React, { useState } from 'react';
 import useFeatureGate from '../../hooks/useFeatureGate';
 import KubeVirt from '../../kubevirt/KubeVirt';
 import { DVTStorageSpec } from '../../types';
+import { hasFeature } from '../../utils/kubevirtVersion';
 import { TOOLTIPS } from '../../utils/tooltips';
 import DataSource from '../BootableVolumes/DataSource';
 import CopyCodeBlock from '../common/CopyCodeBlock';
@@ -82,6 +83,7 @@ interface MetadataEntry {
 interface NetworkInterface {
   name: string;
   type: 'pod' | 'nad';
+  binding: 'masquerade' | 'bridge' | 'passt';
   nadName?: string;
   model?: 'e1000e' | 'virtio';
   macAddress?: string;
@@ -103,7 +105,8 @@ interface AdditionalDisk {
     | 'hostDisk'
     | 'configMap'
     | 'secret'
-    | 'serviceAccount';
+    | 'serviceAccount'
+    | 'containerPath';
   sourceDetail?: string;
   sourceNamespace?: string;
   bus: 'virtio' | 'sata' | 'scsi';
@@ -346,9 +349,16 @@ export default function VMFormFull({
       const isPod = !!network?.pod;
       const nadName = network?.multus?.networkName;
 
+      // Detect binding type from interface spec
+      let binding: NetworkInterface['binding'] = 'masquerade';
+      if (iface.bridge !== undefined) binding = 'bridge';
+      else if (iface.passtBinding !== undefined) binding = 'passt';
+      else if (iface.masquerade !== undefined) binding = 'masquerade';
+
       return {
         name: iface.name || `net-${idx}`,
         type: isPod ? ('pod' as const) : ('nad' as const),
+        binding,
         nadName,
         model: iface.model as 'e1000e' | 'virtio',
         macAddress: iface.macAddress,
@@ -359,6 +369,11 @@ export default function VMFormFull({
 
   // Run strategy
   const runStrategy = resource.spec?.runStrategy || 'Always';
+
+  // Reboot policy (1.8+)
+  const [rebootPolicy, setRebootPolicy] = useState<'Reboot' | 'Terminate'>(
+    resource.spec?.template?.spec?.domain?.rebootPolicy || 'Reboot'
+  );
 
   // Parse additional disks from resource (excluding special boot volumes like cloudinitdisk and rootdisk)
   const currentAdditionalDisks: AdditionalDisk[] = React.useMemo(() => {
@@ -429,6 +444,9 @@ export default function VMFormFull({
       } else if (vol.hostDisk) {
         sourceType = 'hostDisk';
         sourceDetail = vol.hostDisk.path;
+      } else if (vol.containerPath) {
+        sourceType = 'containerPath';
+        sourceDetail = vol.containerPath.path;
       } else if (vol.emptyDisk) {
         sourceType = 'empty';
       }
@@ -631,6 +649,7 @@ export default function VMFormFull({
   const enableWatchdog = !!devices?.watchdog;
   const watchdogAction = devices?.watchdog?.action || 'reset';
   const enableRng = !!devices?.rng;
+  const enablePanicDevice = !!(devices?.panicDevices?.length > 0);
   const enableDownwardMetrics = !!devices?.downwardMetrics;
 
   // Security
@@ -734,6 +753,8 @@ export default function VMFormFull({
   const hostDevicesEnabled = useFeatureGate('HostDevices');
   const vsockEnabled = useFeatureGate('VSOCK');
   const downwardMetricsEnabled = useFeatureGate('DownwardMetrics');
+  const passtBindingEnabled = useFeatureGate('PasstBinding');
+  const containerPathEnabled = useFeatureGate('ContainerPathVolumes');
 
   // Get selected boot source
   const selectedBootSource = dataSources?.find(ds => ds.getName() === bootSourceId);
@@ -1275,10 +1296,12 @@ export default function VMFormFull({
         model: iface.model || 'virtio',
       };
 
-      if (iface.type === 'pod') {
-        interfaceObj.masquerade = {};
-      } else {
+      if (iface.binding === 'passt') {
+        interfaceObj.passtBinding = {};
+      } else if (iface.binding === 'bridge') {
         interfaceObj.bridge = {};
+      } else {
+        interfaceObj.masquerade = {};
       }
 
       if (iface.macAddress) {
@@ -1331,7 +1354,7 @@ export default function VMFormFull({
     const newName = `net-${currentNetworkInterfaces.length}`;
     const newInterfaces = [
       ...currentNetworkInterfaces,
-      { name: newName, type: 'nad' as const, model: 'virtio' as const },
+      { name: newName, type: 'nad' as const, binding: 'bridge' as const, model: 'virtio' as const },
     ];
     handleNetworkInterfacesChange(newInterfaces);
   };
@@ -1383,6 +1406,12 @@ export default function VMFormFull({
     updateSpec({ runStrategy: strategy });
   };
 
+  // Reboot Policy handler (1.8+)
+  const handleRebootPolicyChange = (policy: 'Reboot' | 'Terminate') => {
+    setRebootPolicy(policy);
+    updateDomain({ rebootPolicy: policy });
+  };
+
   // Disk management handlers
   const getSourceTypeLabel = (sourceType: AdditionalDisk['sourceType']): string => {
     const labels: Record<AdditionalDisk['sourceType'], string> = {
@@ -1399,6 +1428,7 @@ export default function VMFormFull({
       configMap: 'ConfigMap',
       secret: 'Secret',
       serviceAccount: 'Service Account',
+      containerPath: 'Container Path',
     };
     return labels[sourceType] || sourceType;
   };
@@ -1489,10 +1519,20 @@ export default function VMFormFull({
         return buildVolumeFromDiskFormData(diskFormData);
       });
 
-      const newDisks = disks.map((d: KubeResourceBuilder) => {
-        if (d.name !== oldDisk.name) return d;
-        return buildDiskDeviceFromDiskFormData(diskFormData);
-      });
+      const { type: deviceType, device: newDiskDevice } =
+        buildDiskDeviceFromDiskFormData(diskFormData);
+      const existingFilesystems = resource.spec?.template?.spec?.domain?.devices?.filesystems || [];
+
+      // Remove old entry from both disks and filesystems, add new to correct list
+      const newDisks = disks.filter((d: KubeResourceBuilder) => d.name !== oldDisk.name);
+      const newFilesystems = existingFilesystems.filter(
+        (f: KubeResourceBuilder) => f.name !== oldDisk.name
+      );
+      if (deviceType === 'filesystem') {
+        newFilesystems.push(newDiskDevice);
+      } else {
+        newDisks.push(newDiskDevice);
+      }
 
       onChange({
         ...resource,
@@ -1508,6 +1548,7 @@ export default function VMFormFull({
                 devices: {
                   ...resource.spec?.template?.spec?.domain?.devices,
                   disks: newDisks,
+                  filesystems: newFilesystems.length > 0 ? newFilesystems : undefined,
                 },
               },
             },
@@ -1517,13 +1558,19 @@ export default function VMFormFull({
     } else {
       // Add new disk
       const newVolume = buildVolumeFromDiskFormData(diskFormData);
-      const newDiskDevice = buildDiskDeviceFromDiskFormData(diskFormData);
+      const { type: deviceType, device: newDiskDevice } =
+        buildDiskDeviceFromDiskFormData(diskFormData);
 
       let newDataVolumeTemplates = dataVolumeTemplates;
       if (needsDVT) {
         const dvt = buildDataVolumeTemplate(diskFormData);
         newDataVolumeTemplates = [...dataVolumeTemplates, dvt];
       }
+
+      const existingFilesystems = resource.spec?.template?.spec?.domain?.devices?.filesystems || [];
+      const newDisks = deviceType === 'disk' ? [...disks, newDiskDevice] : disks;
+      const newFilesystems =
+        deviceType === 'filesystem' ? [...existingFilesystems, newDiskDevice] : existingFilesystems;
 
       onChange({
         ...resource,
@@ -1539,7 +1586,8 @@ export default function VMFormFull({
                 ...resource.spec?.template?.spec?.domain,
                 devices: {
                   ...resource.spec?.template?.spec?.domain?.devices,
-                  disks: [...disks, newDiskDevice],
+                  disks: newDisks,
+                  ...(newFilesystems.length > 0 && { filesystems: newFilesystems }),
                 },
               },
             },
@@ -1594,6 +1642,8 @@ export default function VMFormFull({
         };
       case 'hostDisk':
         return { ...base, hostDisk: { path: disk.sourceDetail || '/tmp', type: 'Disk' } };
+      case 'containerPath':
+        return { ...base, containerPath: { path: disk.sourceDetail || '/tmp', readOnly: true } };
       default:
         return { ...base, emptyDisk: { capacity: disk.size } };
     }
@@ -1670,7 +1720,16 @@ export default function VMFormFull({
   };
 
   // Helper to build disk device object from disk form data
-  const buildDiskDeviceFromDiskFormData = (disk: AdditionalDisk): KubeResourceBuilder => {
+  const buildDiskDeviceFromDiskFormData = (
+    disk: AdditionalDisk
+  ): { type: 'disk' | 'filesystem'; device: KubeResourceBuilder } => {
+    if (disk.sourceType === 'containerPath') {
+      return {
+        type: 'filesystem',
+        device: { name: disk.name, virtiofs: {} },
+      };
+    }
+
     const base: KubeResourceBuilder = {
       name: disk.name,
       disk: { bus: disk.bus || 'virtio' },
@@ -1686,7 +1745,7 @@ export default function VMFormFull({
       base.bootOrder = disk.bootOrder;
     }
 
-    return base;
+    return { type: 'disk', device: base };
   };
 
   const cancelDiskForm = () => {
@@ -2156,6 +2215,10 @@ export default function VMFormFull({
 
   const handleRngChange = (enabled: boolean) => {
     updateDevices({ rng: enabled ? {} : undefined });
+  };
+
+  const handlePanicDeviceChange = (enabled: boolean) => {
+    updateDevices({ panicDevices: enabled ? [{ model: 'isa' }] : undefined });
   };
 
   const handleDownwardMetricsChange = (enabled: boolean) => {
@@ -3031,13 +3094,15 @@ export default function VMFormFull({
                   <FormControl fullWidth size="small">
                     <Select
                       value={iface.type}
-                      onChange={e =>
+                      onChange={e => {
+                        const newType = e.target.value as 'pod' | 'nad';
                         updateNetworkInterface(index, {
-                          type: e.target.value as 'pod' | 'nad',
+                          type: newType,
                           nadName: undefined,
-                          model: e.target.value === 'nad' ? 'virtio' : undefined,
-                        })
-                      }
+                          binding: newType === 'pod' ? 'masquerade' : 'bridge',
+                          model: newType === 'nad' ? 'virtio' : undefined,
+                        });
+                      }}
                     >
                       <MenuItem value="pod" disabled={hasPodNetworking && iface.type !== 'pod'}>
                         Pod Networking
@@ -3046,7 +3111,43 @@ export default function VMFormFull({
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={2}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, display: 'block' }}
+                  >
+                    Binding
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <Select
+                      value={iface.binding || 'masquerade'}
+                      onChange={e =>
+                        updateNetworkInterface(index, {
+                          binding: e.target.value as NetworkInterface['binding'],
+                        })
+                      }
+                    >
+                      {iface.type === 'pod'
+                        ? [
+                            <MenuItem key="masquerade" value="masquerade">
+                              Masquerade
+                            </MenuItem>,
+                            passtBindingEnabled && (
+                              <MenuItem key="passt" value="passt">
+                                Passt
+                              </MenuItem>
+                            ),
+                          ]
+                        : [
+                            <MenuItem key="bridge" value="bridge">
+                              Bridge
+                            </MenuItem>,
+                          ]}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={2}>
                   {iface.type === 'nad' ? (
                     <>
                       <Typography
@@ -3342,6 +3443,9 @@ export default function VMFormFull({
                       <MenuItem value="empty">Empty Disk</MenuItem>
                       <MenuItem value="ephemeral">Ephemeral</MenuItem>
                       {hostDiskEnabled && <MenuItem value="hostDisk">Host Disk</MenuItem>}
+                      {containerPathEnabled && (
+                        <MenuItem value="containerPath">Container Path</MenuItem>
+                      )}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -3742,6 +3846,42 @@ export default function VMFormFull({
                       }
                       placeholder="/path/to/disk.img"
                       helperText="Path to disk image on the host node"
+                    />
+                  </Grid>
+                )}
+
+                {diskFormData.sourceType === 'containerPath' && (
+                  <Grid item xs={12}>
+                    <Alert severity="info" variant="filled" sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                        ContainerPath exposes a virt-launcher pod path to the VM via virtiofs.
+                      </Typography>
+                      <Typography variant="body2">
+                        The path must correspond to an <strong>existing volumeMount</strong> in the
+                        virt-launcher compute container. This is typically injected by a mutating
+                        webhook (AWS IRSA, GCP Workload Identity, Vault Agent, etc.).
+                      </Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>
+                        Reserved paths are blocked: <code>/var/run/kubevirt</code>,{' '}
+                        <code>/var/run/libvirt</code>
+                      </Typography>
+                    </Alert>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: 'block' }}
+                    >
+                      Container Path
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={diskFormData.sourceDetail || ''}
+                      onChange={e =>
+                        setDiskFormData({ ...diskFormData, sourceDetail: e.target.value })
+                      }
+                      placeholder="/var/run/secrets/cloud-provider/token"
+                      helperText="Mounted as read-only virtiofs filesystem inside the guest VM."
                     />
                   </Grid>
                 )}
@@ -4766,6 +4906,23 @@ export default function VMFormFull({
             </>
           )}
 
+          {hasFeature('rebootPolicy') && (
+            <FormControl component="fieldset" sx={{ mb: 3 }}>
+              <FormLabel component="legend">
+                Reboot Policy{' '}
+                <InfoTooltip text="Controls what happens when the guest OS reboots. 'Reboot' allows silent reboots. 'Terminate' stops the VMI so it can be recreated with updated configuration." />
+              </FormLabel>
+              <RadioGroup
+                row
+                value={rebootPolicy}
+                onChange={e => handleRebootPolicyChange(e.target.value as 'Reboot' | 'Terminate')}
+              >
+                <FormControlLabel value="Reboot" control={<Radio />} label="Reboot (default)" />
+                <FormControlLabel value="Terminate" control={<Radio />} label="Terminate" />
+              </RadioGroup>
+            </FormControl>
+          )}
+
           <Box
             sx={{
               border: 1,
@@ -5393,6 +5550,29 @@ export default function VMFormFull({
                 Virtual random number generator — provides fast entropy from the host to the guest
               </Typography>
             </Box>
+
+            {/* Panic Device */}
+            {hasFeature('rebootPolicy') && (
+              <Box sx={{ mb: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={enablePanicDevice}
+                      onChange={e => handlePanicDeviceChange(e.target.checked)}
+                    />
+                  }
+                  label="Panic Device (pvpanic)"
+                />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', ml: 4 }}
+                >
+                  Reports guest kernel panics to KubeVirt as events. Requires{' '}
+                  <code>pvpanic-isa</code> kernel module (Linux) or Hyper-V crash support (Windows).
+                </Typography>
+              </Box>
+            )}
 
             {/* Downward Metrics */}
             {downwardMetricsEnabled && (

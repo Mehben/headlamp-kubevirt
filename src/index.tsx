@@ -56,6 +56,7 @@ import SnapshotDetails from './components/VirtualMachineSnapshot/Details';
 import SnapshotList from './components/VirtualMachineSnapshot/List';
 import KubeVirtSettings from './kubevirt/Settings';
 import { areFeatureGatesLoaded, getFeatureGates, loadFeatureGates } from './utils/featureGates';
+import { detectKubeVirtCapabilities } from './utils/kubevirtVersion';
 
 // Route registration helper - DRY pattern for KubeVirt resources
 interface ResourceRoute {
@@ -108,8 +109,9 @@ function registerKubeVirtResource(config: ResourceRoute) {
   }
 }
 
-// Load feature gates on plugin initialization
+// Load feature gates and detect capabilities on plugin initialization
 loadFeatureGates();
+detectKubeVirtCapabilities();
 
 // Feature gates that affect sidebar visibility
 const SIDEBAR_AFFECTING_FEATURE_GATES = ['Snapshot', 'VMExport', 'DataVolumes'];
