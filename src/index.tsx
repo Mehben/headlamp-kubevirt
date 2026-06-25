@@ -33,6 +33,8 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import DataImportCronDetails from './components/DataImportCrons/Details';
 import DataImportCronList from './components/DataImportCrons/List';
 import CatalogPage from './components/ImageCatalog/CatalogPage';
+import ImportPage from './components/Import/ImportPage';
+import ProviderDetails from './components/Import/ProviderDetails';
 import InstallWizard from './components/InstallWizard/InstallWizard';
 import InstanceTypeDetails from './components/InstanceTypes/Details';
 import InstanceTypeList from './components/InstanceTypes/List';
@@ -75,6 +77,20 @@ async function detectIPAMCRD() {
     ipamCRDAvailable = true;
   } catch {
     ipamCRDAvailable = false;
+  }
+}
+
+// ── Forklift CRD detection ─────────────────────────────────────────────
+let forkliftCRDAvailable = false;
+
+async function detectForkliftCRD() {
+  try {
+    await ApiProxy.request(
+      '/apis/apiextensions.k8s.io/v1/customresourcedefinitions/providers.forklift.konveyor.io'
+    );
+    forkliftCRDAvailable = true;
+  } catch {
+    forkliftCRDAvailable = false;
   }
 }
 
@@ -133,6 +149,7 @@ function registerKubeVirtResource(config: ResourceRoute) {
 loadFeatureGates();
 detectKubeVirtCapabilities();
 detectIPAMCRD();
+detectForkliftCRD();
 detectInstalledOperators();
 detectStackInfo();
 
@@ -420,6 +437,10 @@ registerSidebarEntryFilter(entry => {
   if (entry.name === 'ipamclaims' && !ipamCRDAvailable) {
     return null;
   }
+  // Hide Import menu if Forklift CRDs are not available
+  if (entry.name.startsWith('import') && !forkliftCRDAvailable) {
+    return null;
+  }
   return entry;
 });
 
@@ -690,6 +711,107 @@ registerRoute({
   ),
   exact: true,
   name: 'ipamclaim',
+});
+
+// ── Import (Forklift) ──────────────────────────────────────────────────
+// Import (Forklift) — parent entry + children, same pattern as Networks → IPAMClaims
+registerSidebarEntry({
+  parent: 'kubevirt',
+  name: 'import',
+  label: 'Import',
+  url: '/kubevirt/import',
+  icon: 'mdi:import',
+});
+registerRoute({
+  path: '/kubevirt/import',
+  sidebar: 'import',
+  component: () => (
+    <ErrorBoundary>
+      <ImportPage />
+    </ErrorBoundary>
+  ),
+  exact: true,
+});
+registerSidebarEntry({
+  parent: 'import',
+  name: 'import-providers',
+  label: 'Providers',
+  url: '/kubevirt/import/providers',
+  icon: 'mdi:server-network',
+});
+registerRoute({
+  path: '/kubevirt/import/providers',
+  sidebar: 'import-providers',
+  component: () => (
+    <ErrorBoundary>
+      <ImportPage />
+    </ErrorBoundary>
+  ),
+  exact: true,
+});
+registerSidebarEntry({
+  parent: 'import',
+  name: 'import-plans',
+  label: 'Plans',
+  url: '/kubevirt/import/plans',
+  icon: 'mdi:clipboard-list',
+});
+registerRoute({
+  path: '/kubevirt/import/plans',
+  sidebar: 'import-plans',
+  component: () => (
+    <ErrorBoundary>
+      <ImportPage />
+    </ErrorBoundary>
+  ),
+  exact: true,
+});
+registerSidebarEntry({
+  parent: 'import',
+  name: 'import-networkmaps',
+  label: 'Network Mappings',
+  url: '/kubevirt/import/networkmaps',
+  icon: 'mdi:lan',
+});
+registerRoute({
+  path: '/kubevirt/import/networkmaps',
+  sidebar: 'import-networkmaps',
+  component: () => (
+    <ErrorBoundary>
+      <ImportPage />
+    </ErrorBoundary>
+  ),
+  exact: true,
+});
+registerSidebarEntry({
+  parent: 'import',
+  name: 'import-storagemaps',
+  label: 'Storage Mappings',
+  url: '/kubevirt/import/storagemaps',
+  icon: 'mdi:harddisk',
+});
+registerRoute({
+  path: '/kubevirt/import/storagemaps',
+  sidebar: 'import-storagemaps',
+  component: () => (
+    <ErrorBoundary>
+      <ImportPage />
+    </ErrorBoundary>
+  ),
+  exact: true,
+});
+
+// Provider detail route
+registerRoute({
+  path: '/kubevirt/import/providers/:namespace/:name',
+  sidebar: 'import-providers',
+  name: 'forklift-provider',
+  component: () => (
+    <ErrorBoundary>
+      <ProviderDetails />
+    </ErrorBoundary>
+  ),
+  exact: true,
 });
 
 // Operator Catalog — before Settings
