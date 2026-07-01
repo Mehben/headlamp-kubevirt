@@ -1,4 +1,4 @@
-import { Table } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { Link, Table } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { DateLabel } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Chip } from '@mui/material';
 import React from 'react';
@@ -10,7 +10,22 @@ export default function PlanList() {
   const items = useFilteredList(rawItems);
 
   const columns = [
-    { id: 'name', header: 'Name', accessorFn: (p: ForkliftPlan) => p.getName() },
+    {
+      id: 'name',
+      header: 'Name',
+      accessorFn: (p: ForkliftPlan) => p.getName(),
+      Cell: ({ row }: { row: { original: ForkliftPlan } }) => (
+        <Link
+          routeName="forklift-plan"
+          params={{
+            name: row.original.getName(),
+            namespace: row.original.getNamespace(),
+          }}
+        >
+          {row.original.getName()}
+        </Link>
+      ),
+    },
     { id: 'namespace', header: 'Namespace', accessorFn: (p: ForkliftPlan) => p.getNamespace() },
     { id: 'source', header: 'Source', accessorFn: (p: ForkliftPlan) => p.getSourceProvider() },
     { id: 'target', header: 'Target', accessorFn: (p: ForkliftPlan) => p.getDestinationProvider() },

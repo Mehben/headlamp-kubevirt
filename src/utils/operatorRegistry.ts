@@ -203,7 +203,7 @@ const OPERATORS: OperatorInfo[] = [
     dependencies: ['kubevirt', 'cdi'],
     defaultEnabled: false,
     detection: {
-      namespace: 'konveyor-forklift',
+      // Namespace is detected dynamically — detection checks all namespaces
     },
   },
 

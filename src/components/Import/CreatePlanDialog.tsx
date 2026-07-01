@@ -27,6 +27,7 @@ import {
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useMemo, useState } from 'react';
+import { getForkliftNamespace } from '../../index';
 import { getProviderNamespaces, getProviderVMs, InventoryVM } from '../../utils/forkliftInventory';
 import { safeError } from '../../utils/sanitize';
 import { toYaml } from '../../utils/yamlSerialize';
@@ -81,7 +82,7 @@ export default function CreatePlanDialog({ open, onClose }: CreatePlanDialogProp
     () => (providers || []).find(p => p.getName() === sourceProvider),
     [providers, sourceProvider]
   );
-  const providerNamespace = sourceProviderObj?.getNamespace() || 'konveyor-forklift';
+  const providerNamespace = sourceProviderObj?.getNamespace() || getForkliftNamespace();
 
   const destProviderObj = useMemo(
     () => (providers || []).find(p => p.getName() === destProvider),

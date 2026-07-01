@@ -11,12 +11,14 @@
  */
 
 import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
+import { getForkliftNamespace } from '../index';
 
-const PROXY_BASE =
-  '/api/v1/namespaces/konveyor-forklift/services/forklift-inventory-proxy:8080/proxy';
+function getProxyBase(): string {
+  return `/api/v1/namespaces/${getForkliftNamespace()}/services/forklift-inventory-proxy:8080/proxy`;
+}
 
 async function inventoryRequest(path: string): Promise<unknown> {
-  const url = `${PROXY_BASE}${path}`;
+  const url = `${getProxyBase()}${path}`;
   try {
     const result = await ApiProxy.request(url);
     console.debug('[forklift-inventory] OK:', url, result);

@@ -184,6 +184,8 @@ export default function InstallWizard() {
   const operatorsByCategory = useMemo(() => getOperatorsByCategory(), []);
   const detection = useOperatorDetection();
   const kvInstalled = detection.operators.kubevirt?.status === 'installed';
+  const stackInfo = getStackInfo();
+  const isStandaloneInstall = kvInstalled && !stackInfo.managed;
 
   // Sync wizard state with detection: only enable installed operators + query params
   useEffect(() => {
@@ -371,7 +373,22 @@ export default function InstallWizard() {
     [state.wizard.operators]
   );
 
-  const values = useMemo(() => buildHelmValues(state.wizard), [state.wizard]);
+  const values = useMemo(() => {
+    if (isStandaloneInstall) {
+      // In standalone mode, only include operators that are NOT already installed
+      const filteredState = {
+        ...state.wizard,
+        operators: { ...state.wizard.operators },
+      };
+      for (const op of OPERATORS) {
+        if (detection.operators[op.id]?.status === 'installed') {
+          filteredState.operators[op.id] = false;
+        }
+      }
+      return buildHelmValues(filteredState);
+    }
+    return buildHelmValues(state.wizard);
+  }, [state.wizard, isStandaloneInstall, detection.operators]);
 
   const output = useMemo(
     () =>
@@ -469,10 +486,20 @@ export default function InstallWizard() {
             color="text.secondary"
             sx={{ maxWidth: 600, mx: 'auto', mb: 3 }}
           >
-            {kvInstalled
-              ? 'KubeVirt is already running. Use this wizard to add or configure ecosystem operators.'
+            {isStandaloneInstall
+              ? 'KubeVirt was installed outside the Helm chart. You can add individual operators standalone.'
+              : kvInstalled
+              ? 'KubeVirt is managed by the kubevirt-stack Helm chart. Use this wizard to add or configure ecosystem operators.'
               : 'This wizard will guide you through installing KubeVirt and its ecosystem operators. You can choose which components to install and how to deploy them.'}
           </Typography>
+          {isStandaloneInstall && (
+            <Alert severity="warning" sx={{ maxWidth: 600, mx: 'auto', textAlign: 'left', mb: 2, bgcolor: 'rgba(237, 108, 2, 0.12)', color: 'text.primary', '& .MuiAlert-icon': { color: '#ed6c02' } }}>
+              <Typography variant="body2">
+                <strong>Standalone installation detected.</strong> KubeVirt is running but was not installed via the kubevirt-stack Helm chart.
+                The wizard will generate individual operator manifests instead of a full chart deployment.
+              </Typography>
+            </Alert>
+          )}
           <Alert severity="info" sx={{ maxWidth: 600, mx: 'auto', textAlign: 'left' }}>
             <Typography variant="body2">
               <strong>Requirements:</strong> Kubernetes 1.30+ and appropriate permissions depending
@@ -655,6 +682,15 @@ export default function InstallWizard() {
           <Typography variant="body2" color="text.secondary" mb={2}>
             Choose how to deploy the selected operators.
           </Typography>
+
+          {isStandaloneInstall && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Standalone mode:</strong> Only newly selected operators (not already installed) will be included in the generated manifests.
+                Existing operators installed outside the chart will not be modified.
+              </Typography>
+            </Alert>
+          )}
 
           {/* Mode selector — first */}
           <Box display="flex" alignItems="center" gap={2} mb={3}>

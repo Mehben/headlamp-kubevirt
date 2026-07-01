@@ -34,6 +34,7 @@ import DataImportCronDetails from './components/DataImportCrons/Details';
 import DataImportCronList from './components/DataImportCrons/List';
 import CatalogPage from './components/ImageCatalog/CatalogPage';
 import ImportPage from './components/Import/ImportPage';
+import PlanDetails from './components/Import/PlanDetails';
 import ProviderDetails from './components/Import/ProviderDetails';
 import InstallWizard from './components/InstallWizard/InstallWizard';
 import InstanceTypeDetails from './components/InstanceTypes/Details';
@@ -82,6 +83,7 @@ async function detectIPAMCRD() {
 
 // ── Forklift CRD detection ─────────────────────────────────────────────
 let forkliftCRDAvailable = false;
+let forkliftNamespace = 'konveyor-forklift'; // default, overridden by detection
 
 async function detectForkliftCRD() {
   try {
@@ -89,9 +91,34 @@ async function detectForkliftCRD() {
       '/apis/apiextensions.k8s.io/v1/customresourcedefinitions/providers.forklift.konveyor.io'
     );
     forkliftCRDAvailable = true;
+
+    // Discover actual namespace by finding where forklift resources live
+    try {
+      const resp = (await ApiProxy.request(
+        '/apis/forklift.konveyor.io/v1beta1/providers'
+      )) as { items?: Array<{ metadata: { namespace: string } }> };
+      const ns = resp?.items?.[0]?.metadata?.namespace;
+      if (ns) forkliftNamespace = ns;
+    } catch {
+      // If no providers exist yet, try finding the forklift-controller deployment
+      try {
+        const deps = (await ApiProxy.request(
+          '/apis/apps/v1/deployments?labelSelector=app=forklift-controller'
+        )) as { items?: Array<{ metadata: { namespace: string } }> };
+        const ns = deps?.items?.[0]?.metadata?.namespace;
+        if (ns) forkliftNamespace = ns;
+      } catch {
+        // keep default
+      }
+    }
   } catch {
     forkliftCRDAvailable = false;
   }
+}
+
+/** Get the detected Forklift namespace */
+export function getForkliftNamespace(): string {
+  return forkliftNamespace;
 }
 
 // Route registration helper - DRY pattern for KubeVirt resources
@@ -809,6 +836,19 @@ registerRoute({
   component: () => (
     <ErrorBoundary>
       <ProviderDetails />
+    </ErrorBoundary>
+  ),
+  exact: true,
+});
+
+// Plan detail route
+registerRoute({
+  path: '/kubevirt/import/plans/:namespace/:name',
+  sidebar: 'import-plans',
+  name: 'forklift-plan',
+  component: () => (
+    <ErrorBoundary>
+      <PlanDetails />
     </ErrorBoundary>
   ),
   exact: true,

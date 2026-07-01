@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { SectionBox, SectionFilterHeader } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Button, Typography } from '@mui/material';
 import React, { useState } from 'react';
+import { getForkliftNamespace } from '../../index';
 import CreateNetworkMapDialog from './CreateNetworkMapDialog';
 import CreatePlanDialog from './CreatePlanDialog';
 import CreateProviderDialog from './CreateProviderDialog';
@@ -85,15 +86,18 @@ export default function ImportPage() {
       <CreateProviderDialog
         open={createProviderOpen}
         onClose={() => setCreateProviderOpen(false)}
+        namespace={getForkliftNamespace()}
       />
       <CreatePlanDialog open={createPlanOpen} onClose={() => setCreatePlanOpen(false)} />
       <CreateNetworkMapDialog
         open={createNetworkMapOpen}
         onClose={() => setCreateNetworkMapOpen(false)}
+        namespace={getForkliftNamespace()}
       />
       <CreateStorageMapDialog
         open={createStorageMapOpen}
         onClose={() => setCreateStorageMapOpen(false)}
+        namespace={getForkliftNamespace()}
       />
     </SectionBox>
   );
